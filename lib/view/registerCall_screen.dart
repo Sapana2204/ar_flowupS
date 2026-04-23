@@ -3,6 +3,7 @@ import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart
 import '../utils/routes/app_colors.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:call_log/call_log.dart';
 
 import 'clientHistory_screen.dart';
 
@@ -80,13 +81,22 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
             const SizedBox(height: 12),
 
+            // _buildTextFieldWithAction(
+            //   "Client Contact No",
+            //   "+1 (555) 000-000",
+            //   Icons.phone,
+            //   phoneController,
+            //   Icons.contacts,
+            //   pickContact,
+            // ),
+
             _buildTextFieldWithAction(
               "Client Contact No",
               "+1 (555) 000-000",
               Icons.phone,
               phoneController,
-              Icons.contacts,
-              pickContact,
+              Icons.history, // change icon
+              getRecentCalls, // use new function
             ),
 
             const SizedBox(height: 20),
@@ -218,6 +228,109 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         ),
       ),
     );
+  }
+
+  Future<bool> requestCallLogPermission() async {
+    var status = await Permission.phone.request();
+    return status.isGranted;
+  }
+
+
+
+  Future<void> getRecentCalls() async {
+    bool granted = await requestCallLogPermission();
+
+    if (!granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Call log permission denied")),
+      );
+      return;
+    }
+
+    Iterable<CallLogEntry> entries = await CallLog.get();
+
+    List<CallLogEntry> recentCalls = entries.take(10).toList();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return ListView.builder(
+          itemCount: recentCalls.length,
+          itemBuilder: (context, index) {
+            final call = recentCalls[index];
+
+            return ListTile(
+              title: Text(call.name ?? "Unknown"),
+              subtitle: Text(call.number ?? "No number"),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    getCallIcon(call.callType),
+                    color: getCallColor(call.callType),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(getCallLabel(call.callType)),
+                ],
+              ),
+              onTap: () {
+                setState(() {
+                  nameController.text = call.name ?? "";
+                  phoneController.text = call.number ?? "";
+                });
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  IconData getCallIcon(CallType? type) {
+    switch (type) {
+      case CallType.incoming:
+        return Icons.call_received;
+      case CallType.outgoing:
+        return Icons.call_made;
+      case CallType.missed:
+        return Icons.call_missed;
+      case CallType.rejected:
+        return Icons.call_end;
+      default:
+        return Icons.phone;
+    }
+  }
+
+  Color getCallColor(CallType? type) {
+    switch (type) {
+      case CallType.incoming:
+        return Colors.green;
+      case CallType.outgoing:
+        return Colors.blue;
+      case CallType.missed:
+        return Colors.red;
+      case CallType.rejected:
+        return Colors.grey;
+      default:
+        return Colors.black;
+    }
+  }
+
+  String getCallLabel(CallType? type) {
+    switch (type) {
+      case CallType.incoming:
+        return "Incoming";
+      case CallType.outgoing:
+        return "Outgoing";
+      case CallType.missed:
+        return "Missed";
+      case CallType.rejected:
+        return "Rejected";
+      default:
+        return "Unknown";
+    }
   }
 
   // Future<void> pickContact() async {
