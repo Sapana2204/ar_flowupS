@@ -1,8 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:my_new_project/view/profile_screen.dart';
+import 'package:my_new_project/view/reports_screen.dart';
 import '../utils/routes/app_colors.dart';
 import 'dashboard_screen.dart';
+import 'loginScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -16,10 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late int _currentIndex;
 
   final List<Widget> _pages = const [
-    DashboardScreen(), // ✅ index 0
-    Center(child: Text("Tickets Screen")),
-    Center(child: Text("Alerts Screen")),
-    Center(child: Text("Profile Screen")),
+    DashboardScreen(), // 0
+    Center(child: Text("Tickets Screen")), // 1
+    Center(child: Text("Alerts Screen")), // 2
+    Center(child: Text("Profile Screen")), // 3
   ];
 
   @override
@@ -28,24 +29,32 @@ class _HomeScreenState extends State<HomeScreen> {
     _currentIndex = widget.initialIndex;
   }
 
+  /// 🔷 Dynamic Title
+  String get _title {
+    switch (_currentIndex) {
+      case 0:
+        return "Dashboard";
+      case 1:
+        return "Tickets";
+      case 2:
+        return "Alerts";
+      case 3:
+        return "Profile";
+      default:
+        return "flowupS";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("flowupS"),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.grid_view),
-        //     onPressed: () => _showQuickActions(),
-        //   )
-        // ],
+        title: Text(_title),
       ),
 
       drawer: _buildDrawer(),
 
       body: _pages[_currentIndex],
-
-      bottomNavigationBar: _bottomBar(),
     );
   }
 
@@ -54,8 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Drawer(
       child: Column(
         children: [
-
-          /// 🔷 MODERN HEADER
+          /// 🔷 HEADER
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 16),
@@ -66,60 +74,72 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.business, size: 30),
+                  backgroundColor: Colors.transparent,
+                  child: ClipOval(
+                    child: Image.asset(
+                      "assets/images/logo.png",
+                      fit: BoxFit.cover,
+                      width: 56,
+                      height: 56,
+                    ),
+                  ),
                 ),
-                SizedBox(height: 10),
-                Text(
-                  "Firm Name",
+                const SizedBox(height: 10),
+                const Text(
+                  "AR Infotech",
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-                Text(
-                  "Role Name",
+                const Text(
+                  "Sample User",
                   style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
           ),
 
-          /// 📋 MENU LIST
+          /// 📋 MENU
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
+                /// 🔹 MAIN SECTION
+                _sectionTitle("MAIN"),
 
-                /// Dashboard
-                _drawerItem(
-                  icon: Icons.dashboard,
-                  title: "Dashboard",
-                  onTap: () {
-                    setState(() => _currentIndex = 0);
-                    Navigator.pop(context);
-                  },
-                ),
+                _drawerItem(Icons.dashboard, "Dashboard", 0),
+                // _drawerItem(Icons.airplane_ticket, "Tickets", 1),
+                // _drawerItem(Icons.add_alert, "Alerts", 2),
+                _drawerSimpleNav(Icons.person, "Profile", () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                }),
 
-                /// 📊 REPORTS (NEW)
-                _expansionTile(
-                  icon: Icons.bar_chart,
-                  title: "Reports",
-                  children: [
-                    _subItem("Client Wise", () {
-                      Navigator.pop(context);
-                    }),
-                    _subItem("Resolved By", () {
-                      Navigator.pop(context);
-                    }),
-                    _subItem("Assigned By", () {
-                      Navigator.pop(context);
-                    }),
-                    _subItem("Status Wise", () {
-                      Navigator.pop(context);
-                    }),
-                  ],
-                ),
+                const Divider(),
+
+                /// 🔹 REPORTS SECTION
+                _sectionTitle("REPORTS"),
+
+                _drawerSimpleNav(Icons.bar_chart, "Reports", () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                  );
+                }),
+
+                const Divider(),
+
+                /// 🔹 SETTINGS SECTION
+                _sectionTitle("OTHERS"),
+
+                // _drawerSimple(Icons.settings, "Settings"),
+                // _drawerSimple(Icons.help_outline, "Help"),
+                _drawerSimpleNav(Icons.logout, "Logout", _handleLogout),
               ],
             ),
           ),
@@ -128,11 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _drawerItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
+  // ---------------- WIDGETS ----------------
+
+  Widget _drawerSimpleNav(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: primary),
       title: Text(title),
@@ -140,166 +158,82 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _expansionTile({
-    required IconData icon,
-    required String title,
-    required List<Widget> children,
-  }) {
-    return ExpansionTile(
-      leading: Icon(icon, color: primary),
-      title: Text(title),
-      childrenPadding: const EdgeInsets.only(left: 16),
-      children: children,
-    );
-  }
-
-  Widget _subItem(String title, VoidCallback onTap) {
-    return ListTile(
-      title: Text(title),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-      onTap: onTap,
-    );
-  }
-
-  // ---------------- BOTTOM BAR ----------------
-  Widget _bottomBar() {
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 10, 16, 20),
-        height: 80,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-
-            /// 🔳 BACKGROUND BAR
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 65,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(35),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-
-                /// LEFT + RIGHT ITEMS
-                child: Row(
-                  children: [
-                    /// LEFT
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _modernNavItem(Icons.dashboard, "Dashboard", 0),
-                          _modernNavItem(Icons.airplane_ticket, "Tickets", 1),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(width: 60),
-
-                    /// RIGHT
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _modernNavItem(Icons.add_alert, "Alerts", 2),
-                          _modernNavItem(Icons.person, "Profile", 3),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            /// 🔵 CENTER BUTTON
-            // Positioned(
-            //   top: -15,
-            //   child: GestureDetector(
-            //     onTap: () {
-            //       setState(() => _currentIndex = 2);
-            //     },
-            //     child: Container(
-            //       height: 60,
-            //       width: 60,
-            //       decoration: BoxDecoration(
-            //         shape: BoxShape.circle,
-            //         gradient: LinearGradient(
-            //           colors: [
-            //             primary,
-            //             primary.withOpacity(0.8),
-            //           ],
-            //         ),
-            //         boxShadow: [
-            //           BoxShadow(
-            //             color: Colors.blue.withOpacity(0.4),
-            //             blurRadius: 12,
-            //             offset: const Offset(0, 5),
-            //           ),
-            //         ],
-            //       ),
-            //       child: const Icon(
-            //         Icons.grid_view_rounded,
-            //         color: Colors.white,
-            //         size: 26,
-            //       ),
-            //     ),
-            //   ),
-            // ),
-          ],
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
 
-  Widget _modernNavItem(IconData icon, String label, int index) {
+  Widget _drawerItem(IconData icon, String title, int index) {
     final isSelected = _currentIndex == index;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() => _currentIndex = index);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected ? primary.withOpacity(0.12) : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? primary : Colors.grey,
-                size: 22,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isSelected ? primary : Colors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
+    return ListTile(
+      leading: Icon(icon, color: isSelected ? primary : Colors.grey),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isSelected ? primary : Colors.black,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
+      selected: isSelected,
+      selectedTileColor: primary.withOpacity(0.1),
+      onTap: () {
+        setState(() => _currentIndex = index);
+        Navigator.pop(context);
+      },
     );
+  }
+
+  Widget _drawerSimple(IconData icon, String title) {
+    return ListTile(
+      leading: Icon(icon, color: primary),
+      title: Text(title),
+      onTap: () {
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  void _handleLogout() async {
+    final confirm = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text("Cancel", style: TextStyle(color: primary),),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      /// 🔹 Clear session (if using shared prefs/token)
+      // await SharedPreferences.getInstance().then((prefs) => prefs.clear());
+
+      /// 🔹 Navigate to Login Screen
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()), // 👈 create this
+            (route) => false,
+      );
+    }
   }
 }

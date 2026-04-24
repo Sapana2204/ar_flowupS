@@ -1,50 +1,51 @@
 import 'package:flutter/material.dart';
 
-// 🌊 Primary Colors (Based on Logo)
-Color primary = const Color(0xFF1399EA);   // Main brand color
-Color darkPrimary = const Color(0xFF014AAD);
-Color lightPrimary = const Color(0xFF38B7FF);
-Color deepBlue = const Color(0xFF0053C1);
-Color royalBlue = const Color(0xFF004EB6);
+// 🌊 Primary Colors (Deep Blue Theme)
+const Color primary = Color(0xFF014AAD);        // Main brand color
+const Color darkPrimary = Color(0xFF003B8E);    // Darker shade
+const Color lightPrimary = Color(0xFF6EA8FE);   // Soft lighter blue
+const Color deepBlue = Color(0xFF0053C1);
+const Color royalBlue = Color(0xFF004EB6);
 
 // ⚫ Basic Colors
-Color black = const Color(0xFF000000);
-Color white = Colors.white;
-Color grey = const Color(0xFF8C8E8C);
-Color lightGrey = const Color(0xFFD3D3D3);
+const Color black = Color(0xFF000000);
+const Color white = Colors.white;
+const Color grey = Color(0xFF8C8E8C);
+const Color lightGrey = Color(0xFFD3D3D3);
 
 // 🎯 UI Specific
-Color buttonColor = primary;
-Color textPrimary = black;
-Color textSecondary = grey;
-Color backgroundColor = const Color(0xFFF5FAFF); // soft bluish background
+const Color buttonColor = primary;
+const Color textPrimary = black;
+const Color textSecondary = grey;
+const Color backgroundColor = Color(0xFFF5F8FF); // soft bluish background
+const Color ultraLightPrimary = Color(0xFFEAF1FF);
 
-// 🌊 Primary Gradient (App Background)
-LinearGradient primaryGradient = const LinearGradient(
+// 🌊 Primary Gradient (Main App UI)
+const LinearGradient primaryGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [
-    Color(0xFF1399EA), // primary
-    Color(0xFF0053C1), // deeper tone
+    Color(0xFF014AAD), // primary
+    Color(0xFF0053C1), // lighter blend
   ],
 );
 
-// 🌊 Soft Gradient (Modern UI Background)
-LinearGradient softPrimaryGradient = const LinearGradient(
+// 🌊 Soft Gradient (Headers / Cards Background)
+const LinearGradient softPrimaryGradient = LinearGradient(
   begin: Alignment.topCenter,
   end: Alignment.bottomCenter,
   colors: [
-    Color(0xFF38B7FF),
-    Color(0xFF1399EA),
+    Color(0xFF6EA8FE), // light blue
+    Color(0xFF014AAD), // primary
   ],
 );
 
-// 🌊 Button Gradient
-LinearGradient buttonGradient = const LinearGradient(
+// 🌊 Button Gradient (CTA Buttons)
+const LinearGradient buttonGradient = LinearGradient(
   begin: Alignment.centerLeft,
   end: Alignment.centerRight,
   colors: [
-    Color(0xFF1399EA),
-    Color(0xFF004EB6),
+    Color(0xFF014AAD), // primary
+    Color(0xFF003B8E), // darker
   ],
 );
