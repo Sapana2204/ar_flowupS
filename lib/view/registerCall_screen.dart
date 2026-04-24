@@ -4,7 +4,7 @@ import '../utils/routes/app_colors.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:call_log/call_log.dart';
-
+import 'package:intl/intl.dart';
 import 'clientHistory_screen.dart';
 
 
@@ -21,6 +21,15 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   TextEditingController phoneController = TextEditingController();
   final FlutterNativeContactPicker _contactPicker =
   FlutterNativeContactPicker();
+  TextEditingController dateController = TextEditingController();
+  String selectedCategory = "Technical Support";
+
+  List<String> categories = [
+    "Technical Support",
+    "Billing",
+    "Sales",
+    "General Inquiry",
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +52,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             const SizedBox(height: 10),
 
             Row(
+              crossAxisAlignment: CrossAxisAlignment.end, // 👈 important
               children: [
                 Expanded(
                   child: _buildTextFieldWithController(
@@ -52,28 +62,30 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                     nameController,
                   ),
                 ),
-                const SizedBox(width: 5),
+                const SizedBox(width: 8),
 
-                /// 📜 HISTORY BUTTON
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ClientHistoryScreen(
-                          clientName: nameController.text,
-                          phone: phoneController.text,
+                SizedBox(
+                  height: 58, // 👈 match TextField height
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ClientHistoryScreen(
+                            clientName: nameController.text,
+                            phone: phoneController.text,
+                          ),
                         ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      child: Icon(Icons.history, color: primary),
                     ),
-                    child: Icon(Icons.history, color: primary),
                   ),
                 ),
               ],
@@ -111,7 +123,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _buildBoxField("Query/Category", "Technical Support"),
+                  child: _buildDropdownField(),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -235,7 +247,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     return status.isGranted;
   }
 
+  String formatCallTime(int? timestamp) {
+    if (timestamp == null) return "";
 
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+
+    return DateFormat('dd MMM, hh:mm a').format(date);
+  }
 
   Future<void> getRecentCalls() async {
     bool granted = await requestCallLogPermission();
@@ -261,7 +279,17 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
             return ListTile(
               title: Text(call.name ?? "Unknown"),
-              subtitle: Text(call.number ?? "No number"),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(call.number ?? "No number"),
+                  const SizedBox(height: 2),
+                  Text(
+                    formatCallTime(call.timestamp),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -447,17 +475,21 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
+          style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon),
+            isDense: true, // 🔥 reduces height
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            prefixIcon: Icon(icon, size: 20),
             filled: true,
-            fillColor: Colors.grey.shade200,
+            fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
           ),
@@ -472,26 +504,30 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       IconData icon,
       TextEditingController controller,
       IconData actionIcon,
-      VoidCallback onActionTap,
+      VoidCallback onTap,
       ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
+          style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon),
+            isDense: true,
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            prefixIcon: Icon(icon, size: 20),
             suffixIcon: IconButton(
-              icon: Icon(actionIcon, color: primary),
-              onPressed: onActionTap,
+              icon: Icon(actionIcon, color: primary, size: 20),
+              onPressed: onTap,
             ),
             filled: true,
-            fillColor: Colors.grey.shade200,
+            fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
           ),
@@ -500,28 +536,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     );
   }
 
-  /// Reusable Text Field
-  Widget _buildTextField(String label, String hint, IconData icon) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label),
-        const SizedBox(height: 6),
-        TextField(
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: Icon(icon),
-            filled: true,
-            fillColor: Colors.grey.shade200,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+
 
   /// Box Field
   Widget _buildBoxField(String label, String value) {
@@ -547,18 +562,87 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Due Date"),
+        const Text("Due Date", style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         TextField(
+          controller: dateController,
           readOnly: true,
+          style: const TextStyle(fontSize: 14),
+          onTap: () async {
+            DateTime? pickedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2020),
+              lastDate: DateTime(2100),
+              builder: (context, child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: primary,
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+
+            if (pickedDate != null) {
+              dateController.text =
+                  DateFormat('dd MMM yyyy').format(pickedDate);
+            }
+          },
           decoration: InputDecoration(
-            hintText: "mm/dd/yyyy",
-            suffixIcon: const Icon(Icons.calendar_today),
+            hintText: "Select date",
+            isDense: true,
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            suffixIcon: const Icon(Icons.calendar_today, size: 20),
             filled: true,
-            fillColor: Colors.grey.shade200,
+            fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Query/Category",
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(color: Colors.black12, blurRadius: 4),
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedCategory,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down),
+              items: categories.map((e) {
+                return DropdownMenuItem(
+                  value: e,
+                  child: Text(e),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedCategory = value!;
+                });
+              },
             ),
           ),
         ),

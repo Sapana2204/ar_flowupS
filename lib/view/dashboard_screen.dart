@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_new_project/view/searchCall_screen.dart';
+import 'package:my_new_project/view/updateCall_screen.dart';
 import '../utils/routes/app_colors.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 
@@ -87,7 +88,12 @@ class DashboardScreen extends StatelessWidget {
                 Icons.upload,
                 "Update Call",
                     () {
-                  // your update logic
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const UpdateCallScreen(),
+                    ),
+                  );
                 },
               ),
             ],

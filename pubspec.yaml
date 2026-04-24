@@ -63,13 +63,16 @@ dependencies:
   permission_handler: ^12.0.1
   flutter_native_contact_picker: ^0.0.6
   call_log: ^4.0.0
+  rename: ^2.0.1
 
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/flowups_icon.png"
   remove_alpha_ios: true
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/flowups_icon.png"
 
 
 dev_dependencies:
@@ -101,4 +104,5 @@ flutter:
     - assets/images/logo.png
     - assets/gif/loader.gif
     - assets/gif/nodata2.png
+    - assets/images/flowups_icon.png
 
