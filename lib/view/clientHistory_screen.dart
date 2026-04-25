@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/ticket_model.dart';
-import '../utils/routes/app_colors.dart';
+import '../utils/app_colors.dart';
 
 class ClientHistoryScreen extends StatefulWidget {
   final String clientName;

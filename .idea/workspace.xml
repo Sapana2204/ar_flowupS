@@ -4,12 +4,35 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="app icon and app name set, client history and update call screen done">
-      <change afterPath="$PROJECT_DIR$/lib/view/profile_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/reports_screen.dart" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="profile and reports screen done">
+      <change afterPath="$PROJECT_DIR$/lib/model/queryTypes_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/tickets_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/user_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/repository/query_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/repository/tickets_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/res/widgets/callCard.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/app_strings.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/viewmodel/query_viewmodel.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/utils/routes/app_colors.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/routes/app_colors.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/network/base_api_services.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/network/base_api_services.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/login_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/login_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/login_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/login_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/routes/app_colors.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_colors.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/routes/utils.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/utils.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/loginScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/loginScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/profile_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/profile_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/searchCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/searchCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/updateCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/updateCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +98,7 @@
     "ignore.virus.scanning.warn.message": "true",
     "io.flutter.reload.alreadyRun": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/flutter workspace/ar_flowupS/assets/images",
+    "last_opened_file_path": "C:/flutter workspace/soulconnect",
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
@@ -85,11 +108,14 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\flutter workspace\ar_flowupS\lib\utils" />
+      <recent name="C:\flutter workspace\ar_flowupS\lib" />
       <recent name="C:\flutter workspace\ar_flowupS\assets\images" />
       <recent name="D:\Flutter Workspace\clean_arch\assets\images" />
       <recent name="D:\Flutter Workspace\clean_arch\lib\viewmodel" />
-      <recent name="D:\Flutter Workspace\clean_arch\lib\view" />
-      <recent name="D:\Flutter Workspace\clean_arch" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\flutter workspace\ar_flowupS\lib\utils" />
     </key>
   </component>
   <component name="RunManager">
@@ -139,7 +165,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777017875347</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="profile and reports screen done">
+      <option name="closed" value="true" />
+      <created>1777031080746</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1777031080746</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -148,6 +182,7 @@
     <MESSAGE value="splash, logo, dashboard and search by callID screens ui" />
     <MESSAGE value="recent calls changes done" />
     <MESSAGE value="app icon and app name set, client history and update call screen done" />
-    <option name="LAST_COMMIT_MESSAGE" value="app icon and app name set, client history and update call screen done" />
+    <MESSAGE value="profile and reports screen done" />
+    <option name="LAST_COMMIT_MESSAGE" value="profile and reports screen done" />
   </component>
 </project>

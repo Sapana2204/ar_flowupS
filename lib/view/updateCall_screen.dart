@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:call_log/call_log.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../utils/routes/app_colors.dart';
+import '../utils/app_colors.dart';
 import 'clientHistory_screen.dart';
 
 class UpdateCallScreen extends StatefulWidget {

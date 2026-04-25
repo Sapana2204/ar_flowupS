@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../model/login_model.dart';
 import '../repository/login_repository.dart';
 import '../utils/routes/routes_names.dart';
-import '../utils/routes/utils.dart';
+import '../utils/utils.dart';
 
 class LoginViewModel with ChangeNotifier {
   final _loginRepository = LoginRepository();
@@ -21,136 +22,102 @@ class LoginViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  int? getCustomerIdFromToken() {
-    if (_userData?.token == null) return null;
-
-    try {
-      Map<String, dynamic> decodedToken = JwtDecoder.decode(_userData!.token!);
-
-      // Try both possible key cases
-      var customerId = decodedToken['CustomerId'] ?? decodedToken['customerId'];
-
-      if (customerId == null) return null;
-
-      // Convert to int if it comes as String
-      if (customerId is String) {
-        return int.tryParse(customerId);
-      } else if (customerId is int) {
-        return customerId;
-      } else {
-        print("⚠ Unexpected type for CustomerId: ${customerId.runtimeType}");
-        return null;
-      }
-    } catch (e) {
-      print("Error decoding token: $e");
-      return null;
-    }
-  }
-
-
-  void setUserData(LoginModel? user) {
+  void setUserData(LoginModel user) {
     _userData = user;
     notifyListeners();
   }
 
+  /// ✅ Save user locally
   Future<void> saveUserData(LoginModel user) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userData', jsonEncode(user.toJson()));
   }
 
-  Future<LoginModel?> getUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? data = prefs.getString('userData');
-    if (data != null) {
-      return LoginModel.fromJson(jsonDecode(data));
-    }
-    return null;
-  }
-
+  /// ✅ LOGIN API
   Future<void> loginApi(
       String username, String password, BuildContext context) async {
+
     setLoading(true);
+
     try {
       final response = await _loginRepository.loginApi(username, password);
-      print("Login response: $response");
 
       final loginModel = LoginModel.fromJson(response);
 
       if (loginModel.token != null && loginModel.token!.isNotEmpty) {
+
         setUserData(loginModel);
         await saveUserData(loginModel);
 
-        /// Decode token after saving it
-        Map<String, dynamic> decodedToken = JwtDecoder.decode(loginModel.token!);
-        print("🔐 Token Decoded: $decodedToken");
+        /// 🔐 Decode Token
+        final decoded = JwtDecoder.decode(loginModel.token!);
+        print("🔐 Decoded Token: $decoded");
 
-        /// Access specific fields (only if your backend provides them)
-        print("👤 UserId: ${decodedToken['UserId']}");
-        print("👩 Username: ${decodedToken['UserName']}");
-        print("🎭 Role: ${decodedToken['RoleName']}");
-        print("🎭 CustomerId: ${decodedToken['CustomerId']}");
+        print("👤 AdminID: ${loginModel.adminId}");
+        print("👤 Username: ${loginModel.username}");
+        print("🎭 RoleID: ${loginModel.roleId}");
 
-        /// 🟩 Auto logout when token expires
-        Duration expiryDuration = JwtDecoder.getExpirationDate(loginModel.token!)
-            .difference(DateTime.now());
+        /// ⏳ Auto Logout on Expiry
+        final expiry = JwtDecoder.getExpirationDate(loginModel.token!);
+        final duration = expiry.difference(DateTime.now());
 
-        print("⌛ Token valid for: $expiryDuration");
+        print("⌛ Token valid for: $duration");
 
-        Future.delayed(expiryDuration, () {
+        Future.delayed(duration, () {
           logout(context);
-          Utils.showToast("Session Expired. Please Login Again");
+          Utils.showToast("Session expired. Please login again.");
         });
 
-        Utils.showToast("User Login Successfully!");
-        Navigator.pushNamed(context, RouteNames.home);
+        Utils.showToast("Login Successful!");
+
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          RouteNames.home,
+              (route) => false,
+        );
+
       } else {
-        Utils.showToast("Unauthorized User");
+        Utils.showToast("Invalid login response");
       }
 
     } catch (e) {
-      if (e.toString().contains('401')) {
-        Utils.showToast("Unauthorized User");
-      } else {
-        Utils.showToast("Network error: $e");
-      }
+      Utils.showToast(e.toString());
     } finally {
       setLoading(false);
     }
   }
 
+  /// ✅ Logout
   Future<void> logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('userData');
-    setUserData(null);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    _userData = null;
+
     Navigator.pushNamedAndRemoveUntil(
       context,
-      RouteNames.welcomeScreen,
+      RouteNames.login,
           (route) => false,
     );
   }
 
+  /// ✅ Session Check
   Future<void> checkUserSession(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? data = prefs.getString('userData');
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('userData');
 
     if (data != null) {
       final user = LoginModel.fromJson(jsonDecode(data));
 
-      // Validate token
       if (user.token != null && !JwtDecoder.isExpired(user.token!)) {
         setUserData(user);
+
         Navigator.pushReplacementNamed(context, RouteNames.home);
       } else {
-        // Token expired, clear session and redirect to login
         await logout(context);
-        Utils.showToast("Session expired. Please log in again.");
       }
     } else {
-      // No user data, redirect to login
       Navigator.pushReplacementNamed(context, RouteNames.login);
     }
   }
-
-
-
 }

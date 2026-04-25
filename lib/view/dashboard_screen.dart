@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_new_project/view/searchCall_screen.dart';
 import 'package:my_new_project/view/updateCall_screen.dart';
-import '../utils/routes/app_colors.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
-
+import '../utils/app_colors.dart';
+import '../utils/app_strings.dart';
+import 'callsList_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -21,7 +22,7 @@ class DashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Welcome",
+                AppStrings.welcome,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -30,8 +31,6 @@ class DashboardScreen extends StatelessWidget {
 
               Row(
                 children: [
-
-                  /// 🔍 SEARCH BUTTON (Call ID)
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -50,10 +49,7 @@ class DashboardScreen extends StatelessWidget {
                       child: Icon(Icons.search, color: primary),
                     ),
                   ),
-
                   const SizedBox(width: 10),
-
-
                 ],
               )
             ],
@@ -62,7 +58,7 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 5),
 
           Text(
-            "Efficiency is the architect of flow. Here is your current status.",
+            AppStrings.dashboardSubtitle,
             style: TextStyle(color: textSecondary, fontSize: 12),
           ),
 
@@ -73,12 +69,12 @@ class DashboardScreen extends StatelessWidget {
             children: [
               _actionButton(
                 Icons.call,
-                "Register Call",
+                AppStrings.registerCall,
                     () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const RegisterCallScreen(),
+                      builder: (_) => const CallsListScreen(),
                     ),
                   );
                 },
@@ -86,7 +82,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(width: 10),
               _actionButton(
                 Icons.upload,
-                "Update Call",
+                AppStrings.updateCall,
                     () {
                   Navigator.push(
                     context,
@@ -104,11 +100,11 @@ class DashboardScreen extends StatelessWidget {
           /// 📅 FILTER
           Row(
             children: [
-              _chip("Yesterday", false),
+              _chip(AppStrings.yesterday, false),
               const SizedBox(width: 8),
-              _chip("Today", true),
+              _chip(AppStrings.today, true),
               const SizedBox(width: 8),
-              _chip("Tomorrow", false),
+              _chip(AppStrings.tomorrow, false),
             ],
           ),
 
@@ -122,7 +118,7 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Filtered Status",
+                  AppStrings.filteredStatus,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 15),
@@ -130,9 +126,9 @@ class DashboardScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _statusBox("24", "Open"),
-                    _statusBox("12", "Active"),
-                    _statusBox("158", "Closed"),
+                    _statusBox("24", AppStrings.open),
+                    _statusBox("12", AppStrings.active),
+                    _statusBox("158", AppStrings.closed),
                   ],
                 ),
               ],
@@ -141,7 +137,7 @@ class DashboardScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          /// 📈 GRAPH CARD (SIMPLE PLACEHOLDER)
+          /// 📈 GRAPH CARD
           Container(
             padding: const EdgeInsets.all(16),
             decoration: _cardDecoration(),
@@ -149,12 +145,11 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Assigned Calls Distribution",
+                  AppStrings.assignedCalls,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
 
-                /// Fake chart (replace later with fl_chart)
                 Center(
                   child: Container(
                     height: 150,
@@ -177,13 +172,12 @@ class DashboardScreen extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                /// Legend
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: const [
-                    Text("● Open"),
-                    Text("● Active"),
-                    Text("● Closed"),
+                    Text("● " + AppStrings.open),
+                    Text("● " + AppStrings.active),
+                    Text("● " + AppStrings.closed),
                   ],
                 )
               ],
@@ -270,43 +264,5 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  void _showSearchDialog(BuildContext context) {
-    TextEditingController controller = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Search by Call ID"),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              hintText: "Enter Call ID",
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                String callId = controller.text;
-
-                if (callId.isNotEmpty) {
-                  Navigator.pop(context);
-
-                  /// 👉 TODO: Call your API / navigate
-                  print("Searching Call ID: $callId");
-                }
-              },
-              child: const Text("Search"),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

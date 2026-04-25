@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_new_project/utils/routes/app_colors.dart';
+import 'package:my_new_project/utils/app_colors.dart';
 import 'package:my_new_project/utils/routes/routes.dart';
 import 'package:my_new_project/utils/routes/routes_names.dart';
 import 'package:my_new_project/viewModel/login_viewmodel.dart';
+import 'package:my_new_project/viewmodel/query_viewmodel.dart';
+import 'package:my_new_project/viewmodel/tickets_viewmodel.dart';
 
 import 'package:provider/provider.dart';
 
@@ -18,10 +20,12 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
+        ChangeNotifierProvider(create: (_) => TicketsViewModel()),
+        ChangeNotifierProvider(create: (_) => QueryViewModel()),
 
       ],
       child: MaterialApp(
-        title: 'SoulConnect',
+        title: 'flowupS',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: primary,

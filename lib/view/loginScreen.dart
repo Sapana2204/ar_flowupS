@@ -1,12 +1,49 @@
 import 'package:flutter/material.dart';
-import '../utils/routes/app_colors.dart';
-import 'homeScreen.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginScreen extends StatelessWidget {
+import '../utils/app_colors.dart';
+import '../utils/app_strings.dart';
+import '../viewModel/login_viewmodel.dart';
+
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool rememberMe = false;
+  bool isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedUsername();
+  }
+
+  Future<void> _loadSavedUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUsername = prefs.getString('saved_username');
+
+    if (savedUsername != null) {
+      emailController.text = savedUsername;
+      setState(() {
+        rememberMe = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+
+    final loginVM = Provider.of<LoginViewModel>(context);
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Center(
@@ -29,32 +66,32 @@ class LoginScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                /// 🔷 LOGO + TITLE
+                /// 🔷 LOGO
                 Row(
                   children: [
                     Image.asset(
-                      "assets/images/logo.png",
+                      "assets/images/flowups_icon.png",
                       height: 40,
                     ),
-                    const SizedBox(width: 10),
-
                   ],
                 ),
 
                 const SizedBox(height: 25),
 
-                /// 👋 WELCOME TEXT
+                /// TEXT
                 Text(
-                  "Welcome",
+                  AppStrings.welcome,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: textPrimary,
                   ),
                 ),
+
                 const SizedBox(height: 6),
+
                 Text(
-                  "Sign in to your workspace to continue.",
+                  AppStrings.signInSubtitle,
                   style: TextStyle(
                     fontSize: 13,
                     color: textSecondary,
@@ -63,38 +100,44 @@ class LoginScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                /// 📧 EMAIL FIELD
+                /// EMAIL
                 _inputField(
-                  label: "WORK EMAIL",
-                  hint: "name@company.com",
+                  controller: emailController,
+                  label: AppStrings.workEmail,
+                  hint: AppStrings.emailHint,
                   icon: Icons.email_outlined,
                 ),
 
                 const SizedBox(height: 16),
 
-                /// 🔒 PASSWORD FIELD
+                /// PASSWORD
                 _inputField(
-                  label: "PASSWORD",
-                  hint: "Enter password",
+                  controller: passwordController,
+                  label: AppStrings.password,
+                  hint: AppStrings.passwordHint,
                   icon: Icons.lock_outline,
                   isPassword: true,
                 ),
 
                 const SizedBox(height: 10),
 
-                /// 🔗 FORGOT PASSWORD + REMEMBER
+                /// REMEMBER + FORGOT
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
                         Checkbox(
-                          value: false,
-                          onChanged: (val) {},
+                          value: rememberMe,
+                          onChanged: (val) {
+                            setState(() {
+                              rememberMe = val ?? false;
+                            });
+                          },
                           activeColor: primary,
                         ),
-                        Text(
-                          "Remember this device",
+                        const Text(
+                          AppStrings.rememberDevice,
                           style: TextStyle(
                             fontSize: 12,
                             color: textSecondary,
@@ -102,27 +145,52 @@ class LoginScreen extends StatelessWidget {
                         )
                       ],
                     ),
-                    Text(
-                      "Forgot password?",
-                      style: TextStyle(
-                        color: primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    )
+                    // Text(
+                    //   AppStrings.forgotPassword,
+                    //   style: TextStyle(
+                    //     color: primary,
+                    //     fontSize: 12,
+                    //     fontWeight: FontWeight.w500,
+                    //   ),
+                    // )
                   ],
                 ),
 
                 const SizedBox(height: 15),
 
-                /// 🔘 SIGN IN BUTTON
+                /// 🔘 LOGIN BUTTON
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
+                  onTap: loginVM.isLoading
+                      ? null
+                      : () async {
+                    if (emailController.text.isEmpty ||
+                        passwordController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(AppStrings.snackbarError),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    /// 💾 Save / Remove username
+                    final prefs = await SharedPreferences.getInstance();
+                    if (rememberMe) {
+                      await prefs.setString(
+                          'saved_username', emailController.text.trim());
+                    } else {
+                      await prefs.remove('saved_username');
+                    }
+
+                    loginVM.loginApi(
+                      emailController.text.trim(),
+                      passwordController.text.trim(),
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const HomeScreen(),
-                      ),
                     );
                   },
                   child: Container(
@@ -132,10 +200,12 @@ class LoginScreen extends StatelessWidget {
                       gradient: buttonGradient,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Center(
-                      child: Text(
-                        "Sign In →",
-                        style: TextStyle(
+                    child: Center(
+                      child: loginVM.isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                        AppStrings.signIn,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -146,26 +216,24 @@ class LoginScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-
-
                 /// SIGNUP
-                Center(
-                  child: Text.rich(
-                    TextSpan(
-                      text: "Don't have an account? ",
-                      style: TextStyle(color: textSecondary),
-                      children: [
-                        TextSpan(
-                          text: "Request Access",
-                          style: TextStyle(
-                            color: primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                )
+                // Center(
+                //   child: Text.rich(
+                //     TextSpan(
+                //       text: AppStrings.noAccount,
+                //       style: TextStyle(color: textSecondary),
+                //       children: [
+                //         TextSpan(
+                //           text: AppStrings.requestAccess,
+                //           style: TextStyle(
+                //             color: primary,
+                //             fontWeight: FontWeight.w600,
+                //           ),
+                //         )
+                //       ],
+                //     ),
+                //   ),
+                // )
               ],
             ),
           ),
@@ -176,6 +244,7 @@ class LoginScreen extends StatelessWidget {
 
   /// 🔹 INPUT FIELD
   Widget _inputField({
+    required TextEditingController controller,
     required String label,
     required String hint,
     required IconData icon,
@@ -194,10 +263,29 @@ class LoginScreen extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextField(
-          obscureText: isPassword,
+          controller: controller,
+          obscureText: isPassword ? !isPasswordVisible : false,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon, color: grey),
+
+            /// 👁 Eye Icon
+            suffixIcon: isPassword
+                ? IconButton(
+              icon: Icon(
+                isPasswordVisible
+                    ? Icons.visibility
+                    : Icons.visibility_off,
+                color: grey,
+              ),
+              onPressed: () {
+                setState(() {
+                  isPasswordVisible = !isPasswordVisible;
+                });
+              },
+            )
+                : null,
+
             filled: true,
             fillColor: backgroundColor,
             contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -210,6 +298,4 @@ class LoginScreen extends StatelessWidget {
       ],
     );
   }
-
-
 }

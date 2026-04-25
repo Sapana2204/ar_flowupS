@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import '../utils/routes/app_colors.dart';
+import 'package:provider/provider.dart';
+import '../utils/app_colors.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';
+import '../viewmodel/query_viewmodel.dart';
 import 'clientHistory_screen.dart';
 
 
@@ -22,14 +24,17 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   final FlutterNativeContactPicker _contactPicker =
   FlutterNativeContactPicker();
   TextEditingController dateController = TextEditingController();
-  String selectedCategory = "Technical Support";
 
-  List<String> categories = [
-    "Technical Support",
-    "Billing",
-    "Sales",
-    "General Inquiry",
-  ];
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      final vm = Provider.of<QueryViewModel>(context, listen: false);
+      vm.fetchQueryTypes();
+      vm.fetchPriorityLevels(); // ✅ ADD THIS
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,15 +98,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
             const SizedBox(height: 12),
 
-            // _buildTextFieldWithAction(
-            //   "Client Contact No",
-            //   "+1 (555) 000-000",
-            //   Icons.phone,
-            //   phoneController,
-            //   Icons.contacts,
-            //   pickContact,
-            // ),
-
             _buildTextFieldWithAction(
               "Client Contact No",
               "+1 (555) 000-000",
@@ -135,43 +131,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             const SizedBox(height: 15),
 
             /// PRIORITY
-            const Text("Priority Level"),
-            const SizedBox(height: 10),
+            _buildPriorityDropdown(),
 
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Row(
-                children: ["Low", "Medium", "High"].map((e) {
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          priority = e;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: priority == e ? Colors.white : Colors.transparent,
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          e,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: priority == e ? Colors.black : Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
 
             const SizedBox(height: 15),
 
@@ -361,58 +322,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     }
   }
 
-  // Future<void> pickContact() async {
-  //   bool permission = await FlutterContacts.requestPermission();
-  //
-  //   debugPrint("CONTACT PERMISSION STATUS: $permission");
-  //
-  //   if (!permission) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text("Permission denied")),
-  //     );
-  //     return;
-  //   }
-  //
-  //   List<Contact> contacts = await FlutterContacts.getContacts(
-  //     withProperties: true,
-  //   );
-  //
-  //   showModalBottomSheet(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     builder: (_) {
-  //       return Container(
-  //         height: MediaQuery.of(context).size.height * 0.7,
-  //         padding: const EdgeInsets.all(10),
-  //         child: ListView.builder(
-  //           itemCount: contacts.length,
-  //           itemBuilder: (context, index) {
-  //             final contact = contacts[index];
-  //
-  //             return ListTile(
-  //               title: Text(contact.displayName),
-  //               subtitle: contact.phones.isNotEmpty
-  //                   ? Text(contact.phones.first.number)
-  //                   : const Text("No number"),
-  //               onTap: () {
-  //                 setState(() {
-  //                   nameController.text = contact.displayName;
-  //                   phoneController.text =
-  //                   contact.phones.isNotEmpty
-  //                       ? contact.phones.first.number
-  //                       : "";
-  //                 });
-  //
-  //                 Navigator.pop(context);
-  //               },
-  //             );
-  //           },
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
-
   Future<void> pickContact() async {
     try {
       final contact = await _contactPicker.selectContact();
@@ -495,6 +404,60 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPriorityDropdown() {
+    return Consumer<QueryViewModel>(
+      builder: (context, vm, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Priority Level"),
+            const SizedBox(height: 6),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black12, blurRadius: 4),
+                ],
+              ),
+
+              child: vm.isLoading
+                  ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: Center(child: CircularProgressIndicator()),
+              )
+                  : DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: vm.priorityList.any(
+                          (e) => e.categoryName == vm.selectedPriority)
+                      ? vm.selectedPriority
+                      : null,
+                  hint: const Text("Select Priority"),
+                  isExpanded: true,
+
+                  items: vm.priorityList.map((item) {
+                    return DropdownMenuItem(
+                      value: item.categoryName,
+                      child: Text(item.categoryName ?? ""),
+                    );
+                  }).toList(),
+
+                  onChanged: (value) {
+                    if (value != null) {
+                      vm.setSelectedPriority(value);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -610,43 +573,63 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   }
 
   Widget _buildDropdownField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Query/Category",
-          style: TextStyle(fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(color: Colors.black12, blurRadius: 4),
-            ],
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: selectedCategory,
-              isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down),
-              items: categories.map((e) {
-                return DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedCategory = value!;
-                });
-              },
+    return Consumer<QueryViewModel>(
+      builder: (context, vm, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Query/Category",
+              style: TextStyle(fontWeight: FontWeight.w500),
             ),
-          ),
-        ),
-      ],
+            const SizedBox(height: 6),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black12, blurRadius: 4),
+                ],
+              ),
+
+              child: vm.isLoading
+                  ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: Center(child: CircularProgressIndicator()),
+              )
+                  : vm.queryList.isEmpty
+                  ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text("No categories found"),
+              )
+                  : DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: vm.queryList.any((e) => e.categoryName == vm.selectedQuery)
+                      ? vm.selectedQuery
+                      : null,                  isExpanded: true,
+                  hint: const Text("Select Category"),
+                  icon: const Icon(Icons.keyboard_arrow_down),
+
+                  items: vm.queryList.map((item) {
+                    return DropdownMenuItem(
+                      value: item.categoryName,
+                      child: Text(item.categoryName ?? ""),
+                    );
+                  }).toList(),
+
+                  onChanged: (value) {
+                    if (value != null) {
+                      vm.setSelectedQuery(value);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

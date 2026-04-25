@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
-import '../utils/routes/app_colors.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_strings.dart';
 import 'dashboard_screen.dart';
 import 'loginScreen.dart';
 
@@ -17,10 +18,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late int _currentIndex;
 
   final List<Widget> _pages = const [
-    DashboardScreen(), // 0
-    Center(child: Text("Tickets Screen")), // 1
-    Center(child: Text("Alerts Screen")), // 2
-    Center(child: Text("Profile Screen")), // 3
+    DashboardScreen(),
+    Center(child: Text(AppStrings.ticketsScreen)),
+    Center(child: Text(AppStrings.alertsScreen)),
+    Center(child: Text(AppStrings.profileScreen)),
   ];
 
   @override
@@ -33,15 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
   String get _title {
     switch (_currentIndex) {
       case 0:
-        return "Dashboard";
+        return AppStrings.dashboard;
       case 1:
-        return "Tickets";
+        return AppStrings.tickets;
       case 2:
-        return "Alerts";
+        return AppStrings.alerts;
       case 3:
-        return "Profile";
+        return AppStrings.profile;
       default:
-        return "flowupS";
+        return AppStrings.appName;
     }
   }
 
@@ -51,9 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(_title),
       ),
-
       drawer: _buildDrawer(),
-
       body: _pages[_currentIndex],
     );
   }
@@ -89,11 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  "AR Infotech",
+                  AppStrings.companyName,
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
                 const Text(
-                  "Sample User",
+                  AppStrings.userName,
                   style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
@@ -105,13 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                /// 🔹 MAIN SECTION
-                _sectionTitle("MAIN"),
+                /// 🔹 MAIN
+                _sectionTitle(AppStrings.mainSection),
 
-                _drawerItem(Icons.dashboard, "Dashboard", 0),
-                // _drawerItem(Icons.airplane_ticket, "Tickets", 1),
-                // _drawerItem(Icons.add_alert, "Alerts", 2),
-                _drawerSimpleNav(Icons.person, "Profile", () {
+                _drawerItem(Icons.dashboard, AppStrings.dashboard, 0),
+
+                _drawerSimpleNav(Icons.person, AppStrings.profile, () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
@@ -121,10 +119,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const Divider(),
 
-                /// 🔹 REPORTS SECTION
-                _sectionTitle("REPORTS"),
+                /// 🔹 REPORTS
+                _sectionTitle(AppStrings.reportsSection),
 
-                _drawerSimpleNav(Icons.bar_chart, "Reports", () {
+                _drawerSimpleNav(Icons.bar_chart, AppStrings.reports, () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
@@ -134,12 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const Divider(),
 
-                /// 🔹 SETTINGS SECTION
-                _sectionTitle("OTHERS"),
+                /// 🔹 OTHERS
+                _sectionTitle(AppStrings.othersSection),
 
-                // _drawerSimple(Icons.settings, "Settings"),
-                // _drawerSimple(Icons.help_outline, "Help"),
-                _drawerSimpleNav(Icons.logout, "Logout", _handleLogout),
+                _drawerSimpleNav(Icons.logout, AppStrings.logout, _handleLogout),
               ],
             ),
           ),
@@ -193,31 +189,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _drawerSimple(IconData icon, String title) {
-    return ListTile(
-      leading: Icon(icon, color: primary),
-      title: Text(title),
-      onTap: () {
-        Navigator.pop(context);
-      },
-    );
-  }
-
   void _handleLogout() async {
     final confirm = await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Logout"),
-          content: const Text("Are you sure you want to logout?"),
+          title: const Text(AppStrings.logoutTitle),
+          content: const Text(AppStrings.logoutMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text("Cancel", style: TextStyle(color: primary),),
+              child: Text(
+                AppStrings.cancel,
+                style: TextStyle(color: primary),
+              ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text("Logout"),
+              child: const Text(AppStrings.logout),
             ),
           ],
         );
@@ -225,13 +214,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirm == true) {
-      /// 🔹 Clear session (if using shared prefs/token)
-      // await SharedPreferences.getInstance().then((prefs) => prefs.clear());
-
-      /// 🔹 Navigate to Login Screen
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()), // 👈 create this
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
             (route) => false,
       );
     }

@@ -1,39 +1,47 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../constants/appUrls.dart';
 
 class LoginRepository {
-  Future<dynamic> loginApi(String userName, String password) async {
-    final uri = Uri.parse(
-      "${AppUrls.baseUrl}${AppUrls.loginEndPoint}?userName=$userName&password=$password",
-    );
+  Future<Map<String, dynamic>> loginApi(
+      String username, String password) async {
+
+    final uri = Uri.parse("http://192.168.1.3:3000/api/v1/login");
+
+    final requestBody = {
+      "username": username,
+      "password": password,
+    };
 
     try {
-      print("Calling API at: $uri");
+      print("📡 API URL: $uri");
+      print("📤 Request Headers: {Content-Type: application/json}");
+      print("📤 Request Body: ${jsonEncode(requestBody)}"); // ✅ ADD THIS
 
       final response = await http.post(
         uri,
         headers: {
-          "accept": "text/plain",
+          "Content-Type": "application/json",
         },
-        body: "", // API requires empty body
+        body: jsonEncode(requestBody),
       );
 
-      if (response.statusCode == 200) {
-        print("API Success: ${response.body}");
+      print("📥 Status Code: ${response.statusCode}");
+      print("📥 Response Body: ${response.body}");
 
-        // Return as map for compatibility with LoginModel
-        return {
-          "message": response.body.trim(), // ⬅ removes hidden newlines
-        };
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true) {
+          return data;
+        } else {
+          throw Exception(data['message'] ?? "Login failed");
+        }
       } else {
-        print("API Error - Status: ${response.statusCode}");
-        print("API Error - Body: ${response.body}");
-        throw Exception("Failed with status code ${response.statusCode}: ${response.body}");
+        throw Exception("Server error: ${response.statusCode}");
       }
     } catch (e) {
-      print("Network error: $e");
-      throw Exception("API error: $e");
+      print("❌ API Error: $e");
+      throw Exception("Network/API error: $e");
     }
   }
 }
