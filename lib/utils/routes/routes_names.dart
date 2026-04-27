@@ -3,37 +3,15 @@ class RouteNames {
   static const String login = "login_screen";
   static const String home = "home_screen";
   static const String splashScreen = "splash_screen";
-  static const String adminDashboardScreen = "admin_dashboard_screen";
-  static const String supervisorDashboardScreen = "supervisor_dashboard_screen";
+  static const String dashboardScreen = "dashboard_screen";
   static const String welcomeScreen = "welcome_screen";
-  static const String attendancelistScreen = "attendance_list_screen";
-  static const String addattendanceScreen = "add_attendance_list_screen";  static const String productsScreen = "product_screen";
-  static const String serviceScreen = "service_screen";
-  static const String quotationScreen = "quotation_screen";
-  static const String ratingScreen = "rating_screen";
-  static const String addRatingScreen = "add_rating_screen";
-  static const String signUpScreen = "signup_screen";
-  static const String userRegistrationScreen = "user_registration_screen";
-  static const String productListScreen = "product_list_screen";
-  static const String siteListScreen = "site_list_screen";
-  static const String categoryListScreen = "category_list_screen";
-  static const String customerRegistrationScreen = "customer_registration_screen";
-  static const String customerListScreen = "customer_list_screen";
-  static const String empListScreen = "employee_list_screen";
-  static const String quotationListScreen = "quotation_list_screen";
-  static const String invoiceListScreen = "invoice_list_screen";
-  static const String employeeRegistrationScreen = "employee_registration_screen";
-  static const String termsAndConditionsScreen = "terms_and_conditions_screen";
-  static const String receiptScreen = "receipt_screen";
-  static const String receiptListScreen = "receipt_list_screen";
-  static const String attendanceReportsScreen = "attendance_reports_screen";
-  static const String ratingReportsScreen = "rating_reports_screen";
-  static const String outstandingReportsScreen = "outstanding_reports_screen";
-  static const String ledgerReportsScreen = "ledger_reports_screen";
-  static const String invoiceScreen = "invoice_screen";
-  static const String siteScreen = "site_screen";
-  static const String reportSummaryScreen = "report_summary_screen";
-  static const String reviewListScreen = "review_list_screen";
-  static const String adminreviewListScreen = "admin_review_list_screen";
-  static const String addReviewScreen = "add_review_screen";
+  static const String callListScreen = "call_list_screen";
+  static const String clientHistoryScreen = "client_history_screen";
+  static const String profileScreen = "profile_screen";
+  static const String registerCallScreen = "register_call_screen";
+  static const String reportsScreen = "reports_screen";
+  static const String searchCallScreen = "search_call_screen";
+  static const String updateCallScreen = "update_call_screen";
+
+
 }

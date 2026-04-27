@@ -29,12 +29,20 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: primary,
+
+          textSelectionTheme: TextSelectionThemeData(
+            cursorColor: primary,              // ✅ blinking cursor color
+            selectionColor: primary.withOpacity(0.3),
+            selectionHandleColor: primary,
+          ),
+
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: primary,
               foregroundColor: Colors.white,
             ),
           ),
+
           appBarTheme: AppBarTheme(
             backgroundColor: primary,
             titleTextStyle: const TextStyle(

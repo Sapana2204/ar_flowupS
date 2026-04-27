@@ -4,6 +4,7 @@ import 'package:my_new_project/view/updateCall_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
+import '../utils/routes/routes_names.dart';
 import 'callsList_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -33,12 +34,7 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SearchCallScreen(),
-                        ),
-                      );
+                      Navigator.pushNamed(context, RouteNames.searchCallScreen);
                     },
                     child: Container(
                       padding: const EdgeInsets.all(8),
@@ -71,12 +67,7 @@ class DashboardScreen extends StatelessWidget {
                 Icons.call,
                 AppStrings.registerCall,
                     () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CallsListScreen(),
-                    ),
-                  );
+                  Navigator.pushNamed(context, RouteNames.callListScreen);
                 },
               ),
               const SizedBox(width: 10),
@@ -84,12 +75,7 @@ class DashboardScreen extends StatelessWidget {
                 Icons.upload,
                 AppStrings.updateCall,
                     () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const UpdateCallScreen(),
-                    ),
-                  );
+                  Navigator.pushNamed(context, RouteNames.updateCallScreen);
                 },
               ),
             ],

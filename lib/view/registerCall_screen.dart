@@ -6,6 +6,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';
+import '../utils/routes/routes_names.dart';
 import '../viewmodel/query_viewmodel.dart';
 import 'clientHistory_screen.dart';
 
@@ -73,14 +74,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                   height: 58, // 👈 match TextField height
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
+                      Navigator.pushNamed(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => ClientHistoryScreen(
-                            clientName: nameController.text,
-                            phone: phoneController.text,
-                          ),
-                        ),
+                        RouteNames.clientHistoryScreen,
+                        arguments: {
+                          "clientName": nameController.text,
+                          "phone": phoneController.text,
+                        },
                       );
                     },
                     child: Container(
@@ -499,27 +499,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     );
   }
 
-
-
-  /// Box Field
-  Widget _buildBoxField(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(value),
-        ),
-      ],
-    );
-  }
-
   /// Date Field
   Widget _buildDateField() {
     return Column(
@@ -539,10 +518,14 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               lastDate: DateTime(2100),
               builder: (context, child) {
                 return Theme(
-                  data: ThemeData.light().copyWith(
-                    colorScheme: ColorScheme.light(
-                      primary: primary,
+                  data: Theme.of(context).copyWith(
+                    useMaterial3: false, // ✅ VERY IMPORTANT (removes purple default)
+                    colorScheme: const ColorScheme.light(
+                      primary: primary,            // header + selected date
+                      onPrimary: Colors.white,     // text on header
+                      onSurface: Colors.black,     // normal text
                     ),
+                    dialogBackgroundColor: Colors.white,
                   ),
                   child: child!,
                 );

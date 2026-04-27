@@ -5,6 +5,7 @@ import 'package:call_log/call_log.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../utils/app_colors.dart';
+import '../utils/routes/routes_names.dart';
 import 'clientHistory_screen.dart';
 
 class UpdateCallScreen extends StatefulWidget {
@@ -91,14 +92,13 @@ class _UpdateCallScreenState extends State<UpdateCallScreen> {
                   height: 58,
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
+                      Navigator.pushNamed(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => ClientHistoryScreen(
-                            clientName: nameController.text,
-                            phone: phoneController.text,
-                          ),
-                        ),
+                        RouteNames.clientHistoryScreen,
+                        arguments: {
+                          "clientName": nameController.text,
+                          "phone": phoneController.text,
+                        },
                       );
                     },
                     child: Container(

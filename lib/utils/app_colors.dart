@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-// 🌊 Primary Colors (Deep Blue Theme)
-const Color primary = Color(0xFF014AAD);        // Main brand color
-const Color darkPrimary = Color(0xFF003B8E);    // Darker shade
-const Color lightPrimary = Color(0xFF6EA8FE);   // Soft lighter blue
-const Color deepBlue = Color(0xFF0053C1);
-const Color royalBlue = Color(0xFF004EB6);
+// 🌊 Primary Colors (Sky Blue Theme)
+const Color primary = Color(0xFF1399EA);        // Main brand color
+const Color darkPrimary = Color(0xFF0F7DC2);    // Slightly darker shade
+const Color lightPrimary = Color(0xFF5EC2FF);   // Soft lighter blue
+const Color deepBlue = Color(0xFF0A6BB8);       // Rich supporting tone
+const Color royalBlue = Color(0xFF117FD1);      // Mid accent shade
 
 // ⚫ Basic Colors
 const Color black = Color(0xFF000000);
@@ -17,16 +17,16 @@ const Color lightGrey = Color(0xFFD3D3D3);
 const Color buttonColor = primary;
 const Color textPrimary = black;
 const Color textSecondary = grey;
-const Color backgroundColor = Color(0xFFF5F8FF); // soft bluish background
-const Color ultraLightPrimary = Color(0xFFEAF1FF);
+const Color backgroundColor = Color(0xFFF2F9FF); // softer bluish background
+const Color ultraLightPrimary = Color(0xFFE7F4FF);
 
 // 🌊 Primary Gradient (Main App UI)
 const LinearGradient primaryGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [
-    Color(0xFF014AAD), // primary
-    Color(0xFF0053C1), // lighter blend
+    Color(0xFF1399EA), // primary
+    Color(0xFF0A6BB8), // deeper blend
   ],
 );
 
@@ -35,8 +35,8 @@ const LinearGradient softPrimaryGradient = LinearGradient(
   begin: Alignment.topCenter,
   end: Alignment.bottomCenter,
   colors: [
-    Color(0xFF6EA8FE), // light blue
-    Color(0xFF014AAD), // primary
+    Color(0xFF5EC2FF), // light blue
+    Color(0xFF1399EA), // primary
   ],
 );
 
@@ -45,7 +45,7 @@ const LinearGradient buttonGradient = LinearGradient(
   begin: Alignment.centerLeft,
   end: Alignment.centerRight,
   colors: [
-    Color(0xFF014AAD), // primary
-    Color(0xFF003B8E), // darker
+    Color(0xFF1399EA), // primary
+    Color(0xFF0F7DC2), // darker
   ],
 );
