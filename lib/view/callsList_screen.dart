@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../res/widgets/callCard.dart';
 import '../utils/app_colors.dart';
+import '../viewmodel/query_viewmodel.dart';
 import '../viewmodel/tickets_viewmodel.dart';
 import 'registerCall_screen.dart';
 
@@ -25,14 +26,24 @@ class _CallsListScreenState extends State<CallsListScreen> {
   void initState() {
     super.initState();
 
-    final vm = Provider.of<TicketsViewModel>(context, listen: false);
-    vm.fetchTickets();
+    final ticketVm = Provider.of<TicketsViewModel>(context, listen: false);
+    ticketVm.fetchTickets();
 
-    /// 🔽 Pagination Scroll Listener
+    /// 🔥 PRELOAD ALL DROPDOWN DATA HERE
+    final queryVm = Provider.of<QueryViewModel>(context, listen: false);
+
+    Future.microtask(() {
+      queryVm.fetchQueryTypes();
+      queryVm.fetchPriorityLevels();
+      queryVm.fetchAdmins();
+      queryVm.fetchClients();
+    });
+
+    /// Pagination
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        vm.loadMore();
+        ticketVm.loadMore();
       }
     });
   }
@@ -114,23 +125,13 @@ class _CallsListScreenState extends State<CallsListScreen> {
                         border: InputBorder.none,
                         icon: const Icon(Icons.search),
 
-                        /// 🔄 SHOW LOADER OR CLEAR BUTTON
-                        suffixIcon: vm.isLoading
-                            ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                            : IconButton(
+                        suffixIcon: IconButton(
                           icon: const Icon(Icons.close),
                           onPressed: () {
                             _searchController.clear();
 
                             final vm = Provider.of<TicketsViewModel>(context, listen: false);
-                            vm.filterTickets("");   // reset list
+                            vm.filterTickets("");
                           },
                         ),
                       ),
@@ -147,8 +148,14 @@ class _CallsListScreenState extends State<CallsListScreen> {
 
                   /// 🔄 LOADING
                   if (vm.isLoading && vm.ticketsList.isEmpty) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: primary,   // 🔵 set your primary color
+                        ),
+                      ),
+                    );                }
 
                   /// ❌ ERROR
                   if (vm.error.isNotEmpty) {
@@ -162,6 +169,8 @@ class _CallsListScreenState extends State<CallsListScreen> {
 
                   return RefreshIndicator(
                     onRefresh: vm.refreshTickets,
+                    color: primary,              // 🔵 spinner color
+                    backgroundColor: Colors.white, // optional
                     child: ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.symmetric(horizontal: 16),

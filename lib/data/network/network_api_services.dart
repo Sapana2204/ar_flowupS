@@ -185,21 +185,25 @@ class NetworkApiServices extends BaseApiServices {
 
   dynamic handleResponse(http.Response response) {
     switch (response.statusCode) {
+
       case 200:
+      case 201: // ✅ ADD THIS (VERY IMPORTANT)
         final body = response.body.trim();
         try {
-          // Try to decode JSON
           return jsonDecode(body);
         } catch (_) {
-          // If not JSON, return the string itself
           return body;
         }
+
       case 400:
         throw BadRequestException("Bad Request");
+
       case 401:
         throw UnauthorizedException("Unauthorized. Please log in again.");
+
       case 404:
         throw response;
+
       default:
         throw InternetException(
           "${response.statusCode} : ${response.reasonPhrase}",
@@ -215,7 +219,9 @@ class NetworkApiServices extends BaseApiServices {
 
       final headers = {
         "Content-Type": "application/json",
-        if (token != null && token.isNotEmpty) "Authorization": "Bearer $token",
+        "Accept": "application/json, text/plain, */*",
+        if (token != null && token.isNotEmpty)
+          "Authorization": "Bearer $token",
       };
 
       final response = await http.put(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
+import 'package:provider/provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
+import '../viewModel/login_viewmodel.dart';
 import 'dashboard_screen.dart';
 import 'loginScreen.dart';
 
@@ -51,6 +53,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_title),
+        actions: _currentIndex == 0
+            ? [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              // 👉 Handle notification click
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Notifications clicked")),
+              );
+            },
+          ),
+        ]
+            : null,
       ),
       drawer: _buildDrawer(),
       body: _pages[_currentIndex],
@@ -76,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.transparent,
+                  // backgroundColor: Colors.transparent,
+                  backgroundColor: Colors.white,
                   child: ClipOval(
                     child: Image.asset(
                       "assets/images/logo.png",
@@ -91,9 +107,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   AppStrings.companyName,
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-                const Text(
-                  AppStrings.userName,
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                Consumer<LoginViewModel>(
+                  builder: (context, loginVm, child) {
+                    return Text(
+                      loginVm.userData?.name ?? "Guest",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../constants/appUrls.dart';
+
 class LoginRepository {
   Future<Map<String, dynamic>> loginApi(
       String username, String password) async {
 
-    final uri = Uri.parse("http://192.168.1.3:3000/api/v1/login");
+    final uri = Uri.parse(AppUrls.loginEndPoint); // ✅ UPDATED
 
     final requestBody = {
       "username": username,
@@ -15,7 +17,7 @@ class LoginRepository {
     try {
       print("📡 API URL: $uri");
       print("📤 Request Headers: {Content-Type: application/json}");
-      print("📤 Request Body: ${jsonEncode(requestBody)}"); // ✅ ADD THIS
+      print("📤 Request Body: ${jsonEncode(requestBody)}");
 
       final response = await http.post(
         uri,

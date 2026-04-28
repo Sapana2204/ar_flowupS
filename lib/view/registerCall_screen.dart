@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:provider/provider.dart';
+import '../model/createTicket_model.dart';
 import '../utils/app_colors.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';
 import '../utils/routes/routes_names.dart';
+import '../viewModel/login_viewmodel.dart';
 import '../viewmodel/query_viewmodel.dart';
-import 'clientHistory_screen.dart';
-
+import '../viewmodel/tickets_viewmodel.dart';
 
 class RegisterCallScreen extends StatefulWidget {
   const RegisterCallScreen({super.key});
@@ -20,23 +21,30 @@ class RegisterCallScreen extends StatefulWidget {
 
 class _RegisterCallScreenState extends State<RegisterCallScreen> {
   String priority = "Medium";
+  final FlutterNativeContactPicker _contactPicker =
+      FlutterNativeContactPicker();
+
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
-  final FlutterNativeContactPicker _contactPicker =
-  FlutterNativeContactPicker();
   TextEditingController dateController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      final vm = Provider.of<QueryViewModel>(context, listen: false);
-      vm.fetchQueryTypes();
-      vm.fetchPriorityLevels(); // ✅ ADD THIS
+    Future.microtask(() async {
+      final queryVm = Provider.of<QueryViewModel>(context, listen: false);
+      final loginVm = Provider.of<LoginViewModel>(context, listen: false);
+
+      /// wait until admins are loaded
+      if (queryVm.adminList.isEmpty) {
+        await queryVm.fetchAdmins();
+      }
+
+      _setDefaultAdmin(queryVm, loginVm);
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,25 +69,59 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               crossAxisAlignment: CrossAxisAlignment.end, // 👈 important
               children: [
                 Expanded(
-                  child: _buildTextFieldWithController(
-                    "Client Name",
-                    "Enter name",
-                    Icons.person,
-                    nameController,
+                  child: Consumer<QueryViewModel>(
+                    builder: (context, vm, child) {
+                      return GestureDetector(
+                        onTap: () => _openClientBottomSheet(vm),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black12, blurRadius: 4),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  vm.selectedClient?.name ?? "Select Client",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: vm.selectedClient == null
+                                        ? Colors.grey
+                                        : Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const Icon(Icons.keyboard_arrow_down),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
-
                 SizedBox(
                   height: 58, // 👈 match TextField height
                   child: GestureDetector(
                     onTap: () {
+                      final vm =
+                          Provider.of<QueryViewModel>(context, listen: false);
+
                       Navigator.pushNamed(
                         context,
                         RouteNames.clientHistoryScreen,
                         arguments: {
-                          "clientName": nameController.text,
+                          "clientName": vm.selectedClient?.name ?? "",
                           "phone": phoneController.text,
+                          "clientId": vm.selectedClient?.customerId,   // ✅ correct
+                          "createdDate": vm.selectedClient?.createdDate, // ✅ correct
                         },
                       );
                     },
@@ -133,31 +175,69 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             /// PRIORITY
             _buildPriorityDropdown(),
 
-
             const SizedBox(height: 15),
 
             /// ASSIGN TO
             const Text("Assign To"),
             const SizedBox(height: 8),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: "Sarah Jenkins (Support)",
-                  items: const [
-                    DropdownMenuItem(
-                      value: "Sarah Jenkins (Support)",
-                      child: Text("Sarah Jenkins (Support)"),
+            Consumer<QueryViewModel>(
+              builder: (context, vm, child) {
+                final loginVm =
+                    Provider.of<LoginViewModel>(context, listen: false);
+                final loggedInUser = loginVm.userData?.username;
+
+                /// ✅ AUTO SELECT LOGGED-IN USER
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (vm.selectedAdmin == null &&
+                      loggedInUser != null &&
+                      vm.adminList.isNotEmpty) {
+                    final match = vm.adminList.firstWhere(
+                      (e) => e.name == loggedInUser,
+                      orElse: () => vm.adminList.first,
+                    );
+
+                    vm.setSelectedAdmin(match.name ?? "");
+                  }
+                });
+
+                if (vm.isLoading && vm.adminList.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+
+                      /// ✅ FIX: ensure value exists
+                      value: vm.adminList.any((e) => e.name == vm.selectedAdmin)
+                          ? vm.selectedAdmin
+                          : null,
+
+                      hint: const Text("Select User"),
+
+                      items: vm.adminList.map((user) {
+                        return DropdownMenuItem<String>(
+                          value: user.name,
+                          child: Text(user.name ?? ""),
+                        );
+                      }).toList(),
+
+                      onChanged: (value) {
+                        if (value != null) {
+                          vm.setSelectedAdmin(value);
+                        }
+                      },
                     ),
-                  ],
-                  onChanged: (value) {},
-                ),
-              ),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 15),
@@ -167,6 +247,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             const SizedBox(height: 8),
 
             TextField(
+              controller: descriptionController,
               maxLines: 4,
               decoration: InputDecoration(
                 hintText: "Briefly describe the call outcome or client needs",
@@ -186,7 +267,64 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () async {
+                  final vm =
+                      Provider.of<TicketsViewModel>(context, listen: false);
+                  final queryVm =
+                      Provider.of<QueryViewModel>(context, listen: false);
+
+                  // 🔴 Basic Validation
+                  if (nameController.text.isEmpty ||
+                      phoneController.text.isEmpty ||
+                      queryVm.selectedQuery == null ||
+                      queryVm.selectedPriority == null ||
+                      queryVm.selectedAdmin == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Please fill all required fields")),
+                    );
+                    return;
+                  }
+
+                  // 🔹 Convert date
+                  String dueDate = "";
+                  if (dateController.text.isNotEmpty) {
+                    final parsedDate =
+                        DateFormat("dd MMM yyyy").parse(dateController.text);
+                    dueDate = DateFormat("yyyy-MM-dd").format(parsedDate);
+                  }
+
+                  // 🔹 Prepare Model
+                  final ticket = CreateTicket(
+                    clientId: queryVm.selectedClient?.customerId,
+                    contactNo: phoneController.text,
+                    description: "<p>${descriptionController.text}</p>",
+                    queryType: queryVm.getSelectedQueryId(), // 👈 IMPORTANT
+                    ticketStatus: "206", // default
+                    ticketPriority:
+                        queryVm.getSelectedPriorityId(), // 👈 IMPORTANT
+                    assignee: queryVm.getSelectedAdminId(), // 👈 IMPORTANT
+                    startDate: DateFormat("yyyy-MM-dd").format(DateTime.now()),
+                    dueDate: dueDate,
+                    status: "active",
+                    contactPerson: nameController.text,
+                  );
+
+                  final success = await vm.createTicket(ticket);
+
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("✅ Call Registered Successfully")),
+                    );
+
+                    Navigator.pop(context); // go back
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(vm.createMessage)),
+                    );
+                  }
+                },
                 icon: const Icon(Icons.call),
                 label: const Text("Register Call"),
                 style: ElevatedButton.styleFrom(
@@ -201,6 +339,21 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         ),
       ),
     );
+  }
+
+  void _setDefaultAdmin(QueryViewModel vm, LoginViewModel loginVm) {
+    final loggedInUser = loginVm.userData?.username;
+
+    if (vm.selectedAdmin == null &&
+        loggedInUser != null &&
+        vm.adminList.isNotEmpty) {
+      final match = vm.adminList.firstWhere(
+            (e) => e.name == loggedInUser,
+        orElse: () => vm.adminList.first,
+      );
+
+      vm.setSelectedAdmin(match.name ?? "");
+    }
   }
 
   Future<bool> requestCallLogPermission() async {
@@ -327,14 +480,11 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       final contact = await _contactPicker.selectContact();
 
       if (contact != null) {
-
         /// ✅ Set name first
         nameController.text = contact.fullName ?? "";
 
         /// ✅ MULTIPLE NUMBERS → SHOW SELECTION UI
-        if (contact.phoneNumbers != null &&
-            contact.phoneNumbers!.length > 1) {
-
+        if (contact.phoneNumbers != null && contact.phoneNumbers!.length > 1) {
           showModalBottomSheet(
             context: context,
             builder: (_) {
@@ -375,35 +525,89 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     }
   }
 
-  Widget _buildTextFieldWithController(
-      String label,
-      String hint,
-      IconData icon,
-      TextEditingController controller,
-      ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          style: const TextStyle(fontSize: 14),
-          decoration: InputDecoration(
-            hintText: hint,
-            isDense: true, // 🔥 reduces height
-            contentPadding:
-            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-            prefixIcon: Icon(icon, size: 20),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
+  void _openClientBottomSheet(QueryViewModel vm) {
+    TextEditingController searchController = TextEditingController();
+    List clients = List.from(vm.clientList);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: SizedBox(
+                height:
+                    MediaQuery.of(context).size.height * 0.5, // 👈 fixed height
+                child: Column(
+                  children: [
+                    /// 🔍 SEARCH BAR
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: "Search client...",
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            clients = vm.clientList
+                                .where((c) =>
+                                    (c.name ?? "")
+                                        .toLowerCase()
+                                        .contains(value.toLowerCase()) ||
+                                    (c.mobileNo ?? "").contains(value))
+                                .toList();
+                          });
+                        },
+                      ),
+                    ),
+
+                    /// 📋 LIST
+                    Expanded(
+                      child: clients.isEmpty
+                          ? const Center(child: Text("No clients found"))
+                          : ListView.builder(
+                              itemCount: clients.length,
+                              itemBuilder: (context, index) {
+                                final client = clients[index];
+
+                                return ListTile(
+                                  title: Text(client.name ?? ""),
+                                  subtitle: Text(client.mobileNo ?? ""),
+                                  onTap: () {
+                                    vm.setSelectedClient(client);
+
+                                    /// ✅ FIX: force UI update
+                                    setState(() {
+                                      nameController.text = client.name ?? "";
+                                      phoneController.text =
+                                          client.mobileNo ?? "";
+                                    });
+
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -415,7 +619,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
           children: [
             const Text("Priority Level"),
             const SizedBox(height: 6),
-
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
@@ -425,35 +628,32 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                   BoxShadow(color: Colors.black12, blurRadius: 4),
                 ],
               ),
-
               child: vm.isLoading
                   ? const Padding(
-                padding: EdgeInsets.all(12),
-                child: Center(child: CircularProgressIndicator()),
-              )
+                      padding: EdgeInsets.all(12),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
                   : DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: vm.priorityList.any(
-                          (e) => e.categoryName == vm.selectedPriority)
-                      ? vm.selectedPriority
-                      : null,
-                  hint: const Text("Select Priority"),
-                  isExpanded: true,
-
-                  items: vm.priorityList.map((item) {
-                    return DropdownMenuItem(
-                      value: item.categoryName,
-                      child: Text(item.categoryName ?? ""),
-                    );
-                  }).toList(),
-
-                  onChanged: (value) {
-                    if (value != null) {
-                      vm.setSelectedPriority(value);
-                    }
-                  },
-                ),
-              ),
+                      child: DropdownButton<String>(
+                        value: vm.priorityList.any(
+                                (e) => e.categoryName == vm.selectedPriority)
+                            ? vm.selectedPriority
+                            : null,
+                        hint: const Text("Select Priority"),
+                        isExpanded: true,
+                        items: vm.priorityList.map((item) {
+                          return DropdownMenuItem(
+                            value: item.categoryName,
+                            child: Text(item.categoryName ?? ""),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            vm.setSelectedPriority(value);
+                          }
+                        },
+                      ),
+                    ),
             ),
           ],
         );
@@ -462,13 +662,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   }
 
   Widget _buildTextFieldWithAction(
-      String label,
-      String hint,
-      IconData icon,
-      TextEditingController controller,
-      IconData actionIcon,
-      VoidCallback onTap,
-      ) {
+    String label,
+    String hint,
+    IconData icon,
+    TextEditingController controller,
+    IconData actionIcon,
+    VoidCallback onTap,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -481,7 +681,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             hintText: hint,
             isDense: true,
             contentPadding:
-            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             prefixIcon: Icon(icon, size: 20),
             suffixIcon: IconButton(
               icon: Icon(actionIcon, color: primary, size: 20),
@@ -519,11 +719,12 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               builder: (context, child) {
                 return Theme(
                   data: Theme.of(context).copyWith(
-                    useMaterial3: false, // ✅ VERY IMPORTANT (removes purple default)
+                    useMaterial3:
+                        false, // ✅ VERY IMPORTANT (removes purple default)
                     colorScheme: const ColorScheme.light(
-                      primary: primary,            // header + selected date
-                      onPrimary: Colors.white,     // text on header
-                      onSurface: Colors.black,     // normal text
+                      primary: primary, // header + selected date
+                      onPrimary: Colors.white, // text on header
+                      onSurface: Colors.black, // normal text
                     ),
                     dialogBackgroundColor: Colors.white,
                   ),
@@ -541,7 +742,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             hintText: "Select date",
             isDense: true,
             contentPadding:
-            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             suffixIcon: const Icon(Icons.calendar_today, size: 20),
             filled: true,
             fillColor: Colors.white,
@@ -566,7 +767,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 6),
-
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
@@ -576,39 +776,38 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                   BoxShadow(color: Colors.black12, blurRadius: 4),
                 ],
               ),
-
               child: vm.isLoading
                   ? const Padding(
-                padding: EdgeInsets.all(12),
-                child: Center(child: CircularProgressIndicator()),
-              )
+                      padding: EdgeInsets.all(12),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
                   : vm.queryList.isEmpty
-                  ? const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text("No categories found"),
-              )
-                  : DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: vm.queryList.any((e) => e.categoryName == vm.selectedQuery)
-                      ? vm.selectedQuery
-                      : null,                  isExpanded: true,
-                  hint: const Text("Select Category"),
-                  icon: const Icon(Icons.keyboard_arrow_down),
-
-                  items: vm.queryList.map((item) {
-                    return DropdownMenuItem(
-                      value: item.categoryName,
-                      child: Text(item.categoryName ?? ""),
-                    );
-                  }).toList(),
-
-                  onChanged: (value) {
-                    if (value != null) {
-                      vm.setSelectedQuery(value);
-                    }
-                  },
-                ),
-              ),
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Text("No categories found"),
+                        )
+                      : DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: vm.queryList.any(
+                                    (e) => e.categoryName == vm.selectedQuery)
+                                ? vm.selectedQuery
+                                : null,
+                            isExpanded: true,
+                            hint: const Text("Select Category"),
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            items: vm.queryList.map((item) {
+                              return DropdownMenuItem(
+                                value: item.categoryName,
+                                child: Text(item.categoryName ?? ""),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                vm.setSelectedQuery(value);
+                              }
+                            },
+                          ),
+                        ),
             ),
           ],
         );

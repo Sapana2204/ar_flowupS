@@ -1,5 +1,7 @@
 import '../data/network/network_api_services.dart';
 import '../constants/appUrls.dart';
+import '../model/adminData_model.dart';
+import '../model/clientData_model.dart';
 import '../model/queryTypes_model.dart';
 
 class QueryRepository {
@@ -22,6 +24,51 @@ class QueryRepository {
 
     if (model.data != null && model.data!.isNotEmpty) {
       return model.data!.first.sublist ?? [];
+    }
+
+    return [];
+  }
+
+  /// 🔹 FETCH ADMIN LIST
+  Future<List<AdminData>> fetchAdmins() async {
+    final response = await _apiService.getPostApiResponse(
+      AppUrls.searchList, // or direct URL if not added
+      {
+        "text": "",
+        "tableName": "admin",
+        "wherec": "name",
+        "list": "adminID,name",
+        "slug": null,
+        "status": "false"
+      },
+    );
+
+    if (response['data'] != null) {
+      return (response['data'] as List)
+          .map((e) => AdminData.fromJson(e))
+          .toList();
+    }
+
+    return [];
+  }
+
+  Future<List<ClientData>> fetchClients({String text = ""}) async {
+    final response = await _apiService.getPostApiResponse(
+      AppUrls.searchList,
+      {
+        "text": text,
+        "system": "new",
+        "tableName": "customer",
+        "wherec": "name",
+        "status": false,
+        "list": "customer_id,name,created_date,mobile_no"
+      },
+    );
+
+    if (response['data'] != null) {
+      return (response['data'] as List)
+          .map((e) => ClientData.fromJson(e))
+          .toList();
     }
 
     return [];

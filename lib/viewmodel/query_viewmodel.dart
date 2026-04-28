@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../model/adminData_model.dart';
+import '../model/clientData_model.dart';
 import '../model/queryTypes_model.dart';
 import '../repository/query_repository.dart';
 
@@ -21,6 +23,29 @@ class QueryViewModel extends ChangeNotifier {
 
   String? _selectedPriority;
   String? get selectedPriority => _selectedPriority;
+
+  /// 🔹 ADMIN LIST
+  List<AdminData> _adminList = [];
+  List<AdminData> get adminList => _adminList;
+
+  String? _selectedAdmin;
+  String? get selectedAdmin => _selectedAdmin;
+
+  List<ClientData> _clientList = [];
+  List<ClientData> get clientList => _clientList;
+
+  ClientData? _selectedClient;
+  ClientData? get selectedClient => _selectedClient;
+
+  void setSelectedClient(ClientData value) {
+    _selectedClient = value;
+    notifyListeners();
+  }
+
+  void setSelectedAdmin(String value) {
+    _selectedAdmin = value;
+    notifyListeners();
+  }
 
   /// 🔹 FETCH QUERY TYPES
   Future<void> fetchQueryTypes() async {
@@ -62,6 +87,43 @@ class QueryViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> fetchAdmins() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      _adminList = await _repository.fetchAdmins();
+
+      if (_adminList.isNotEmpty) {
+        _selectedAdmin = _adminList.first.name;
+      }
+
+    } catch (e) {
+      debugPrint("❌ Admin Error: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchClients({String text = ""}) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      _clientList = await _repository.fetchClients(text: text);
+
+      if (_clientList.isNotEmpty) {
+        _selectedClient = _clientList.first;      }
+
+    } catch (e) {
+      debugPrint("❌ Client Error: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   /// 🔹 SETTERS
   void setSelectedQuery(String value) {
     _selectedQuery = value;
@@ -71,5 +133,38 @@ class QueryViewModel extends ChangeNotifier {
   void setSelectedPriority(String value) {
     _selectedPriority = value;
     notifyListeners();
+  }
+
+  String? getSelectedQueryId() {
+    try {
+      final item = queryList.firstWhere(
+            (e) => e.categoryName == selectedQuery,
+      );
+      return item.categoryId?.toString();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  String? getSelectedPriorityId() {
+    try {
+      final item = priorityList.firstWhere(
+            (e) => e.categoryName == selectedPriority,
+      );
+      return item.categoryId?.toString();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  String? getSelectedAdminId() {
+    try {
+      final item = adminList.firstWhere(
+            (e) => e.name == selectedAdmin,
+      );
+      return item.adminID?.toString();
+    } catch (e) {
+      return null;
+    }
   }
 }

@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../model/ticket_model.dart';
+import '../model/tickets_model.dart';
 import '../utils/app_colors.dart';
+import '../viewmodel/tickets_viewmodel.dart';
 
 class ClientHistoryScreen extends StatefulWidget {
   final String clientName;
   final String phone;
+  final int clientId; // ✅ ADD
+  final String? createdDate;
 
   const ClientHistoryScreen({
     super.key,
     required this.clientName,
     required this.phone,
+    required this.clientId,
+    this.createdDate, // ✅ ADD
   });
 
   @override
@@ -20,31 +27,20 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<Ticket> tickets = [
-    Ticket(
-      title: "Issue Raised while adding Sales Entry",
-      status: "In Progress",
-      category: "Sales",
-      assignedBy: "Admin",
-      assignedTo: "Sapana",
-      resolvedBy: "-",
-      resolvedOn: "-",
-    ),
-    Ticket(
-      title: "Login issue",
-      status: "Open",
-      category: "Authentication",
-      assignedBy: "Admin",
-      assignedTo: "Support",
-      resolvedBy: "-",
-      resolvedOn: "-",
-    ),
-  ];
+  String formatDate(String? date) {
+    if (date == null) return "-";
+    return DateTime.parse(date).toLocal().toString().split(' ')[0];
+  }
 
   @override
   void initState() {
-    _tabController = TabController(length: 3, vsync: this);
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+
+    Future.microtask(() {
+      Provider.of<TicketsViewModel>(context, listen: false)
+          .fetchClientHistory(widget.clientId);
+    });
   }
 
   @override
@@ -95,56 +91,72 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
 
   /// 🔹 HEADER CARD
   Widget _buildClientHeader() {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 6),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
+    return Consumer<TicketsViewModel>(
+      builder: (context, vm, child) {
+        return Container(
+          margin: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(color: Colors.black12, blurRadius: 6),
+            ],
+          ),
+          child: Column(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: primary,
-                child: const Icon(Icons.phone, color: Colors.white),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Text(
-                    widget.clientName.isEmpty
-                        ? "Unknown Client"
-                        : widget.clientName,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: primary,
+                    child: const Icon(Icons.phone, color: Colors.white),
                   ),
-                  Text(
-                    widget.phone,
-                    style: const TextStyle(color: Colors.grey),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.clientName.isEmpty
+                            ? "Unknown Client"
+                            : widget.clientName,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        widget.phone,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(child:
+                  _infoBox(
+                    "Member Since",
+                    formatDate(widget.createdDate),
+                  ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  /// ✅ DYNAMIC COUNT
+                  Expanded(
+                    child: _infoBox(
+                      "Total Tickets",
+                      vm.ticketsList.length.toString(),
+                    ),
                   ),
                 ],
               )
             ],
           ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              Expanded(child: _infoBox("Member Since", "Jan 30, 2025")),
-              const SizedBox(width: 10),
-              Expanded(child: _infoBox("Total Tickets", "2")),
-            ],
-          )
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -171,11 +183,25 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
 
   /// 🔹 TICKET LIST
   Widget _buildTicketList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: tickets.length,
-      itemBuilder: (context, index) {
-        return _ticketCard(tickets[index]);
+    return Consumer<TicketsViewModel>(
+      builder: (context, vm, child) {
+        if (vm.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (vm.ticketsList.isEmpty) {
+          return const Center(child: Text("No tickets found"));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(12),
+          itemCount: vm.ticketsList.length,
+          itemBuilder: (context, index) {
+            final ticket = vm.ticketsList[index];
+
+            return _ticketCard(ticket);
+          },
+        );
       },
     );
   }
@@ -188,10 +214,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
   }
 
   /// 🔹 TICKET CARD
-  Widget _ticketCard(Ticket ticket) {
+  Widget _ticketCard(Data ticket) {
     Color statusColor;
 
-    switch (ticket.status) {
+    switch (ticket.ticketStatus) {
       case "Open":
         statusColor = Colors.blue;
         break;
@@ -219,13 +245,13 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// 🔹 TITLE + STATUS
+          /// TITLE + STATUS
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
-                  ticket.title,
+                  ticket.ticketNo ?? "No Ticket No",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -240,7 +266,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  ticket.status,
+                  ticket.ticketStatus ?? "",
                   style: TextStyle(color: statusColor, fontSize: 12),
                 ),
               )
@@ -249,12 +275,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
 
           const SizedBox(height: 10),
 
-          /// 🔹 DETAILS
-          _detailRow("Category", ticket.category),
-          _detailRow("Assigned By", ticket.assignedBy),
-          _detailRow("Assigned To", ticket.assignedTo),
-          _detailRow("Resolved By", ticket.resolvedBy),
-          _detailRow("Resolved On", ticket.resolvedOn),
+          _detailRow("Query Type", ticket.queryType ?? ""),
+          _detailRow("Assigned To", ticket.assignee ?? ""),
+          _detailRow("Start Date", formatDate(ticket.startDate)),
+          _detailRow("Due Date", formatDate(ticket.dueDate)),
         ],
       ),
     );

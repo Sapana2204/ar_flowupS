@@ -51,8 +51,10 @@ class Routes {
 
         return MaterialPageRoute(
           builder: (BuildContext context) => ClientHistoryScreen(
-            clientName: args["clientName"],
-            phone: args["phone"],
+            clientName: args["clientName"] ?? "",
+            phone: args["phone"] ?? "",
+            clientId: args["clientId"] ?? 0,
+            createdDate: args["createdDate"], // ✅ ADD
           ),
         );
 

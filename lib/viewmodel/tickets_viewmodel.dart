@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../model/createTicket_model.dart';
 import '../model/tickets_model.dart';
 import '../repository/tickets_repository.dart';
 
@@ -23,10 +24,18 @@ class TicketsViewModel extends ChangeNotifier {
   String _searchText = "";
   String get searchText => _searchText;
 
+  List<Data> _allTickets = [];   // original data
+
+  bool _isCreating = false;
+  bool get isCreating => _isCreating;
+
+  String _createMessage = "";
+  String get createMessage => _createMessage;
+
+
   void setSearchText(String value) {
     _searchText = value;
   }
-  List<Data> _allTickets = [];   // original data
 
   /// 🔹 Initial Load
   Future<void> fetchTickets({bool isRefresh = false}) async {
@@ -96,5 +105,53 @@ class TicketsViewModel extends ChangeNotifier {
   /// 🔹 Refresh
   Future<void> refreshTickets() async {
     await fetchTickets(isRefresh: true); // ✅ will use _searchText automatically
+  }
+
+  Future<bool> createTicket(CreateTicket ticket) async {
+    try {
+      _isCreating = true;
+      _createMessage = "";
+      notifyListeners();
+
+      final response = await _repository.createTicket(ticket);
+
+      if (response["success"] == true) {
+        _createMessage = response["message"] ?? "Ticket created successfully";
+
+        // 🔄 Refresh list after creation
+        await fetchTickets(isRefresh: true);
+
+        return true;
+      } else {
+        _createMessage = response["message"] ?? "Failed to create ticket";
+        return false;
+      }
+    } catch (e) {
+      _createMessage = e.toString();
+      return false;
+    } finally {
+      _isCreating = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchClientHistory(int clientId) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _repository.fetchClientTickets(clientId);
+
+      if (response.data != null) {
+        _ticketsList = response.data!;
+      }
+
+      _error = "";
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }
