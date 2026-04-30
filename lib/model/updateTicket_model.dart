@@ -9,9 +9,9 @@ class UpdateTicketModel {
   String? assignee;
   String? startDate;
   String? dueDate;
-  Null? companyId;
+  int? companyId;
+  int? modifiedBy;
   int? createdBy;
-  Null? modifiedBy;
   String? status;
   String? contactPerson;
   String? reason;

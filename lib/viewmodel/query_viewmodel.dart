@@ -139,8 +139,8 @@ class QueryViewModel extends ChangeNotifier {
 
       _clientList = await _repository.fetchClients(text: text);
 
-      if (_clientList.isNotEmpty) {
-        _selectedClient = _clientList.first;      }
+      // ❌ DO NOTHING (no default selection)
+      _selectedClient = null;
 
     } catch (e) {
       debugPrint("❌ Client Error: $e");
@@ -148,6 +148,15 @@ class QueryViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void resetSelections() {
+    _selectedClient = null;
+    _selectedQuery = null;
+    _selectedPriority = null;
+    _selectedAdmin = null;
+    _selectedStatus = null;
+    notifyListeners();
   }
 
   /// 🔹 SETTERS

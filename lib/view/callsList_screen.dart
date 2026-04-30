@@ -97,7 +97,7 @@ class _CallsListScreenState extends State<CallsListScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(30),
                 ),
                 child: Consumer<TicketsViewModel>(
                   builder: (context, vm, child) {

@@ -56,6 +56,12 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       final loginVm = Provider.of<LoginViewModel>(context, listen: false);
       final ticketVm = Provider.of<TicketsViewModel>(context, listen: false);
 
+      /// ✅ CLEAR EVERYTHING FIRST (ONLY CREATE MODE)
+      if (widget.mode == RegisterCallMode.create) {
+        _clearAllFields();
+        queryVm.resetSelections();
+      }
+
       /// ✅ WAIT LOGIN
       while (loginVm.userData == null) {
         await Future.delayed(const Duration(milliseconds: 100));
@@ -121,21 +127,38 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
         /// ✅ 🔥 VERY IMPORTANT: SET CLIENT
         if (data.clientId != null) {
-          final clientMatch = queryVm.clientList.firstWhere(
+          // final clientMatch = queryVm.clientList.firstWhere(
+          //       (c) => c.customerId.toString() == data.clientId.toString(),
+          //   orElse: () => queryVm.clientList.first,
+          // );
+          //
+          // queryVm.setSelectedClient(clientMatch);
+          //
+          // nameController.text = clientMatch.name ?? "";
+          // phoneController.text = clientMatch.mobileNo ?? "";
+
+          final clientMatch = queryVm.clientList.where(
                 (c) => c.customerId.toString() == data.clientId.toString(),
-            orElse: () => queryVm.clientList.first,
-          );
+          ).toList();
 
-          queryVm.setSelectedClient(clientMatch);
+          if (clientMatch.isNotEmpty) {
+            queryVm.setSelectedClient(clientMatch.first);
 
-          nameController.text = clientMatch.name ?? "";
-          phoneController.text = clientMatch.mobileNo ?? "";
+            nameController.text = clientMatch.first.name ?? "";
+            phoneController.text = clientMatch.first.mobileNo ?? "";
+          }
         }
       }
 
       /// ✅ CREATE MODE ONLY (DON’T OVERRIDE EDIT)
       else {
         _setDefaultAdmin(queryVm, loginVm);
+
+        // final client = queryVm.selectedClient;
+        // if (client != null) {
+        //   nameController.text = client.name ?? "";
+        //   phoneController.text = client.mobileNo ?? "";
+        // }
 
         final client = queryVm.selectedClient;
         if (client != null) {
@@ -498,7 +521,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   Future<void> _onRegisterCallPressed() async {
 
     final vm = Provider.of<TicketsViewModel>(context, listen: false);
+    final ticketVm = Provider.of<TicketsViewModel>(context, listen: false); // ✅ ADD
     final queryVm = Provider.of<QueryViewModel>(context, listen: false);
+    final loginVm = Provider.of<LoginViewModel>(context, listen: false); // ✅ ADD
+    final existing = ticketVm.ticketDetail?.data?.isNotEmpty == true
+        ? ticketVm.ticketDetail!.data!.first
+        : null;
+
     print("BUTTON CLICKED");
 
     print("Name: ${nameController.text}");
@@ -542,17 +571,26 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         contactNo: phoneController.text,
         description: "<p>${descriptionController.text}</p>",
         queryType: queryVm.getSelectedQueryId(),
-        ticketStatus: queryVm.getSelectedStatusId(), // ✅ FIX
+        ticketStatus: queryVm.getSelectedStatusId(),
         ticketPriority: queryVm.getSelectedPriorityId(),
         assignee: queryVm.getSelectedAdminId(),
         startDate: startDate,
         dueDate: dueDate,
         status: "active",
         contactPerson: contactPersonController.text,
-        reason: reasonController.text.isEmpty
-            ? null
-            : reasonController.text,
+        reason: reasonController.text.isEmpty ? null : reasonController.text,
+
+        /// ✅ SAFE VALUES
+        createdBy: existing?.createdBy != null
+            ? int.tryParse(existing!.createdBy!)
+            : null,
+        createdDate: existing?.createdDate,
+        companyId: existing?.companyId,
+        ticketNo: existing?.ticketNo,
+
       );
+
+
       /// ✅ PRINT FULL REQUEST
       print("📤 UPDATE REQUEST: ${ticket.toJson()}");
       final success = await vm.updateTicket(ticket);
@@ -958,6 +996,20 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         );
       },
     );
+  }
+
+  void _clearAllFields() {
+    nameController.clear();
+    phoneController.clear();
+    dateController.clear();
+    descriptionController.clear();
+    contactPersonController.clear();
+    emailController.clear();
+    reasonController.clear();
+    commentsController.clear();
+    productTypeController.clear();
+    serialNoController.clear();
+    startDateController.clear();
   }
 
   Widget _buildPriorityDropdown() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
+import 'package:my_new_project/view/payroll_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
 import 'package:provider/provider.dart';
@@ -138,6 +139,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const LeadsDashboard()),
+                  );
+                }),
+
+                _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PayrollScreen()),
                   );
                 }),
 

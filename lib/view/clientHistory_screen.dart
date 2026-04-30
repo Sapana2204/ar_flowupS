@@ -27,7 +27,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
   late TabController _tabController;
 
   String formatDate(String? date) {
-    if (date == null) return "-";
+    if (date == null || date.isEmpty) return "";
     return DateTime.parse(date).toLocal().toString().split(' ')[0];
   }
 
@@ -36,10 +36,12 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    Future.microtask(() {
-      Provider.of<TicketsViewModel>(context, listen: false)
-          .fetchClientHistory(widget.clientId);
-    });
+    if (widget.clientId != 0) { // ✅ only call API if valid
+      Future.microtask(() {
+        Provider.of<TicketsViewModel>(context, listen: false)
+            .fetchClientHistory(widget.clientId);
+      });
+    }
   }
 
   @override
@@ -67,12 +69,11 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
         ),
       ),
 
-      body: Column(
+      body: widget.clientId == 0
+          ? const Center(child: Text("No client selected"))
+          : Column(
         children: [
-          /// 🔹 TOP CLIENT CARD
           _buildClientHeader(),
-
-          /// 🔹 TAB CONTENT
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -115,13 +116,12 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.clientName.isEmpty
-                            ? "Unknown Client"
-                            : widget.clientName,
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      if (widget.clientName.isNotEmpty)
+                        Text(
+                          widget.clientName,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                       Text(
                         widget.phone,
                         style: const TextStyle(color: Colors.grey),
@@ -135,12 +135,13 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
 
               Row(
                 children: [
-                  Expanded(child:
-                  _infoBox(
-                    "Member Since",
-                    formatDate(widget.createdDate),
-                  ),
-                  ),
+                  if (widget.createdDate != null && widget.createdDate!.isNotEmpty)
+                    Expanded(
+                      child: _infoBox(
+                        "Member Since",
+                        formatDate(widget.createdDate),
+                      ),
+                    ),
                   const SizedBox(width: 10),
 
                   /// ✅ DYNAMIC COUNT
@@ -250,7 +251,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
             children: [
               Expanded(
                 child: Text(
-                  ticket.ticketNo ?? "No Ticket No",
+                   ticket.ticketNo ?? "",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -274,10 +275,17 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
 
           const SizedBox(height: 10),
 
-          _detailRow("Query Type", ticket.queryType ?? ""),
-          _detailRow("Assigned To", ticket.assignee ?? ""),
-          _detailRow("Start Date", formatDate(ticket.startDate)),
-          _detailRow("Due Date", formatDate(ticket.dueDate)),
+          if ((ticket.queryType ?? "").isNotEmpty)
+            _detailRow("Query Type", ticket.queryType!),
+
+          if ((ticket.assignee ?? "").isNotEmpty)
+            _detailRow("Assigned To", ticket.assignee!),
+
+          if ((ticket.startDate ?? "").isNotEmpty)
+            _detailRow("Start Date", formatDate(ticket.startDate)),
+
+          if ((ticket.dueDate ?? "").isNotEmpty)
+            _detailRow("Due Date", formatDate(ticket.dueDate)),
         ],
       ),
     );

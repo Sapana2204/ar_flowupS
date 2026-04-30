@@ -24,13 +24,13 @@ class LeadsDashboard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               children: const [
                 LeadCard(
-                  name: "Jonathan Wick",
+                  name: "Sapana Padmane",
                   company: "Continental Corp",
                   status: "NEW",
                 ),
                 SizedBox(height: 16),
                 LeadCard(
-                  name: "Sarah Jenkins",
+                  name: "Aniket Sonawane",
                   company: "Tech Solutions",
                   status: "CONTACTED",
                 ),
@@ -55,7 +55,7 @@ class LeadsDashboard extends StatelessWidget {
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
                 ),
               ),

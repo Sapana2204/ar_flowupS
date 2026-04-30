@@ -21,8 +21,8 @@ class SearchCallScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
+                color: white,
+                borderRadius: BorderRadius.circular(20),
               ),
               child: const TextField(
                 decoration: InputDecoration(
