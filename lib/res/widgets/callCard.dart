@@ -1,29 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../model/tickets_model.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/enums/register_call_mode.dart';
+import '../../view/registerCall_screen.dart';
 
 class CallCard extends StatelessWidget {
-  final String name;
-  final String phone;
-  final String status;
-  final String priority;
-  final String description;
-  final String startDate;
-  final String dueDate;
+  final Data ticket;
 
   const CallCard({
     super.key,
-    required this.name,
-    required this.phone,
-    required this.status,
-    required this.priority,
-    required this.description,
-    required this.startDate,
-    required this.dueDate,
+    required this.ticket,
   });
 
-  Color getStatusColor() {
+  Color getStatusColor(String status) {
     switch (status) {
       case "NEW":
         return Colors.blue;
@@ -36,7 +27,7 @@ class CallCard extends StatelessWidget {
     }
   }
 
-  Color getPriorityColor() {
+  Color getPriorityColor(String priority) {
     switch (priority) {
       case "HIGH":
         return Colors.red;
@@ -68,38 +59,41 @@ class CallCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// 🔝 NAME + STATUS
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                name,
+                ticket.clientId ?? "",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                 ),
               ),
-              _tag(status, getStatusColor()),
+              _tag(
+                ticket.ticketStatus ?? "",
+                getStatusColor(ticket.ticketStatus ?? ""),
+              ),
             ],
           ),
 
           const SizedBox(height: 4),
 
-          /// 📞 PHONE + PRIORITY
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                phone,
+                ticket.contactNo ?? "",
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
-              _tag(priority, getPriorityColor()),
+              _tag(
+                ticket.ticketPriority ?? "",
+                getPriorityColor(ticket.ticketPriority ?? ""),
+              ),
             ],
           ),
 
           const SizedBox(height: 10),
 
-          /// 💬 DESCRIPTION
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -107,14 +101,13 @@ class CallCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              description,
+              removeHtmlTags(ticket.description ?? ""),
               style: const TextStyle(fontSize: 12),
             ),
           ),
 
           const SizedBox(height: 12),
 
-          /// 📅 DATES + BUTTON
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -123,7 +116,7 @@ class CallCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("START DATE", style: TextStyle(fontSize: 10)),
-                  Text(startDate,
+                  Text(ticket.startDate ?? "",
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -133,35 +126,41 @@ class CallCard extends StatelessWidget {
                 children: [
                   const Text("DUE DATE", style: TextStyle(fontSize: 10)),
                   Text(
-                    dueDate,
+                    ticket.dueDate ?? "",
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.red),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
                   ),
                 ],
               ),
 
-              // /// 🔘 VIEW BUTTON
-              // OutlinedButton(
-              //   style: OutlinedButton.styleFrom(
-              //     side: BorderSide(color: primary),
-              //     shape: RoundedRectangleBorder(
-              //       borderRadius: BorderRadius.circular(20),
-              //     ),
-              //   ),
-              //   onPressed: () {},
-              //   child: Text(
-              //     "View Details",
-              //     style: TextStyle(color: primary),
-              //   ),
-              // )
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RegisterCallScreen(
+                        mode: RegisterCallMode.edit,
+                        ticketId: ticket.ticketId,
+                        clientId: int.tryParse(ticket.clientId ?? "0"),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
-  /// 🔹 TAG WIDGET
+  String removeHtmlTags(String htmlString) {
+    return htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
+  }
+
   Widget _tag(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

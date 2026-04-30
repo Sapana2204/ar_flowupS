@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
 import 'package:provider/provider.dart';
@@ -132,6 +133,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 _drawerItem(Icons.dashboard, AppStrings.dashboard, 0),
 
+                _drawerSimpleNav(Icons.people_outline, AppStrings.leads, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LeadsDashboard()),
+                  );
+                }),
+
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -139,6 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   );
                 }),
+
+
 
                 const Divider(),
 

@@ -37,6 +37,7 @@ class _CallsListScreenState extends State<CallsListScreen> {
       queryVm.fetchPriorityLevels();
       queryVm.fetchAdmins();
       queryVm.fetchClients();
+      queryVm.fetchStatusList();
     });
 
     /// Pagination
@@ -191,16 +192,7 @@ class _CallsListScreenState extends State<CallsListScreen> {
 
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: CallCard(
-                            name: ticket.clientId ?? "N/A",
-                            phone: ticket.contactNo ?? "N/A",
-                            status: ticket.ticketStatus ?? "N/A",
-                            priority: ticket.ticketPriority ?? "N/A",
-                            description: removeHtmlTags(
-                                ticket.description ?? ""),
-                            startDate: formatDate(ticket.startDate),
-                            dueDate: formatDate(ticket.dueDate),
-                          ),
+                          child: CallCard(ticket: ticket)
                         );
                       },
                     ),

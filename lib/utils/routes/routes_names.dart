@@ -12,6 +12,7 @@ class RouteNames {
   static const String reportsScreen = "reports_screen";
   static const String searchCallScreen = "search_call_screen";
   static const String updateCallScreen = "update_call_screen";
+  static const String leadsScreen = "leads_screen";
 
 
 }

@@ -1,0 +1,4 @@
+enum RegisterCallMode {
+  create,
+  edit,
+}

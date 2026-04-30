@@ -65,19 +65,12 @@ class DashboardScreen extends StatelessWidget {
             children: [
               _actionButton(
                 Icons.call,
-                AppStrings.registerCall,
+                AppStrings.manageCall,
                     () {
                   Navigator.pushNamed(context, RouteNames.callListScreen);
                 },
               ),
-              const SizedBox(width: 10),
-              _actionButton(
-                Icons.upload,
-                AppStrings.updateCall,
-                    () {
-                  Navigator.pushNamed(context, RouteNames.updateCallScreen);
-                },
-              ),
+
             ],
           ),
 

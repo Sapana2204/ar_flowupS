@@ -83,4 +83,9 @@ class QueryRepository {
   Future<List<Sublist>> fetchPriorityLevels() async {
     return _fetchBySlug("ticket_priority");
   }
+
+  /// 🔹 Ticket Status
+  Future<List<Sublist>> fetchStatusList() async {
+    return _fetchBySlug("ticket_status");
+  }
 }

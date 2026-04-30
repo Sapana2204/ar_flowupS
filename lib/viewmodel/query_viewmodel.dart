@@ -37,6 +37,12 @@ class QueryViewModel extends ChangeNotifier {
   ClientData? _selectedClient;
   ClientData? get selectedClient => _selectedClient;
 
+  List<Sublist> _statusList = [];
+  List<Sublist> get statusList => _statusList;
+
+  String? _selectedStatus;
+  String? get selectedStatus => _selectedStatus;
+
   void setSelectedClient(ClientData value) {
     _selectedClient = value;
     notifyListeners();
@@ -45,6 +51,30 @@ class QueryViewModel extends ChangeNotifier {
   void setSelectedAdmin(String value) {
     _selectedAdmin = value;
     notifyListeners();
+  }
+
+  void setSelectedStatus(String value) {
+    _selectedStatus = value;
+    notifyListeners();
+  }
+
+  Future<void> fetchStatusList() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      _statusList = await _repository.fetchStatusList();
+
+      if (_statusList.isNotEmpty) {
+        _selectedStatus = _statusList.first.categoryName;
+      }
+
+    } catch (e) {
+      debugPrint("❌ Status Error: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// 🔹 FETCH QUERY TYPES
@@ -93,10 +123,6 @@ class QueryViewModel extends ChangeNotifier {
       notifyListeners();
 
       _adminList = await _repository.fetchAdmins();
-
-      if (_adminList.isNotEmpty) {
-        _selectedAdmin = _adminList.first.name;
-      }
 
     } catch (e) {
       debugPrint("❌ Admin Error: $e");
@@ -166,5 +192,52 @@ class QueryViewModel extends ChangeNotifier {
     } catch (e) {
       return null;
     }
+  }
+
+  String? getSelectedStatusId() {
+    try {
+      final item = statusList.firstWhere(
+            (e) => e.categoryName == selectedStatus,
+      );
+      return item.categoryId?.toString();
+    } catch (e) {
+      return null;
+    }
+  }
+  void setSelectedQueryById(String? id) {
+    try {
+      final item = _queryList.firstWhere(
+            (e) => e.categoryId.toString() == id,
+      );
+      _selectedQuery = item.categoryName;
+      notifyListeners();
+    } catch (_) {}
+  }
+  void setSelectedPriorityById(String? id) {
+    try {
+      final item = _priorityList.firstWhere(
+            (e) => e.categoryId.toString() == id,
+      );
+      _selectedPriority = item.categoryName;
+      notifyListeners();
+    } catch (_) {}
+  }
+  void setSelectedAdminById(String? id) {
+    try {
+      final item = _adminList.firstWhere(
+            (e) => e.adminID.toString() == id,
+      );
+      _selectedAdmin = item.name;
+      notifyListeners();
+    } catch (_) {}
+  }
+  void setSelectedStatusById(String? id) {
+    try {
+      final item = _statusList.firstWhere(
+            (e) => e.categoryId.toString() == id,
+      );
+      _selectedStatus = item.categoryName;
+      notifyListeners();
+    } catch (_) {}
   }
 }

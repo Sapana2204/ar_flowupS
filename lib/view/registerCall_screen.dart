@@ -2,18 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:provider/provider.dart';
 import '../model/createTicket_model.dart';
+import '../model/updateTicket_model.dart';
 import '../utils/app_colors.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';
+import '../utils/enums/register_call_mode.dart';
 import '../utils/routes/routes_names.dart';
 import '../viewModel/login_viewmodel.dart';
 import '../viewmodel/query_viewmodel.dart';
 import '../viewmodel/tickets_viewmodel.dart';
 
 class RegisterCallScreen extends StatefulWidget {
-  const RegisterCallScreen({super.key});
+  final RegisterCallMode mode;
+  final int? ticketId;
+  final int? clientId;
+
+  const RegisterCallScreen({
+    super.key,
+    this.mode = RegisterCallMode.create,
+    this.ticketId,
+    this.clientId,
+  });
 
   @override
   State<RegisterCallScreen> createState() => _RegisterCallScreenState();
@@ -28,21 +39,112 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController dateController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController contactPersonController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController reasonController = TextEditingController();
+  TextEditingController commentsController = TextEditingController();
+  TextEditingController productTypeController = TextEditingController();
+  TextEditingController serialNoController = TextEditingController();
+  TextEditingController startDateController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final queryVm = Provider.of<QueryViewModel>(context, listen: false);
       final loginVm = Provider.of<LoginViewModel>(context, listen: false);
+      final ticketVm = Provider.of<TicketsViewModel>(context, listen: false);
 
-      /// wait until admins are loaded
-      if (queryVm.adminList.isEmpty) {
-        await queryVm.fetchAdmins();
+      /// ✅ WAIT LOGIN
+      while (loginVm.userData == null) {
+        await Future.delayed(const Duration(milliseconds: 100));
       }
 
-      _setDefaultAdmin(queryVm, loginVm);
+      /// ✅ LOAD DATA (WAIT ALL)
+      await Future.wait([
+        if (queryVm.adminList.isEmpty) queryVm.fetchAdmins(),
+        if (queryVm.clientList.isEmpty) queryVm.fetchClients(),
+        if (queryVm.queryList.isEmpty) queryVm.fetchQueryTypes(),
+        if (queryVm.priorityList.isEmpty) queryVm.fetchPriorityLevels(),
+        if (queryVm.statusList.isEmpty) queryVm.fetchStatusList(),
+      ]);
+
+      /// ✅ EDIT MODE (DO FIRST)
+      if (widget.mode == RegisterCallMode.edit &&
+          widget.ticketId != null) {
+
+        await ticketVm.fetchTicketById(
+          ticketId: widget.ticketId!,
+          clientId: widget.clientId,
+        );
+
+        final list = ticketVm.ticketDetail?.data;
+
+        if (list == null || list.isEmpty) return;
+
+        final data = list.first;
+
+        /// ✅ TEXT FIELDS
+        phoneController.text = data.contactNo ?? "";
+        contactPersonController.text = data.contactPerson ?? "";
+        descriptionController.text =
+            removeHtmlTags(data.description ?? "");
+        reasonController.text = data.reason ?? "";
+
+        /// ✅ DATE FORMAT FIX
+        if (data.dueDate != null && data.dueDate!.isNotEmpty) {
+          try {
+            final parsed = DateTime.parse(data.dueDate!);
+            dateController.text =
+                DateFormat('dd MMM yyyy').format(parsed);
+          } catch (_) {
+            dateController.text = data.dueDate!;
+          }
+        }
+        /// ✅ START DATE PREFILL
+        if (data.startDate != null && data.startDate!.isNotEmpty) {
+          try {
+            final parsed = DateTime.parse(data.startDate!);
+            startDateController.text =
+                DateFormat('dd MMM yyyy').format(parsed);
+          } catch (_) {
+            startDateController.text = data.startDate!;
+          }
+        }
+
+        /// ✅ DROPDOWNS (AFTER DATA READY)
+        queryVm.setSelectedQueryById(data.queryType);
+        queryVm.setSelectedPriorityById(data.ticketPriority);
+        queryVm.setSelectedAdminById(data.assignee);
+        queryVm.setSelectedStatusById(data.ticketStatus);
+
+        /// ✅ 🔥 VERY IMPORTANT: SET CLIENT
+        if (data.clientId != null) {
+          final clientMatch = queryVm.clientList.firstWhere(
+                (c) => c.customerId.toString() == data.clientId.toString(),
+            orElse: () => queryVm.clientList.first,
+          );
+
+          queryVm.setSelectedClient(clientMatch);
+
+          nameController.text = clientMatch.name ?? "";
+          phoneController.text = clientMatch.mobileNo ?? "";
+        }
+      }
+
+      /// ✅ CREATE MODE ONLY (DON’T OVERRIDE EDIT)
+      else {
+        _setDefaultAdmin(queryVm, loginVm);
+
+        final client = queryVm.selectedClient;
+        if (client != null) {
+          nameController.text = client.name ?? "";
+          phoneController.text = client.mobileNo ?? "";
+        }
+      }
+
+      setState(() {});
     });
   }
   @override
@@ -50,7 +152,11 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title: const Text("Register Call"),
+        title: Text(
+          widget.mode == RegisterCallMode.edit
+              ? "Update Call"
+              : "Register Call",
+        ),
         backgroundColor: primary,
       ),
       body: SingleChildScrollView(
@@ -59,9 +165,42 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// CLIENT INFO
-            const Text(
-              "CLIENT INFORMATION",
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            /// HEADER (Ticket No + Section Title)
+            Consumer<TicketsViewModel>(
+              builder: (context, ticketVm, _) {
+                final ticketData = ticketVm.ticketDetail?.data;
+                final ticketNo = (ticketData != null && ticketData.isNotEmpty)
+                    ? ticketData.first.ticketNo   // ✅ use correct field name
+                    : null;
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "CLIENT INFORMATION",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+
+                    /// ✅ SHOW ONLY IN EDIT MODE + WHEN DATA AVAILABLE
+                    if (widget.mode == RegisterCallMode.edit && ticketNo != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "Ticket No: $ticketNo",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: primary,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 10),
 
@@ -72,7 +211,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                   child: Consumer<QueryViewModel>(
                     builder: (context, vm, child) {
                       return GestureDetector(
-                        onTap: () => _openClientBottomSheet(vm),
+                        onTap: widget.mode == RegisterCallMode.edit
+                            ? null
+                            : () => _openClientBottomSheet(vm),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 14),
@@ -145,8 +286,26 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               "+1 (555) 000-000",
               Icons.phone,
               phoneController,
-              Icons.history, // change icon
-              getRecentCalls, // use new function
+              Icons.history,
+              getRecentCalls,
+              enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
+            ),
+            const SizedBox(height: 12),
+
+            _buildTextField(
+              "Contact Person",
+              "Enter contact person name",
+              contactPersonController,
+              enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildTextField(
+              "Email",
+              "Enter email address",
+              emailController,
+              keyboardType: TextInputType.emailAddress,
             ),
 
             const SizedBox(height: 20),
@@ -158,15 +317,26 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
             ),
             const SizedBox(height: 10),
 
+
             Row(
               children: [
                 Expanded(
                   child: _buildDropdownField(),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDateField(),
-                ),
+              ],
+            ),
+
+            const SizedBox(height: 15),
+
+            Row(
+              children: [
+                if (widget.mode == RegisterCallMode.edit)
+                  Expanded(child: _buildStartDateField()),
+
+                if (widget.mode == RegisterCallMode.edit)
+                  const SizedBox(width: 12),
+
+                Expanded(child: _buildDateField()),
               ],
             ),
 
@@ -183,23 +353,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
             Consumer<QueryViewModel>(
               builder: (context, vm, child) {
-                final loginVm =
-                    Provider.of<LoginViewModel>(context, listen: false);
-                final loggedInUser = loginVm.userData?.username;
-
-                /// ✅ AUTO SELECT LOGGED-IN USER
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (vm.selectedAdmin == null &&
-                      loggedInUser != null &&
-                      vm.adminList.isNotEmpty) {
-                    final match = vm.adminList.firstWhere(
-                      (e) => e.name == loggedInUser,
-                      orElse: () => vm.adminList.first,
-                    );
-
-                    vm.setSelectedAdmin(match.name ?? "");
-                  }
-                });
 
                 if (vm.isLoading && vm.adminList.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
@@ -240,6 +393,57 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               },
             ),
 
+            const SizedBox(height: 12),
+            if (widget.mode == RegisterCallMode.edit)
+              _buildStatusDropdown(),
+
+            Consumer<QueryViewModel>(
+              builder: (context, vm, _) {
+
+                final isOpen = (vm.selectedStatus ?? "").toLowerCase() == "open";
+
+                if (widget.mode == RegisterCallMode.create || isOpen) {
+                  return const SizedBox(); // 👈 hide
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 15),
+                    _buildTextField(
+                      "Reason",
+                      "Enter reason",
+                      reasonController,
+                    ),
+                  ],
+                );
+              },
+            ),
+
+            // const SizedBox(height: 12),
+
+            // _buildTextField(
+            //   "Comments",
+            //   "Enter comments",
+            //   commentsController,
+            //   maxLines: 3,
+            // ),
+
+            // const SizedBox(height: 12),
+            //
+            // _buildTextField(
+            //   "Product Type",
+            //   "Enter product type",
+            //   productTypeController,
+            // ),
+            //
+            // const SizedBox(height: 12),
+            //
+            // _buildTextField(
+            //   "Product Serial No",
+            //   "Enter serial number",
+            //   serialNoController,
+            // ),
             const SizedBox(height: 15),
 
             /// DESCRIPTION
@@ -259,100 +463,159 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
 
-            const SizedBox(height: 25),
-
-            /// BUTTON
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final vm =
-                      Provider.of<TicketsViewModel>(context, listen: false);
-                  final queryVm =
-                      Provider.of<QueryViewModel>(context, listen: false);
-
-                  // 🔴 Basic Validation
-                  if (nameController.text.isEmpty ||
-                      phoneController.text.isEmpty ||
-                      queryVm.selectedQuery == null ||
-                      queryVm.selectedPriority == null ||
-                      queryVm.selectedAdmin == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please fill all required fields")),
-                    );
-                    return;
-                  }
-
-                  // 🔹 Convert date
-                  String dueDate = "";
-                  if (dateController.text.isNotEmpty) {
-                    final parsedDate =
-                        DateFormat("dd MMM yyyy").parse(dateController.text);
-                    dueDate = DateFormat("yyyy-MM-dd").format(parsedDate);
-                  }
-
-                  // 🔹 Prepare Model
-                  final ticket = CreateTicket(
-                    clientId: queryVm.selectedClient?.customerId,
-                    contactNo: phoneController.text,
-                    description: "<p>${descriptionController.text}</p>",
-                    queryType: queryVm.getSelectedQueryId(), // 👈 IMPORTANT
-                    ticketStatus: "206", // default
-                    ticketPriority:
-                        queryVm.getSelectedPriorityId(), // 👈 IMPORTANT
-                    assignee: queryVm.getSelectedAdminId(), // 👈 IMPORTANT
-                    startDate: DateFormat("yyyy-MM-dd").format(DateTime.now()),
-                    dueDate: dueDate,
-                    status: "active",
-                    contactPerson: nameController.text,
-                  );
-
-                  final success = await vm.createTicket(ticket);
-
-                  if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("✅ Call Registered Successfully")),
-                    );
-
-                    Navigator.pop(context); // go back
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(vm.createMessage)),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.call),
-                label: const Text("Register Call"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          color: Color(0xFFF5F6FA),
+          child: SizedBox(
+            height: 50,
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _onRegisterCallPressed,
+              icon: const Icon(Icons.call),
+              label: Text(
+                widget.mode == RegisterCallMode.edit
+                    ? "Update Call"
+                    : "Register Call",
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  void _setDefaultAdmin(QueryViewModel vm, LoginViewModel loginVm) {
-    final loggedInUser = loginVm.userData?.username;
+  Future<void> _onRegisterCallPressed() async {
 
-    if (vm.selectedAdmin == null &&
-        loggedInUser != null &&
-        vm.adminList.isNotEmpty) {
-      final match = vm.adminList.firstWhere(
-            (e) => e.name == loggedInUser,
-        orElse: () => vm.adminList.first,
+    final vm = Provider.of<TicketsViewModel>(context, listen: false);
+    final queryVm = Provider.of<QueryViewModel>(context, listen: false);
+    print("BUTTON CLICKED");
+
+    print("Name: ${nameController.text}");
+    print("Phone: ${phoneController.text}");
+    print("Query: ${queryVm.selectedQuery}");
+    print("Priority: ${queryVm.selectedPriority}");
+    print("Admin: ${queryVm.selectedAdmin}");
+    if (nameController.text.isEmpty ||
+        phoneController.text.isEmpty ||
+        queryVm.selectedQuery == null ||
+        queryVm.selectedPriority == null ||
+        queryVm.selectedAdmin == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all required fields")),
       );
+      return;
+    }
 
-      vm.setSelectedAdmin(match.name ?? "");
+    /// ✅ FORMAT DATES
+    String dueDate = "";
+    if (dateController.text.isNotEmpty) {
+      final parsedDate =
+      DateFormat("dd MMM yyyy").parse(dateController.text);
+      dueDate = DateFormat("yyyy-MM-dd").format(parsedDate);
+    }
+
+    String startDate = "";
+    if (startDateController.text.isNotEmpty) {
+      final parsedStart =
+      DateFormat("dd MMM yyyy").parse(startDateController.text);
+      startDate = DateFormat("yyyy-MM-dd").format(parsedStart);
+    }
+
+    /// =========================
+    /// ✅ EDIT MODE → UPDATE API
+    /// =========================
+    if (widget.mode == RegisterCallMode.edit) {
+      final ticket = UpdateTicketModel(
+        ticketId: widget.ticketId,
+        clientId: queryVm.selectedClient?.customerId,
+        contactNo: phoneController.text,
+        description: "<p>${descriptionController.text}</p>",
+        queryType: queryVm.getSelectedQueryId(),
+        ticketStatus: queryVm.getSelectedStatusId(), // ✅ FIX
+        ticketPriority: queryVm.getSelectedPriorityId(),
+        assignee: queryVm.getSelectedAdminId(),
+        startDate: startDate,
+        dueDate: dueDate,
+        status: "active",
+        contactPerson: contactPersonController.text,
+        reason: reasonController.text.isEmpty
+            ? null
+            : reasonController.text,
+      );
+      /// ✅ PRINT FULL REQUEST
+      print("📤 UPDATE REQUEST: ${ticket.toJson()}");
+      final success = await vm.updateTicket(ticket);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("✅ Call Updated Successfully")),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(vm.updateMessage)),
+        );
+      }
+
+      return; // 👈 IMPORTANT (stop here)
+    }
+
+    /// =========================
+    /// ✅ CREATE MODE
+    /// =========================
+    final ticket = CreateTicket(
+      clientId: queryVm.selectedClient?.customerId,
+      contactNo: phoneController.text,
+      description: "<p>${descriptionController.text}</p>",
+      queryType: queryVm.getSelectedQueryId(),
+      ticketStatus: "206",
+      ticketPriority: queryVm.getSelectedPriorityId(),
+      assignee: queryVm.getSelectedAdminId(),
+      startDate: startDate.isNotEmpty
+          ? startDate
+          : DateFormat("yyyy-MM-dd").format(DateTime.now()),
+      dueDate: dueDate,
+      status: "active",
+      contactPerson: contactPersonController.text,
+    );
+    /// ✅ PRINT FULL REQUEST
+    print("📤 CREATE REQUEST: ${ticket.toJson()}");
+    final success = await vm.createTicket(ticket);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("✅ Call Registered Successfully")),
+      );
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.createMessage)),
+      );
+    }
+  }
+
+  void _setDefaultAdmin(QueryViewModel vm, LoginViewModel loginVm) {
+    final loggedInUser = loginVm.userData?.username?.toLowerCase().trim();
+
+    if (loggedInUser == null || vm.adminList.isEmpty) return;
+
+    final matchList = vm.adminList.where(
+          (e) => (e.name ?? "").toLowerCase().contains(loggedInUser),
+    );
+
+    if (matchList.isNotEmpty) {
+      vm.setSelectedAdmin(matchList.first.name ?? "");
     }
   }
 
@@ -425,6 +688,92 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               },
             );
           },
+        );
+      },
+    );
+  }
+
+  String removeHtmlTags(String htmlString) {
+    return htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
+  }
+
+  Widget _buildTextField(
+      String label,
+      String hint,
+      TextEditingController controller, {
+        int maxLines = 1,
+        TextInputType keyboardType = TextInputType.text,
+        bool enabled = true, // 👈 ADD
+      }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          decoration: InputDecoration(
+            hintText: hint,
+            filled: true,
+            fillColor: white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusDropdown() {
+    return Consumer<QueryViewModel>(
+      builder: (context, vm, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Query Status"),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black12, blurRadius: 4),
+                ],
+              ),
+              child: vm.isLoading
+                  ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: Center(child: CircularProgressIndicator()),
+              )
+                  : DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: vm.statusList.any(
+                          (e) => e.categoryName == vm.selectedStatus)
+                      ? vm.selectedStatus
+                      : null,
+                  hint: const Text("Select Status"),
+                  items: vm.statusList.map((item) {
+                    return DropdownMenuItem(
+                      value: item.categoryName,
+                      child: Text(item.categoryName ?? ""),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      vm.setSelectedStatus(value);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -662,13 +1011,14 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   }
 
   Widget _buildTextFieldWithAction(
-    String label,
-    String hint,
-    IconData icon,
-    TextEditingController controller,
-    IconData actionIcon,
-    VoidCallback onTap,
-  ) {
+      String label,
+      String hint,
+      IconData icon,
+      TextEditingController controller,
+      IconData actionIcon,
+      VoidCallback onTap, {
+        bool enabled = true, // 👈 ADD
+      }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -676,6 +1026,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         const SizedBox(height: 6),
         TextField(
           controller: controller,
+          enabled: enabled,
           style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
@@ -755,7 +1106,34 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       ],
     );
   }
-
+  Widget _buildStartDateField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Start Date", style: TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: startDateController,
+          readOnly: true, // 👈 prevents keyboard
+          onTap: () {},   // 👈 do nothing (no calendar)
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            hintText: "Start date",
+            isDense: true,
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            suffixIcon: const Icon(Icons.calendar_today, size: 20),
+            filled: true,
+            fillColor: Colors.white, // 👈 normal look (not disabled)
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
   Widget _buildDropdownField() {
     return Consumer<QueryViewModel>(
       builder: (context, vm, child) {

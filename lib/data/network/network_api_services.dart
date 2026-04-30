@@ -187,7 +187,7 @@ class NetworkApiServices extends BaseApiServices {
     switch (response.statusCode) {
 
       case 200:
-      case 201: // ✅ ADD THIS (VERY IMPORTANT)
+      case 201:
         final body = response.body.trim();
         try {
           return jsonDecode(body);

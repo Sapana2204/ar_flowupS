@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../model/ticket_model.dart';
 import '../model/tickets_model.dart';
 import '../utils/app_colors.dart';
 import '../viewmodel/tickets_viewmodel.dart';

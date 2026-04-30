@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/createTicket_model.dart';
 import '../model/tickets_model.dart';
+import '../model/updateTicket_model.dart';
 import '../repository/tickets_repository.dart';
 
 class TicketsViewModel extends ChangeNotifier {
@@ -32,6 +33,14 @@ class TicketsViewModel extends ChangeNotifier {
   String _createMessage = "";
   String get createMessage => _createMessage;
 
+  Ticketsmodel? _ticketDetail;
+  Ticketsmodel? get ticketDetail => _ticketDetail;
+
+  bool _isUpdating = false;
+  bool get isUpdating => _isUpdating;
+
+  String _updateMessage = "";
+  String get updateMessage => _updateMessage;
 
   void setSearchText(String value) {
     _searchText = value;
@@ -43,6 +52,7 @@ class TicketsViewModel extends ChangeNotifier {
       if (isRefresh) {
         _page = 1;
         _ticketsList.clear();
+        _allTickets.clear();
       }
 
       _isLoading = true;
@@ -50,19 +60,23 @@ class TicketsViewModel extends ChangeNotifier {
 
       final response = await _repository.fetchTickets(
         page: _page,
-        searchText: _searchText, // ✅ ALWAYS use stored value
+        searchText: _searchText,
       );
+
+      print("PAGE: $_page");
+      print("TOTAL: ${response.pagination?.totalPages}");
+      print("DATA: ${response.data?.length}");
 
       if (response.data != null) {
         if (_page == 1) {
-          _allTickets = response.data!;     // ✅ store original
-          _ticketsList = response.data!;    // ✅ show initially
+          _allTickets = List.from(response.data!);
+          _ticketsList = List.from(response.data!);
         } else {
           _allTickets.addAll(response.data!);
           _ticketsList.addAll(response.data!);
         }
 
-        _hasMore = response.pagination?.totalPages != _page;
+        _hasMore = _page < (response.pagination?.totalPages ?? 0);
       }
 
       _error = "";
@@ -151,6 +165,58 @@ class TicketsViewModel extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchTicketById({
+    required int ticketId,
+    int? clientId,
+  }) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _repository.getTicketById(
+        ticketId: ticketId,
+        clientId: clientId,
+      );
+
+      _ticketDetail = response;
+
+      _error = "";
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateTicket(UpdateTicketModel ticket) async {
+    try {
+      _isUpdating = true;
+      _updateMessage = "";
+      notifyListeners();
+
+      final response = await _repository.updateTicket(ticket);
+
+      if (response["success"] == true) {
+        _updateMessage = response["message"] ?? "Updated successfully";
+
+        // 🔄 Refresh list after update
+        await fetchTickets(isRefresh: true);
+
+        return true;
+      } else {
+        _updateMessage = response["message"] ?? "Failed to update ticket";
+        return false;
+      }
+    } catch (e) {
+      _updateMessage = e.toString();
+      return false;
+    } finally {
+      _isUpdating = false;
       notifyListeners();
     }
   }

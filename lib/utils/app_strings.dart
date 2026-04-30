@@ -24,6 +24,7 @@ class AppStrings {
   static const tickets = "Tickets";
   static const alerts = "Alerts";
   static const profile = "Profile";
+  static const leads = "Leads";
   static const appName = "flowupS";
 
   // Drawer Header
@@ -51,10 +52,10 @@ class AppStrings {
 
   // Dashboard
   static const dashboardSubtitle =
-      "Efficiency is the architect of flow. Here is your current status.";
+      "Progress begins with visibility. Here is your current status.";
 
   // Actions
-  static const registerCall = "Register Call";
+  static const manageCall = "Manage Calls";
   static const updateCall = "Update Call";
 
   // Filters

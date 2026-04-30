@@ -3,6 +3,7 @@ import 'package:my_new_project/utils/routes/routes_names.dart';
 import 'package:my_new_project/view/callsList_screen.dart';
 import 'package:my_new_project/view/clientHistory_screen.dart';
 import 'package:my_new_project/view/dashboard_screen.dart';
+import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
@@ -77,6 +78,10 @@ class Routes {
       case (RouteNames.updateCallScreen):
         return MaterialPageRoute(
             builder: (BuildContext context) => const UpdateCallScreen());
+
+      case (RouteNames.leadsScreen):
+        return MaterialPageRoute(
+            builder: (BuildContext context) => const LeadsDashboard());
 
       default:
         return MaterialPageRoute(
