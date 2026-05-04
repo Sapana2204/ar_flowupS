@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/payroll_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
+import 'package:my_new_project/view/registerCall_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
 import 'package:provider/provider.dart';
+import '../data/network/network_api_services.dart';
+import '../data/network/socket_service.dart';
+import '../model/notification_model.dart';
+import '../repository/login_repository.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
+import '../utils/enums/register_call_mode.dart';
 import '../viewModel/login_viewmodel.dart';
 import 'dashboard_screen.dart';
 import 'loginScreen.dart';
@@ -20,6 +27,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late int _currentIndex;
+  int notificationCount = 0;
+  ValueNotifier<List<NotificationModel>> notificationNotifier =
+  ValueNotifier([]);
+  final LoginRepository _repo = LoginRepository();
 
   final List<Widget> _pages = const [
     DashboardScreen(),
@@ -31,7 +42,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _startLocationTracking();
     _currentIndex = widget.initialIndex;
+
+    loadInitialCount();
+
+    SocketService().listenNotification((data) async {
+      print("🔥 SOCKET HIT: $data");
+
+      setState(() {
+        notificationCount += 1;
+      });
+
+      /// ✅ FETCH LATEST LIST
+      final latest = await _repo.fetchNotifications();
+      notificationNotifier.value = latest;
+      });
   }
 
   /// 🔷 Dynamic Title
@@ -57,14 +83,38 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(_title),
         actions: _currentIndex == 0
             ? [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              // 👉 Handle notification click
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Notifications clicked")),
-              );
-            },
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications),
+                onPressed: _showNotificationPanel, // ✅ now correct
+              ),
+
+              if (notificationCount > 0)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$notificationCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ]
             : null,
@@ -142,13 +192,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
 
-                _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const PayrollScreen()),
-                  );
-                }),
+                // _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
+                //   Navigator.pop(context);
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (_) => const PayrollScreen()),
+                //   );
+                // }),
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
                   Navigator.pop(context);
@@ -230,6 +280,138 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.pop(context);
       },
     );
+  }
+
+  Future<void> _showNotificationPanel() async {
+    /// initial load
+    notificationNotifier.value = await _repo.fetchNotifications();
+
+    if (notificationNotifier.value.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              const Text(
+                "Notifications",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Divider(),
+
+              /// 🔥 THIS IS THE MAGIC
+              Expanded(
+                child: ValueListenableBuilder<List<NotificationModel>>(
+                  valueListenable: notificationNotifier,
+                  builder: (_, list, __) {
+                    return ListView.builder(
+                      itemCount: list.length,
+                      itemBuilder: (_, index) {
+                        final item = list[index];
+
+                        return ListTile(
+                          tileColor: item.isRead == "n"
+                              ? Colors.blue.shade50
+                              : null,
+                          title: Text(
+                            item.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(item.message),
+                            onTap: () async {
+                              /// 1. MARK AS READ API
+                              await _repo.markNotificationAsRead(item.id);
+
+                              /// 2. UPDATE UI LOCALLY (VERY IMPORTANT)
+                              final updatedList = notificationNotifier.value.map((e) {
+                                if (e.id == item.id) {
+                                  return NotificationModel(
+                                    id: e.id,
+                                    title: e.title,
+                                    message: e.message,
+                                    referenceId: e.referenceId,
+                                    isRead: "y", // ✅ mark locally
+                                  );
+                                }
+                                return e;
+                              }).toList();
+
+                              notificationNotifier.value = updatedList;
+
+                              /// 3. OPTIONAL → reduce count
+                              setState(() {
+                                if (notificationCount > 0) notificationCount--;
+                              });
+
+                              /// 4. NAVIGATE
+                              Navigator.pop(context);
+                              _openTicket(item.referenceId);
+                            }
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+  void _openTicket(int ticketId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegisterCallScreen(
+          mode: RegisterCallMode.edit,
+          ticketId: ticketId,
+          clientId: null, // optional (explained below)
+        ),
+      ),
+    );
+  }
+  Future<void> loadInitialCount() async {
+    final count = await _repo.fetchUnreadCount();
+    print("🌐 API Count: $count");
+
+    if (!mounted) return;
+
+    setState(() {
+      // ✅ Keep higher value
+      notificationCount = count > notificationCount
+          ? count
+          : notificationCount;
+    });
+  }
+
+  void _startLocationTracking() {
+    Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 50,
+      ),
+    ).listen((Position position) {
+
+      /// ✅ PRINT LIVE LOCATION
+      print("📡 LIVE LOCATION UPDATE:");
+      print("Latitude: ${position.latitude}");
+      print("Longitude: ${position.longitude}");
+
+      NetworkApiServices().getPostApiResponse(
+        "/users/update-location",
+        {
+          "latitude": position.latitude,
+          "longitude": position.longitude,
+        },
+      );
+    });
   }
 
   void _handleLogout() async {

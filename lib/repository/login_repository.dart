@@ -2,8 +2,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../constants/appUrls.dart';
+import '../data/network/network_api_services.dart';
+import '../model/notification_model.dart';
 
 class LoginRepository {
+  final NetworkApiServices _api = NetworkApiServices(); // ✅ ADD THIS
+
   Future<Map<String, dynamic>> loginApi(
       String username, String password) async {
 
@@ -46,4 +50,73 @@ class LoginRepository {
       throw Exception("Network/API error: $e");
     }
   }
+
+
+  Future<int> fetchUnreadCount() async {
+    try {
+      final response = await http.get(Uri.parse(AppUrls.unreadCount));
+
+      final data = jsonDecode(response.body);
+
+      return data['total'] ?? 0;
+    } catch (e) {
+      print("❌ Error fetching count: $e");
+      return 0;
+    }
+  }
+
+  Future<List<NotificationModel>> fetchNotifications() async {
+    try {
+      final response = await _api.getPostApiResponse(
+        "/notifications",   // ✅ IMPORTANT (no /api/v1 because baseUrl already has it)
+        {"page": 1},
+      );
+
+      final list = response['data'] as List;
+
+      return list.map((e) => NotificationModel.fromJson(e)).toList();
+    } catch (e) {
+      print("❌ Fetch notification error: $e");
+      return [];
+    }
+  }
+
+  Future<void> markNotificationAsRead(int notificationId) async {
+    try {
+      final response = await _api.getGetApiResponse(
+        "/notifications/read/$notificationId", // ✅ NO /api/v1
+      );
+
+      print("✅ Mark read response: $response");
+    } catch (e) {
+      print("❌ Mark read error: $e");
+    }
+  }
+
+
+
+  Future<void> updateUserLocation({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final api = NetworkApiServices();
+
+    final data = {
+      "latitude": latitude,
+      "longitude": longitude,
+    };
+
+    try {
+      final response = await api.getPostApiResponse(
+        "/users/update-location",   // ✅ no full URL needed
+        data,
+      );
+
+      print("✅ Location updated: $response");
+    } catch (e) {
+      print("❌ Error updating location: $e");
+    }
+  }
+
+
 }
