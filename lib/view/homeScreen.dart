@@ -161,12 +161,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Consumer<LoginViewModel>(
                   builder: (context, loginVm, child) {
-                    return Text(
-                      loginVm.userData?.name ?? "Guest",
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
+                    final user = loginVm.userData;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.name ?? "Guest",
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        /// ✅ ROLE HERE
+                        Text(
+                          user?.roleSlug?.toUpperCase() ?? "",
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),

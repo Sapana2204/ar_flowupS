@@ -6,6 +6,7 @@ class LoginModel {
   int? code;
   String? message;
   String? token;
+  String? roleSlug;
 
   int? adminId;
   String? username;
@@ -30,6 +31,7 @@ class LoginModel {
     code = json['code'];
     message = json['message'];
     token = json['token'];
+    roleSlug = json['user']?['role_slug'];
 
     // ✅ Parse user object
     if (json['user'] != null) {

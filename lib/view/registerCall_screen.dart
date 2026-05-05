@@ -46,6 +46,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   TextEditingController productTypeController = TextEditingController();
   TextEditingController serialNoController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
+  TextEditingController whatsappController = TextEditingController();
 
   @override
   void initState() {
@@ -313,6 +314,22 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               getRecentCalls,
               enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
             ),
+
+            const SizedBox(height: 12),
+
+            _buildTextFieldWithAction(
+              "WhatsApp Number",
+              "Enter WhatsApp number",
+              Icons.chat,
+              whatsappController,
+              Icons.phone,
+                  () {
+                setState(() {
+                  whatsappController.text = phoneController.text; // optional auto-fill
+                });
+              },
+            ),
+
             const SizedBox(height: 12),
 
             _buildTextField(
@@ -579,7 +596,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         status: "active",
         contactPerson: contactPersonController.text,
         reason: reasonController.text.isEmpty ? null : reasonController.text,
-
+        // whatsappNo: whatsappController.text,
         /// ✅ SAFE VALUES
         createdBy: existing?.createdBy != null
             ? int.tryParse(existing!.createdBy!)
@@ -625,6 +642,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
           : DateFormat("yyyy-MM-dd").format(DateTime.now()),
       dueDate: dueDate,
       status: "active",
+      // whatsappNo: whatsappController.text,
       contactPerson: contactPersonController.text,
     );
     /// ✅ PRINT FULL REQUEST
@@ -721,6 +739,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                 setState(() {
                   nameController.text = call.name ?? "";
                   phoneController.text = call.number ?? "";
+                  whatsappController.text = call.number ?? "";
                 });
                 Navigator.pop(context);
               },
@@ -1010,6 +1029,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     productTypeController.clear();
     serialNoController.clear();
     startDateController.clear();
+    whatsappController.clear();
   }
 
   Widget _buildPriorityDropdown() {

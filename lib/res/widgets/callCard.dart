@@ -127,9 +127,9 @@ class CallCard extends StatelessWidget {
                   const Text("DUE DATE", style: TextStyle(fontSize: 10)),
                   Text(
                     ticket.dueDate ?? "",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.red,
+                      color: getDueDateColor(ticket.dueDate),
                     ),
                   ),
                 ],
@@ -155,6 +155,29 @@ class CallCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color getDueDateColor(String? date) {
+    if (date == null || date.isEmpty) return Colors.green;
+
+    try {
+      final due = DateTime.parse(date);
+      final today = DateTime.now();
+
+      final dueDateOnly = DateTime(due.year, due.month, due.day);
+      final todayOnly = DateTime(today.year, today.month, today.day);
+
+      // 🔴 today or past
+      if (dueDateOnly.isBefore(todayOnly) ||
+          dueDateOnly.isAtSameMomentAs(todayOnly)) {
+        return Colors.red;
+      }
+
+      // 🟢 future
+      return Colors.green;
+    } catch (_) {
+      return Colors.green;
+    }
   }
 
   String removeHtmlTags(String htmlString) {

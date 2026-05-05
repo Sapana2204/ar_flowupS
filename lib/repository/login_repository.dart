@@ -84,7 +84,7 @@ class LoginRepository {
   Future<void> markNotificationAsRead(int notificationId) async {
     try {
       final response = await _api.getGetApiResponse(
-        "/notifications/read/$notificationId", // ✅ NO /api/v1
+        "${AppUrls.baseUrl}/notifications/read/$notificationId", // ✅ FULL URL
       );
 
       print("✅ Mark read response: $response");

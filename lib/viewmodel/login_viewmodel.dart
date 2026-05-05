@@ -124,12 +124,24 @@ class LoginViewModel with ChangeNotifier {
     if (data != null) {
       final user = LoginModel.fromJson(jsonDecode(data));
 
-      if (user.token != null && !JwtDecoder.isExpired(user.token!)) {
-        setUserData(user);
+      if (user.token != null) {
+        if (JwtDecoder.isExpired(user.token!)) {
+          await logout(context);
+          Utils.showToast("Session expired. Please login again.");
+        } else {
+          setUserData(user);
 
-        Navigator.pushReplacementNamed(context, RouteNames.home);
-      } else {
-        await logout(context);
+          /// 🔥 AUTO LOGOUT TIMER (RE-SET EVERY APP OPEN)
+          final expiry = JwtDecoder.getExpirationDate(user.token!);
+          final duration = expiry.difference(DateTime.now());
+
+          Future.delayed(duration, () {
+            logout(context);
+            Utils.showToast("Session expired");
+          });
+
+          Navigator.pushReplacementNamed(context, RouteNames.home);
+        }
       }
     } else {
       Navigator.pushReplacementNamed(context, RouteNames.login);
