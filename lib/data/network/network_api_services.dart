@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:my_new_project/data/network/socket_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/appUrls.dart';
 import '../../model/login_model.dart';
+import '../../utils/routes/routes_names.dart';
 import '../app_exceptions.dart';
 import 'base_api_services.dart';
+import 'navigation_service.dart';
 
 class NetworkApiServices extends BaseApiServices {
   @override
@@ -72,43 +75,37 @@ class NetworkApiServices extends BaseApiServices {
   }
 
   Future<String?> _getValidToken(String? token) async {
+    final prefs = await SharedPreferences.getInstance();
+
     if (token == null || token.isEmpty) {
-      final prefs = await SharedPreferences.getInstance();
       final userDataString = prefs.getString("userData");
 
       if (userDataString != null) {
-        final loginModel = LoginModel.fromJson(jsonDecode(userDataString));
+        final loginModel =
+        LoginModel.fromJson(jsonDecode(userDataString));
         token = loginModel.token ?? "";
       }
     }
 
-    // ❌ No token
+    /// ❌ No token → DO NOT logout
     if (token == null || token.isEmpty || token == "null") {
-      throw UnauthorizedException("Token missing");
+      return null;
     }
 
+    /// ❌ Invalid format → logout
     try {
-      // ❌ Invalid token format
       JwtDecoder.decode(token);
     } catch (e) {
-      throw UnauthorizedException("Invalid token format");
+      await _forceLogout();
+      throw UnauthorizedException("Invalid token");
     }
 
-    // ❌ Expired token
+    /// ❌ Expired → logout
     if (JwtDecoder.isExpired(token)) {
-      print("❌ Token expired.");
+      print("❌ Token expired");
+      await _forceLogout();
       throw UnauthorizedException("Token expired");
     }
-
-    // ✅ Token valid
-    print("🔑 Token: $token");
-
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-
-    print("🧾 Decoded Token: $decodedToken");
-    print("👤 UserId: ${decodedToken['UserId']}");
-    print("👩 Username: ${decodedToken['UserName']}");
-    print("👮 Role: ${decodedToken['RoleName']}");
 
     return token;
   }
@@ -200,7 +197,8 @@ class NetworkApiServices extends BaseApiServices {
         throw BadRequestException("Bad Request");
 
       case 401:
-        throw UnauthorizedException("Unauthorized. Please log in again.");
+        _forceLogout(); // 🔥 AUTO LOGOUT FROM BACKEND
+        throw UnauthorizedException("Session expired. Please login again.");
 
       case 404:
         throw response;
@@ -272,6 +270,18 @@ class NetworkApiServices extends BaseApiServices {
     );
   }
 
+  Future<void> _forceLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove("userData"); // ✅ FIX
+
+    SocketService().disconnect();
+
+    NavigationService.navigatorKey.currentState
+        ?.pushNamedAndRemoveUntil(
+      RouteNames.login,
+          (route) => false,
+    );
+  }
 
 
 }

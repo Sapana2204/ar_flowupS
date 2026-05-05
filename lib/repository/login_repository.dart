@@ -54,11 +54,15 @@ class LoginRepository {
 
   Future<int> fetchUnreadCount() async {
     try {
-      final response = await http.get(Uri.parse(AppUrls.unreadCount));
+      print("🔥 FUNCTION CALLED");
 
-      final data = jsonDecode(response.body);
+      final response = await _api.getGetApiResponse(
+        "${AppUrls.baseUrl}/notifications/unread-count",
+      );
 
-      return data['total'] ?? 0;
+      print("📦 Response: $response");
+
+      return response['total'] ?? 0;
     } catch (e) {
       print("❌ Error fetching count: $e");
       return 0;
@@ -68,7 +72,7 @@ class LoginRepository {
   Future<List<NotificationModel>> fetchNotifications() async {
     try {
       final response = await _api.getPostApiResponse(
-        "/notifications",   // ✅ IMPORTANT (no /api/v1 because baseUrl already has it)
+        "/notifications",
         {"page": 1},
       );
 

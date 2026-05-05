@@ -66,6 +66,7 @@ dependencies:
   rename: ^2.0.1
   socket_io_client: ^2.0.3+1
   geolocator: ^10.1.0
+  audioplayers: ^5.2.1
 
 
 
@@ -108,4 +109,5 @@ flutter:
     - assets/gif/loader.gif
     - assets/gif/nodata2.png
     - assets/images/flowups_icon.png
+    - assets/sounds/notification.mp3
 

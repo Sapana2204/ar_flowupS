@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
@@ -28,9 +31,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late int _currentIndex;
   int notificationCount = 0;
-  ValueNotifier<List<NotificationModel>> notificationNotifier =
-  ValueNotifier([]);
+  ValueNotifier<List<NotificationModel>> notificationNotifier = ValueNotifier([]);
   final LoginRepository _repo = LoginRepository();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isDialogShowing = false;
+  StreamSubscription<ServiceStatus>? _locationStatusSub;
 
   final List<Widget> _pages = const [
     DashboardScreen(),
@@ -43,13 +48,26 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _startLocationTracking();
+    /// ✅ ADD THIS BLOCK HERE
+    _locationStatusSub =
+        Geolocator.getServiceStatusStream().listen((status) {
+          if (status == ServiceStatus.disabled) {
+            _showLocationDialog();
+          } else if (status == ServiceStatus.enabled) {
+            _startLocationTracking(); // ✅ restart tracking automatically
+          }
+        });
+
     _currentIndex = widget.initialIndex;
 
-    loadInitialCount();
-
+    /// ✅ Delay to ensure everything is ready
+    Future.delayed(const Duration(milliseconds: 300), () {
+      loadInitialCount();
+    });
     SocketService().listenNotification((data) async {
       print("🔥 SOCKET HIT: $data");
-
+      /// 🔊 PLAY SOUND HERE
+      _playNotificationSound();
       setState(() {
         notificationCount += 1;
       });
@@ -203,7 +221,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 _drawerItem(Icons.dashboard, AppStrings.dashboard, 0),
 
-                _drawerSimpleNav(Icons.people_outline, AppStrings.leads, () {
+                _drawerSimpleNav(Icons.call, AppStrings.registerCall, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterCallScreen()),
+                  );
+                }),
+
+                _drawerSimpleNav(Icons.people_alt_sharp, AppStrings.leads, () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
@@ -211,13 +237,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
 
-                // _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
-                //   Navigator.pop(context);
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(builder: (_) => const PayrollScreen()),
-                //   );
-                // }),
+                _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PayrollScreen()),
+                  );
+                }),
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
                   Navigator.pop(context);
@@ -299,6 +325,15 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.pop(context);
       },
     );
+  }
+
+  Future<void> _playNotificationSound() async {
+    try {
+      await _audioPlayer.stop(); // stop previous
+      await _audioPlayer.play(AssetSource('sounds/notification.mp3'));
+    } catch (e) {
+      print("❌ Sound error: $e");
+    }
   }
 
   Future<void> _showNotificationPanel() async {
@@ -410,7 +445,35 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _startLocationTracking() {
+  Future<void> _startLocationTracking() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    /// 🔴 STEP 1: Check if location service is ON
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      _showLocationDialog();
+      return;
+    }
+
+    /// 🔴 STEP 2: Check permission
+    permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+
+      if (permission == LocationPermission.denied) {
+        _showLocationDialog();
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      _showLocationDialog(openSettings: true);
+      return;
+    }
+
+    /// ✅ STEP 3: Start tracking ONLY if allowed
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
@@ -418,7 +481,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ).listen((Position position) {
 
-      /// ✅ PRINT LIVE LOCATION
       print("📡 LIVE LOCATION UPDATE:");
       print("Latitude: ${position.latitude}");
       print("Longitude: ${position.longitude}");
@@ -431,6 +493,42 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       );
     });
+  }
+
+  void _showLocationDialog({bool openSettings = false}) {
+    if (_isDialogShowing) return; // 🚫 prevent duplicate
+
+    _isDialogShowing = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Location Required"),
+          content: const Text(
+            "This app requires location to work. Please enable location services.",
+          ),
+          actions: [
+            if (openSettings)
+              TextButton(
+                onPressed: () {
+                  Geolocator.openAppSettings();
+                },
+                child: const Text("Open Settings"),
+              ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                _isDialogShowing = false; // ✅ reset
+                _startLocationTracking();
+              },
+              child: const Text("Retry"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _handleLogout() async {
@@ -464,5 +562,11 @@ class _HomeScreenState extends State<HomeScreen> {
             (route) => false,
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _locationStatusSub?.cancel(); // ✅ prevent memory leak
+    super.dispose();
   }
 }

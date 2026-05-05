@@ -101,7 +101,7 @@ class LoginViewModel with ChangeNotifier {
   /// ✅ Logout
   Future<void> logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove("userData"); // ✅ FIX
 
     _userData = null;
 

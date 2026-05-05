@@ -145,14 +145,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         )
                       ],
                     ),
-                    // Text(
-                    //   AppStrings.forgotPassword,
-                    //   style: TextStyle(
-                    //     color: primary,
-                    //     fontSize: 12,
-                    //     fontWeight: FontWeight.w500,
-                    //   ),
-                    // )
+                    const Text(
+                      AppStrings.forgotPassword,
+                      style: TextStyle(
+                        color: primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    )
                   ],
                 ),
 
@@ -203,9 +203,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Center(
                       child: loginVM.isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
+                          : const Text(
                         AppStrings.signIn,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -255,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 11,
             color: textSecondary,
             fontWeight: FontWeight.w500,

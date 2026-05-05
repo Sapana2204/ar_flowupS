@@ -8,6 +8,8 @@ import 'package:my_new_project/viewmodel/tickets_viewmodel.dart';
 
 import 'package:provider/provider.dart';
 
+import 'data/network/navigation_service.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -25,6 +27,7 @@ class MyApp extends StatelessWidget {
 
       ],
       child: MaterialApp(
+        navigatorKey: NavigationService.navigatorKey, // 🔥 ADD THIS LINE
         title: 'flowupS',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -43,14 +46,14 @@ class MyApp extends StatelessWidget {
             ),
           ),
 
-          appBarTheme: AppBarTheme(
+          appBarTheme: const AppBarTheme(
             backgroundColor: primary,
-            titleTextStyle: const TextStyle(
+            titleTextStyle: TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
-            iconTheme: const IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: Colors.white),
           ),
         ),
         initialRoute: RouteNames.splashScreen,

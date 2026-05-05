@@ -26,6 +26,7 @@ class AppStrings {
   static const profile = "Profile";
   static const leads = "Leads";
   static const payroll = "Payroll";
+  static const registerCall = "Register Call";
   static const appName = "flowupS";
 
   // Drawer Header
