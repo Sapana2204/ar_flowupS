@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
 import '../viewModel/login_viewmodel.dart';
+import 'forgetPassword_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -145,12 +146,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         )
                       ],
                     ),
-                    const Text(
-                      AppStrings.forgotPassword,
-                      style: TextStyle(
-                        color: primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ForgotPasswordScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        AppStrings.forgotPassword,
+                        style: TextStyle(
+                          color: primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     )
                   ],

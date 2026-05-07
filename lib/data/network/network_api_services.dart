@@ -182,30 +182,41 @@ class NetworkApiServices extends BaseApiServices {
 
 
   dynamic handleResponse(http.Response response) {
+    dynamic data;
+
+    try {
+      data = jsonDecode(response.body);
+    } catch (_) {
+      data = null;
+    }
+
     switch (response.statusCode) {
 
       case 200:
       case 201:
-        final body = response.body.trim();
-        try {
-          return jsonDecode(body);
-        } catch (_) {
-          return body;
-        }
+        return data ?? response.body;
 
       case 400:
-        throw BadRequestException("Bad Request");
+        throw BadRequestException(
+          data?['message'] ?? "Bad Request",
+        );
 
       case 401:
-        _forceLogout(); // 🔥 AUTO LOGOUT FROM BACKEND
-        throw UnauthorizedException("Session expired. Please login again.");
+        _forceLogout();
+        throw UnauthorizedException(
+          data?['message'] ?? "Session expired. Please login again.",
+        );
 
       case 404:
-        throw response;
+      /// 🔥 FIX HERE
+        throw Exception(
+          data?['message'] ?? "Resource not found",
+        );
 
       default:
         throw InternetException(
-          "${response.statusCode} : ${response.reasonPhrase}",
+          data?['message'] ??
+              "${response.statusCode} : ${response.reasonPhrase}",
         );
     }
   }

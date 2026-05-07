@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import '../data/network/network_api_services.dart';
+import '../model/comment_model.dart';
 import '../model/createTicket_model.dart';
+import '../model/ticketHistory_model.dart';
 import '../model/tickets_model.dart';
 import '../constants/appUrls.dart';
 import '../model/updateTicket_model.dart';
@@ -94,6 +96,77 @@ class TicketsRepository {
       return response;
     } catch (e) {
       throw Exception("Update Ticket Failed: $e");
+    }
+  }
+
+  Future<List<CommentModel>> fetchComments(int ticketId) async {
+    try {
+      final response = await _apiService.getPostApiResponse(
+        AppUrls.commentsList,
+        {
+          "module": "tickets",
+          "order_by": "created_date",
+          "order": "DESC",
+          "module_id": ticketId,
+          "ticket_id": ticketId,
+          "getAll": "Y",
+        },
+      );
+
+      if (response["data"] != null) {
+        return (response["data"] as List)
+            .map((e) => CommentModel.fromJson(e))
+            .toList();
+      }
+
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> createComment({
+    required int ticketId,
+    required String comment,
+  }) async {
+    try {
+      final response = await _apiService.getPutApiResponse(
+        AppUrls.createComment,
+        {
+          "module": "tickets",
+          "module_id": ticketId,
+          "ticket_id": ticketId,
+          "record_type": "ticket",
+          "comment": comment,
+          "status": "active",
+        },
+      );
+
+      return response["success"] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<TicketHistoryModel>> fetchTicketHistory(
+      int ticketId,
+      ) async {
+    try {
+      final response = await _apiService.getPostApiResponse(
+        AppUrls.ticketHistory,
+        {
+          "ticket_id": ticketId,
+        },
+      );
+
+      if (response["data"] == null) return [];
+
+      return (response["data"] as List)
+          .map((e) => TicketHistoryModel.fromJson(e))
+          .toList();
+    } catch (e) {
+      debugPrint("❌ Ticket History Error: $e");
+      rethrow;
     }
   }
 }

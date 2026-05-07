@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../model/comment_model.dart';
 import '../model/createTicket_model.dart';
+import '../model/ticketHistory_model.dart';
 import '../model/tickets_model.dart';
 import '../model/updateTicket_model.dart';
 import '../repository/tickets_repository.dart';
@@ -41,6 +43,17 @@ class TicketsViewModel extends ChangeNotifier {
 
   String _updateMessage = "";
   String get updateMessage => _updateMessage;
+
+  List<CommentModel> commentsList = [];
+
+  bool commentsLoading = false;
+
+  TextEditingController commentController =
+  TextEditingController();
+
+  List<TicketHistoryModel> ticketHistoryList = [];
+
+  bool historyLoading = false;
 
   void setSearchText(String value) {
     _searchText = value;
@@ -220,4 +233,55 @@ class TicketsViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> fetchComments(int ticketId) async {
+    try {
+      commentsLoading = true;
+      notifyListeners();
+
+      commentsList =
+      await _repository.fetchComments(ticketId);
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      commentsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> addComment(int ticketId) async {
+    if (commentController.text.trim().isEmpty) {
+      return false;
+    }
+
+    final success = await _repository.createComment(
+      ticketId: ticketId,
+      comment: commentController.text.trim(),
+    );
+
+    if (success) {
+      commentController.clear();
+      await fetchComments(ticketId);
+    }
+
+    return success;
+  }
+
+  Future<void> fetchTicketHistory(int ticketId) async {
+    try {
+      historyLoading = true;
+      notifyListeners();
+
+      ticketHistoryList =
+      await _repository.fetchTicketHistory(ticketId);
+
+    } catch (e) {
+      debugPrint("❌ History Error: $e");
+    } finally {
+      historyLoading = false;
+      notifyListeners();
+    }
+  }
+
+
 }

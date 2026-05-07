@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:my_new_project/view/searchCall_screen.dart';
 import 'package:my_new_project/view/updateCall_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
+import 'package:provider/provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
 import '../utils/routes/routes_names.dart';
+import '../viewModel/login_viewmodel.dart';
 import 'callsList_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -12,6 +14,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loginVM = Provider.of<LoginViewModel>(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -19,35 +22,24 @@ class DashboardScreen extends StatelessWidget {
         children: [
 
           /// 🔷 HEADER
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                AppStrings.welcome,
+                "Welcome 👋",
                 style: TextStyle(
+                  fontSize: 14,
+                  color: textSecondary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                loginVM.userData?.name ?? "User",
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, RouteNames.searchCallScreen);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.search, color: primary),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-              )
             ],
           ),
 

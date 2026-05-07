@@ -14,5 +14,18 @@ class AppUrls {
   static const createTicket = "$baseUrl/tickets/create";
   static const ticketDetailsById = "$baseUrl/tickets/";
   static const updateTicket = "$baseUrl/tickets/";
+  
+  static const customersList = "$baseUrl/customers";
+  static const createCustomer = "$baseUrl/customers/create";
+  static const customerById = "$baseUrl/customers/";
+  static const updateCustomer = "$baseUrl/customers/";
+
+  static const String commentsList = "$baseUrl/comments";
+  static const String createComment = "$baseUrl/comments/create";
+
+  static const String ticketHistory =
+      "/tickets/history";
+
+
 
 }

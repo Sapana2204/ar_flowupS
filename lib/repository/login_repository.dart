@@ -122,5 +122,55 @@ class LoginRepository {
     }
   }
 
+  /// 🔐 FORGOT PASSWORD - SEND OTP
+  Future<void> forgotPasswordApi(String email) async {
+    try {
+      final response = await _api.getPostApiResponse(
+        "/forgotPassword",
+        {
+          "email": email,
+        },
+      );
+
+      print("✅ Forgot Password Response: $response");
+
+      if (response['success'] != true) {
+        throw Exception(response['message'] ?? "Failed to send OTP");
+      }
+
+    } catch (e) {
+      print("❌ Forgot Password Error: $e");
+      rethrow;
+    }
+  }
+
+  /// 🔐 VERIFY OTP + RESET PASSWORD
+  Future<void> verifyOtpApi({
+    required String otp,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await _api.getPostApiResponse(
+        "/verifyOtp",
+        {
+          "otp": otp,
+          "new_password": newPassword,
+          "re_enter_password": confirmPassword,
+        },
+      );
+
+      print("✅ Verify OTP Response: $response");
+
+      if (response['success'] != true) {
+        throw Exception(response['message'] ?? "Reset failed");
+      }
+
+    } catch (e) {
+      print("❌ Verify OTP Error: $e");
+      rethrow;
+    }
+  }
+
 
 }

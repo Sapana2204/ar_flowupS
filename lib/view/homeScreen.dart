@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:my_new_project/view/customerList_screen.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/payroll_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
+import 'package:my_new_project/view/userMarker_screen.dart';
 import 'package:provider/provider.dart';
 import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
@@ -221,11 +223,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 _drawerItem(Icons.dashboard, AppStrings.dashboard, 0),
 
-                _drawerSimpleNav(Icons.call, AppStrings.registerCall, () {
+                _drawerSimpleNav(Icons.location_on_outlined, AppStrings.userMarkers, () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const RegisterCallScreen()),
+                    MaterialPageRoute(builder: (_) => const LiveMapScreen()),
+                  );
+                }),
+
+                _drawerSimpleNav(Icons.supervised_user_circle_outlined, AppStrings.customers, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CustomersListScreen()),
                   );
                 }),
 

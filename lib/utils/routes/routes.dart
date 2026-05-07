@@ -7,12 +7,14 @@ import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 import 'package:my_new_project/view/reports_screen.dart';
+import 'package:my_new_project/view/resetPassword_screen.dart';
 import 'package:my_new_project/view/searchCall_screen.dart';
 import 'package:my_new_project/view/updateCall_screen.dart';
 
 import '../../view/homeScreen.dart';
 import '../../view/loginScreen.dart';
 import '../../view/splash_screen.dart';
+import '../enums/register_call_mode.dart';
 
 
 class Routes {
@@ -56,6 +58,8 @@ class Routes {
             phone: args["phone"] ?? "",
             clientId: args["clientId"] ?? 0,
             createdDate: args["createdDate"], // ✅ ADD
+            mode: args["mode"] ?? RegisterCallMode.create,
+            ticketId: args["ticketId"],
           ),
         );
 
@@ -82,6 +86,13 @@ class Routes {
       case (RouteNames.leadsScreen):
         return MaterialPageRoute(
             builder: (BuildContext context) => const LeadsDashboard());
+
+      case RouteNames.resetPasswordScreen:
+        final email = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => ResetPasswordScreen(email: email),
+        );
+
 
       default:
         return MaterialPageRoute(

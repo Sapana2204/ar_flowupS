@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:provider/provider.dart';
 import '../model/createTicket_model.dart';
@@ -34,6 +35,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   String priority = "Medium";
   final FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
+  final _formKey = GlobalKey<FormState>();
 
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -183,327 +185,367 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         ),
         backgroundColor: primary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// CLIENT INFO
-            /// HEADER (Ticket No + Section Title)
-            Consumer<TicketsViewModel>(
-              builder: (context, ticketVm, _) {
-                final ticketData = ticketVm.ticketDetail?.data;
-                final ticketNo = (ticketData != null && ticketData.isNotEmpty)
-                    ? ticketData.first.ticketNo   // ✅ use correct field name
-                    : null;
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "CLIENT INFORMATION",
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-
-                    /// ✅ SHOW ONLY IN EDIT MODE + WHEN DATA AVAILABLE
-                    if (widget.mode == RegisterCallMode.edit && ticketNo != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          "Ticket No: $ticketNo",
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: primary,
-                          ),
-                        ),
+     body: Form(
+      key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// CLIENT INFO
+              /// HEADER (Ticket No + Section Title)
+              Consumer<TicketsViewModel>(
+                builder: (context, ticketVm, _) {
+                  final ticketData = ticketVm.ticketDetail?.data;
+                  final ticketNo = (ticketData != null && ticketData.isNotEmpty)
+                      ? ticketData.first.ticketNo   // ✅ use correct field name
+                      : null;
+        
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "CLIENT INFORMATION",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 10),
-
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end, // 👈 important
-              children: [
-                Expanded(
-                  child: Consumer<QueryViewModel>(
-                    builder: (context, vm, child) {
-                      return GestureDetector(
-                        onTap: widget.mode == RegisterCallMode.edit
-                            ? null
-                            : () => _openClientBottomSheet(vm),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 14),
+        
+                      /// ✅ SHOW ONLY IN EDIT MODE + WHEN DATA AVAILABLE
+                      if (widget.mode == RegisterCallMode.edit && ticketNo != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: const [
-                              BoxShadow(color: Colors.black12, blurRadius: 4),
-                            ],
+                            color: primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  vm.selectedClient?.name ?? "Select Client",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: vm.selectedClient == null
-                                        ? Colors.grey
-                                        : Colors.black,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const Icon(Icons.keyboard_arrow_down),
-                            ],
+                          child: Text(
+                            "Ticket No: $ticketNo",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: primary,
+                            ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  height: 58, // 👈 match TextField height
-                  child: GestureDetector(
-                    onTap: () {
-                      final vm =
-                          Provider.of<QueryViewModel>(context, listen: false);
-
-                      Navigator.pushNamed(
-                        context,
-                        RouteNames.clientHistoryScreen,
-                        arguments: {
-                          "clientName": vm.selectedClient?.name ?? "",
-                          "phone": phoneController.text,
-                          "clientId": vm.selectedClient?.customerId,   // ✅ correct
-                          "createdDate": vm.selectedClient?.createdDate, // ✅ correct
-                        },
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.history, color: primary),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildTextFieldWithAction(
-              "Client Contact No",
-              "+1 (555) 000-000",
-              Icons.phone,
-              phoneController,
-              Icons.history,
-              getRecentCalls,
-              enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildTextFieldWithAction(
-              "WhatsApp Number",
-              "Enter WhatsApp number",
-              Icons.chat,
-              whatsappController,
-              Icons.phone,
-                  () {
-                setState(() {
-                  whatsappController.text = phoneController.text; // optional auto-fill
-                });
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildTextField(
-              "Contact Person",
-              "Enter contact person name",
-              contactPersonController,
-              enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
-            ),
-
-            const SizedBox(height: 12),
-
-            _buildTextField(
-              "Email",
-              "Enter email address",
-              emailController,
-              keyboardType: TextInputType.emailAddress,
-            ),
-
-            const SizedBox(height: 20),
-
-            /// CALL DETAILS
-            const Text(
-              "CALL DETAILS",
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            const SizedBox(height: 10),
-
-
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDropdownField(),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 15),
-
-            Row(
-              children: [
-                if (widget.mode == RegisterCallMode.edit)
-                  Expanded(child: _buildStartDateField()),
-
-                if (widget.mode == RegisterCallMode.edit)
-                  const SizedBox(width: 12),
-
-                Expanded(child: _buildDateField()),
-              ],
-            ),
-
-            const SizedBox(height: 15),
-
-            /// PRIORITY
-            _buildPriorityDropdown(),
-
-            const SizedBox(height: 15),
-
-            /// ASSIGN TO
-            const Text("Assign To"),
-            const SizedBox(height: 8),
-
-            Consumer<QueryViewModel>(
-              builder: (context, vm, child) {
-
-                if (vm.isLoading && vm.adminList.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-
-                      /// ✅ FIX: ensure value exists
-                      value: vm.adminList.any((e) => e.name == vm.selectedAdmin)
-                          ? vm.selectedAdmin
-                          : null,
-
-                      hint: const Text("Select User"),
-
-                      items: vm.adminList.map((user) {
-                        return DropdownMenuItem<String>(
-                          value: user.name,
-                          child: Text(user.name ?? ""),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+        
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end, // 👈 important
+                children: [
+                  Expanded(
+                    child: Consumer<QueryViewModel>(
+                      builder: (context, vm, child) {
+                        return GestureDetector(
+                          onTap: widget.mode == RegisterCallMode.edit
+                              ? null
+                              : () => _openClientBottomSheet(vm),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: const [
+                                BoxShadow(color: Colors.black12, blurRadius: 4),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    vm.selectedClient?.name ?? "Select Client",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: vm.selectedClient == null
+                                          ? Colors.grey
+                                          : Colors.black,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const Icon(Icons.keyboard_arrow_down),
+                              ],
+                            ),
+                          ),
                         );
-                      }).toList(),
-
-                      onChanged: (value) {
-                        if (value != null) {
-                          vm.setSelectedAdmin(value);
-                        }
                       },
                     ),
                   ),
-                );
-              },
-            ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 58, // 👈 match TextField height
+                    child: GestureDetector(
+                      onTap: () {
+                        final vm =
+                            Provider.of<QueryViewModel>(context, listen: false);
+        
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.clientHistoryScreen,
+                          arguments: {
+                            "clientName": vm.selectedClient?.name ?? "",
+                            "phone": phoneController.text,
+                            "clientId": vm.selectedClient?.customerId,   // ✅ correct
+                            "createdDate": vm.selectedClient?.createdDate, // ✅ correct
+                            "mode": widget.mode, // ✅ ADD
+                            "ticketId": widget.ticketId, // ✅ ADD
 
-            const SizedBox(height: 12),
-            if (widget.mode == RegisterCallMode.edit)
-              _buildStatusDropdown(),
-
-            Consumer<QueryViewModel>(
-              builder: (context, vm, _) {
-
-                final isOpen = (vm.selectedStatus ?? "").toLowerCase() == "open";
-
-                if (widget.mode == RegisterCallMode.create || isOpen) {
-                  return const SizedBox(); // 👈 hide
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 15),
-                    _buildTextField(
-                      "Reason",
-                      "Enter reason",
-                      reasonController,
+                          },
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.history, color: primary),
+                      ),
                     ),
-                  ],
-                );
-              },
-            ),
-
-            // const SizedBox(height: 12),
-
-            // _buildTextField(
-            //   "Comments",
-            //   "Enter comments",
-            //   commentsController,
-            //   maxLines: 3,
-            // ),
-
-            // const SizedBox(height: 12),
-            //
-            // _buildTextField(
-            //   "Product Type",
-            //   "Enter product type",
-            //   productTypeController,
-            // ),
-            //
-            // const SizedBox(height: 12),
-            //
-            // _buildTextField(
-            //   "Product Serial No",
-            //   "Enter serial number",
-            //   serialNoController,
-            // ),
-            const SizedBox(height: 15),
-
-            /// DESCRIPTION
-            const Text("Description"),
-            const SizedBox(height: 8),
-
-            TextField(
-              controller: descriptionController,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: "Briefly describe the call outcome or client needs",
-                filled: true,
-                fillColor: Colors.grey.shade200,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
+                  ),
+                ],
               ),
-            ),
-          ],
+        
+              const SizedBox(height: 12),
+        
+              _buildTextFieldWithAction(
+                "Client Contact No",
+                "+1 (555) 000-000",
+                Icons.phone,
+                phoneController,
+                Icons.history,
+                getRecentCalls,
+                keyboardType: TextInputType.phone, // ✅ ADD
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Phone number required";
+                  }
+                  if (value.length < 10) {
+                    return "Enter valid phone number";
+                  }
+                  return null;
+                },
+                enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
+              ),
+        
+              const SizedBox(height: 12),
+        
+              _buildTextFieldWithAction(
+                "WhatsApp Number",
+                "Enter WhatsApp number",
+                Icons.chat,
+                whatsappController,
+                Icons.phone,
+                    () {
+                  setState(() {
+                    whatsappController.text = phoneController.text; // optional auto-fill
+                  });
+                },
+                keyboardType: TextInputType.phone, // ✅ ADD
+              ),
+        
+              const SizedBox(height: 12),
+        
+              _buildTextField(
+                "Contact Person",
+                "Enter contact person name",
+                contactPersonController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Contact person required";
+                  }
+                  return null;
+                },
+                enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
+              ),
+        
+              const SizedBox(height: 12),
+        
+              _buildTextField(
+                "Email",
+                "Enter email address",
+                emailController,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                  if (!emailRegex.hasMatch(value)) {
+                    return "Enter valid email";
+                  }
+                  return null;
+                },
+              ),
+        
+              const SizedBox(height: 20),
+        
+              /// CALL DETAILS
+              const Text(
+                "CALL DETAILS",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 10),
+        
+        
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDropdownField(),
+                  ),
+                ],
+              ),
+        
+              const SizedBox(height: 15),
+        
+              Row(
+                children: [
+                  if (widget.mode == RegisterCallMode.edit)
+                    Expanded(child: _buildStartDateField()),
+        
+                  if (widget.mode == RegisterCallMode.edit)
+                    const SizedBox(width: 12),
+        
+                  Expanded(child: _buildDateField()),
+                ],
+              ),
+        
+              const SizedBox(height: 15),
+        
+              /// PRIORITY
+              _buildPriorityDropdown(),
+        
+              const SizedBox(height: 15),
+        
+              /// ASSIGN TO
+              const Text("Assign To"),
+              const SizedBox(height: 8),
+        
+              Consumer<QueryViewModel>(
+                builder: (context, vm, child) {
+        
+                  if (vm.isLoading && vm.adminList.isEmpty) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+        
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+        
+                        /// ✅ FIX: ensure value exists
+                        value: vm.adminList.any((e) => e.name == vm.selectedAdmin)
+                            ? vm.selectedAdmin
+                            : null,
+        
+                        hint: const Text("Select User"),
+        
+                        items: vm.adminList.map((user) {
+                          return DropdownMenuItem<String>(
+                            value: user.name,
+                            child: Text(user.name ?? ""),
+                          );
+                        }).toList(),
+        
+                        onChanged: (value) {
+                          if (value != null) {
+                            vm.setSelectedAdmin(value);
+                          }
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+        
+              const SizedBox(height: 12),
+              if (widget.mode == RegisterCallMode.edit)
+                _buildStatusDropdown(),
+        
+              Consumer<QueryViewModel>(
+                builder: (context, vm, _) {
+        
+                  final isOpen = (vm.selectedStatus ?? "").toLowerCase() == "open";
+        
+                  if (widget.mode == RegisterCallMode.create || isOpen) {
+                    return const SizedBox(); // 👈 hide
+                  }
+        
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 15),
+                      _buildTextField(
+                        "Reason",
+                        "Enter reason",
+                        reasonController,
+                      ),
+                    ],
+                  );
+                },
+              ),
+        
+              // const SizedBox(height: 12),
+        
+              // _buildTextField(
+              //   "Comments",
+              //   "Enter comments",
+              //   commentsController,
+              //   maxLines: 3,
+              // ),
+        
+              // const SizedBox(height: 12),
+              //
+              // _buildTextField(
+              //   "Product Type",
+              //   "Enter product type",
+              //   productTypeController,
+              // ),
+              //
+              // const SizedBox(height: 12),
+              //
+              // _buildTextField(
+              //   "Product Serial No",
+              //   "Enter serial number",
+              //   serialNoController,
+              // ),
+              const SizedBox(height: 15),
+        
+              /// DESCRIPTION
+              const Text("Description"),
+              const SizedBox(height: 8),
+
+              TextFormField(
+                controller: descriptionController,
+                maxLines: 4,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Description required";
+                  }
+                  // if (value.length < 10) {
+                  //   return "Minimum 10 characters required";
+                  // }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: "Briefly describe the call outcome or client needs",
+                  filled: true,
+                  fillColor: Colors.grey.shade200,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
 
@@ -536,7 +578,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   }
 
   Future<void> _onRegisterCallPressed() async {
-
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     final vm = Provider.of<TicketsViewModel>(context, listen: false);
     final ticketVm = Provider.of<TicketsViewModel>(context, listen: false); // ✅ ADD
     final queryVm = Provider.of<QueryViewModel>(context, listen: false);
@@ -760,18 +804,20 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       TextEditingController controller, {
         int maxLines = 1,
         TextInputType keyboardType = TextInputType.text,
-        bool enabled = true, // 👈 ADD
+        bool enabled = true,
+        String? Function(String?)? validator, // 👈 ADD
       }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label),
         const SizedBox(height: 6),
-        TextField(
+        TextFormField( // ✅ change here
           controller: controller,
           enabled: enabled,
           maxLines: maxLines,
           keyboardType: keyboardType,
+          validator: validator, // 👈 ADD
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
@@ -1090,15 +1136,22 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       IconData actionIcon,
       VoidCallback onTap, {
         bool enabled = true, // 👈 ADD
+        String? Function(String?)? validator, // ✅ ADD THIS
+        TextInputType keyboardType = TextInputType.text, // ✅ ADD THIS
       }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
-        TextField(
+        TextFormField(
           controller: controller,
           enabled: enabled,
+          validator: validator, // 👈 ADD
+          keyboardType: keyboardType, // ✅ ADD
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
           style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,

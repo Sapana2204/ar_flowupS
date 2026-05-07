@@ -21,6 +21,15 @@ class LoginViewModel with ChangeNotifier {
   LoginModel? _userData;
   LoginModel? get userData => _userData;
 
+  /// 🔄 LOADING FOR FORGOT FLOW
+  bool _isForgotLoading = false;
+  bool get isForgotLoading => _isForgotLoading;
+
+  void setForgotLoading(bool value) {
+    _isForgotLoading = value;
+    notifyListeners();
+  }
+
   void setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -170,6 +179,62 @@ class LoginViewModel with ChangeNotifier {
       print("✅ Location sent after login");
     } catch (e) {
       print("❌ Location error: $e");
+    }
+  }
+
+  Future<void> forgotPassword(
+      String email,
+      BuildContext context,
+      ) async {
+
+    setForgotLoading(true);
+
+    try {
+      await _loginRepository.forgotPasswordApi(email);
+
+      Utils.showToast("OTP sent to your email");
+
+      Navigator.pushNamed(
+        context,
+        RouteNames.resetPasswordScreen,
+        arguments: email,
+      );
+
+    } catch (e) {
+      Utils.showToast(e.toString());
+    } finally {
+      setForgotLoading(false);
+    }
+  }
+
+  Future<void> verifyOtp(
+      String otp,
+      String newPassword,
+      String confirmPassword,
+      BuildContext context,
+      ) async {
+
+    setForgotLoading(true);
+
+    try {
+      await _loginRepository.verifyOtpApi(
+        otp: otp,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+
+      Utils.showToast("Password reset successful");
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        RouteNames.login,
+            (route) => false,
+      );
+
+    } catch (e) {
+      Utils.showToast(e.toString());
+    } finally {
+      setForgotLoading(false);
     }
   }
 }
