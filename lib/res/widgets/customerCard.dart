@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../model/customers_model.dart';
 import '../../utils/app_colors.dart';
+import '../../view/createCustomer_screen.dart';
 
 class CustomerCard extends StatelessWidget {
   final CustomerData customer;
@@ -138,8 +139,15 @@ class CustomerCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.edit, color: Colors.blue),
                 onPressed: () {
-                  // TODO: Navigate to Edit Customer Screen
-                },
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CreateCustomerScreen(
+                        isEdit: true,
+                        customerId: customer.customerId,
+                      ),
+                    ),
+                  );                },
               ),
             ],
           ),

@@ -1,13 +1,25 @@
 class UpdateCustomer {
   int? customerId;
   String? name;
-  String? email;
+  String? contactPerson;
   String? mobileNo;
   String? waNo;
-  String? address;
+  String? email;
   String? panNumber;
-  String? companyName;
-  String? contactPerson;
+  String? gstNumber;
+  String? address;
+
+  UpdateCustomer({
+    this.customerId,
+    this.name,
+    this.contactPerson,
+    this.mobileNo,
+    this.waNo,
+    this.email,
+    this.panNumber,
+    this.gstNumber,
+    this.address,
+  });
 
   Map<String, dynamic> toJson() {
     return {
@@ -15,10 +27,10 @@ class UpdateCustomer {
       "name": name,
       "email": email,
       "mobile_no": mobileNo,
-      "wa_no": waNo,
-      "address": address,
+      "wa_no": waNo ?? "",
       "pan_number": panNumber,
-      "company_name": companyName,
+      "gst_number": gstNumber,
+      "address": address,
       "contact_person": contactPerson,
     };
   }

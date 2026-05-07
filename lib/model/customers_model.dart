@@ -38,18 +38,18 @@ class CustomerData {
 
   CustomerData.fromJson(Map<String, dynamic> json) {
     customerId = json['customer_id'];
-    name = json['name'];
-    contactPerson = json['contact_person'];
-    email = json['email'];
-    mobileNo = json['mobile_no'];
-    waNo = json['wa_no'];
-    panNumber = json['pan_number'];
-    gstNumber = json['gst_number'];
-    companyName = json['company_name'];
-    address = json['address'];
-    createdBy = json['created_by'];
-    createdDate = json['created_date'];
-    status = json['status'];
+    name = json['name']?.toString();
+    contactPerson = json['contact_person']?.toString();
+    email = json['email']?.toString();
+    mobileNo = json['mobile_no']?.toString();
+    waNo = json['wa_no']?.toString();
+    panNumber = json['pan_number']?.toString();
+    gstNumber = json['gst_number']?.toString();
+    companyName = json['company_name']?.toString();
+    address = json['address']?.toString();
+    createdBy = json['created_by']?.toString();     // 🔥 FIX
+    createdDate = json['created_date']?.toString();
+    status = json['status']?.toString();
   }
 }
 

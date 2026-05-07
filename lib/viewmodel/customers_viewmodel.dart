@@ -105,6 +105,16 @@ class CustomersViewModel extends ChangeNotifier {
     return false;
   }
 
+  Future<CustomerData?> getCustomerById(int id) async {
+    try {
+      final res = await _repo.getCustomerById(id);
+      return res;
+    } catch (e) {
+      debugPrint("Error fetching customer: $e");
+      return null;
+    }
+  }
+
   /// 🔹 UPDATE
   Future<bool> updateCustomer(UpdateCustomer model) async {
     final res = await _repo.updateCustomer(model);

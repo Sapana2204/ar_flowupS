@@ -3,11 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../model/createCustomer_model.dart';
+import '../model/updateCustomer_model.dart';
 import '../utils/app_colors.dart';
 import '../viewmodel/customers_viewmodel.dart';
 
 class CreateCustomerScreen extends StatefulWidget {
-  const CreateCustomerScreen({super.key});
+  final int? customerId; // 👈 ADD
+  final bool isEdit;     // 👈 ADD
+
+  const CreateCustomerScreen({
+    super.key,
+    this.customerId,
+    this.isEdit = false,
+  });
 
   @override
   State<CreateCustomerScreen> createState() => _CreateCustomerScreenState();
@@ -26,12 +34,39 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   final addressController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+
+    if (widget.isEdit && widget.customerId != null) {
+      _loadCustomer();
+    }
+  }
+  Future<void> _loadCustomer() async {
+    final vm = Provider.of<CustomersViewModel>(context, listen: false);
+
+    final customer = await vm.getCustomerById(widget.customerId!);
+
+    if (customer == null) return;
+
+    nameController.text = customer.name ?? "";
+    contactPersonController.text = customer.contactPerson ?? "";
+    mobileController.text = customer.mobileNo ?? "";
+    whatsappController.text = customer.waNo ?? "";
+    emailController.text = customer.email ?? "";
+    panController.text = customer.panNumber ?? "";
+    gstController.text = customer.gstNumber ?? "";
+    addressController.text = customer.address ?? "";
+
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     final vm = Provider.of<CustomersViewModel>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Customer"),
+        title: Text(widget.isEdit ? "Update Customer" : "Add Customer"),
         backgroundColor: primary,
       ),
       backgroundColor: const Color(0xFFF5F6FA),
@@ -112,7 +147,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                   icon: const Icon(Icons.save),
                   label: vm.isLoading
                       ? const Text("Saving...")
-                      : const Text("Save Customer"),
+                      : Text(widget.isEdit ? "Update Customer" : "Save Customer"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     shape: RoundedRectangleBorder(
@@ -149,6 +184,9 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         int maxLines = 1,
         TextInputType keyboard = TextInputType.text,
       }) {
+    final isPhoneField = label.toLowerCase().contains("mobile") ||
+        label.toLowerCase().contains("whatsapp");
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -166,13 +204,22 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
             controller: controller,
             keyboardType: keyboard,
             maxLines: maxLines,
+
+            /// ✅ Apply formatter ONLY for phone
+            inputFormatters: isPhoneField
+                ? [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ]
+                : null,
+
             validator: (v) {
               if (required && (v == null || v.isEmpty)) {
                 return "$label required";
               }
 
               /// 📱 Mobile validation
-              if (label.toLowerCase().contains("mobile")) {
+              if (isPhoneField) {
                 if (v == null || v.isEmpty) return "Mobile number required";
                 if (v.length != 10) return "Enter valid 10-digit mobile number";
               }
@@ -185,10 +232,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
 
               return null;
             },
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(10),
-            ],
+
             style: const TextStyle(fontSize: 14),
             decoration: InputDecoration(
               hintText: "Enter $label",
@@ -208,49 +252,6 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     );
   }
 
-  /// TEXT FIELD
-  Widget _field(String label, TextEditingController controller,
-      {bool required = false,
-        int maxLines = 1,
-        TextInputType keyboard = TextInputType.text}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboard,
-        maxLines: maxLines,
-        validator: (v) {
-          if (required && (v == null || v.isEmpty)) {
-            return "$label required";
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          hintText: label,
-          isDense: true,
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// PHONE FIELD
-  Widget _phoneField(String label, TextEditingController controller,
-      {bool required = false}) {
-    return _field(
-      label,
-      controller,
-      required: required,
-      keyboard: TextInputType.phone,
-    );
-  }
 
   /// SUBMIT
   Future<void> _submit() async {
@@ -258,6 +259,37 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
 
     final vm = Provider.of<CustomersViewModel>(context, listen: false);
 
+    /// ✏️ EDIT MODE
+    if (widget.isEdit) {
+      final model = UpdateCustomer(
+        customerId: widget.customerId,
+        name: nameController.text,
+        contactPerson: contactPersonController.text,
+        mobileNo: mobileController.text,
+        waNo: whatsappController.text,
+        email: emailController.text,
+        panNumber: panController.text,
+        gstNumber: gstController.text,
+        address: addressController.text,
+      );
+
+      final success = await vm.updateCustomer(model);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("✅ Customer Updated")),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("❌ Update failed")),
+        );
+      }
+
+      return;
+    }
+
+    /// ➕ CREATE MODE
     final model = CreateCustomer(
       name: nameController.text,
       contactPerson: contactPersonController.text,
@@ -265,7 +297,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       waNo: whatsappController.text,
       email: emailController.text,
       panNumber: panController.text,
-      gstNo: gstController.text, // 👈 ADD IN MODEL
+      gstNo: gstController.text,
       address: addressController.text,
     );
 
@@ -278,7 +310,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("❌ Failed to create customer")),
+        const SnackBar(content: Text("❌ Failed")),
       );
     }
   }
