@@ -347,10 +347,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _showNotificationPanel() async {
-    /// initial load
+    /// Load notifications
     notificationNotifier.value = await _repo.fetchNotifications();
-
-    if (notificationNotifier.value.isEmpty) return;
 
     showModalBottomSheet(
       context: context,
@@ -363,15 +361,56 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Text(
                 "Notifications",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+
               const Divider(),
 
-              /// 🔥 THIS IS THE MAGIC
               Expanded(
                 child: ValueListenableBuilder<List<NotificationModel>>(
                   valueListenable: notificationNotifier,
                   builder: (_, list, __) {
+
+                    /// ✅ EMPTY STATE
+                    if (list.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.notifications_none_rounded,
+                              size: 60,
+                              color: Colors.grey.shade400,
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            Text(
+                              "No notifications available",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Text(
+                              "New updates will appear here",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
                     return ListView.builder(
                       itemCount: list.length,
                       itemBuilder: (_, index) {
@@ -381,40 +420,44 @@ class _HomeScreenState extends State<HomeScreen> {
                           tileColor: item.isRead == "n"
                               ? Colors.blue.shade50
                               : null,
+
                           title: Text(
                             item.title,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+
                           subtitle: Text(item.message),
-                            onTap: () async {
-                              /// 1. MARK AS READ API
-                              await _repo.markNotificationAsRead(item.id);
 
-                              /// 2. UPDATE UI LOCALLY (VERY IMPORTANT)
-                              final updatedList = notificationNotifier.value.map((e) {
-                                if (e.id == item.id) {
-                                  return NotificationModel(
-                                    id: e.id,
-                                    title: e.title,
-                                    message: e.message,
-                                    referenceId: e.referenceId,
-                                    isRead: "y", // ✅ mark locally
-                                  );
-                                }
-                                return e;
-                              }).toList();
+                          onTap: () async {
+                            await _repo.markNotificationAsRead(item.id);
 
-                              notificationNotifier.value = updatedList;
+                            final updatedList =
+                            notificationNotifier.value.map((e) {
+                              if (e.id == item.id) {
+                                return NotificationModel(
+                                  id: e.id,
+                                  title: e.title,
+                                  message: e.message,
+                                  referenceId: e.referenceId,
+                                  isRead: "y",
+                                );
+                              }
+                              return e;
+                            }).toList();
 
-                              /// 3. OPTIONAL → reduce count
-                              setState(() {
-                                if (notificationCount > 0) notificationCount--;
-                              });
+                            notificationNotifier.value = updatedList;
 
-                              /// 4. NAVIGATE
-                              Navigator.pop(context);
-                              _openTicket(item.referenceId);
-                            }
+                            setState(() {
+                              if (notificationCount > 0) {
+                                notificationCount--;
+                              }
+                            });
+
+                            Navigator.pop(context);
+                            _openTicket(item.referenceId);
+                          },
                         );
                       },
                     );

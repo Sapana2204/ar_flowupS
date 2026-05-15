@@ -156,20 +156,74 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                     child: const Icon(Icons.phone, color: Colors.white),
                   ),
                   const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (widget.clientName.isNotEmpty)
-                        Text(
-                          widget.clientName,
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (widget.clientName.isNotEmpty)
+                          Text(
+                            widget.clientName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+
+                        /// ✅ COMPANY NAME
+                        if (vm.clientHistoryList.isNotEmpty &&
+                            vm.clientHistoryList.first.companyId != null &&
+                            vm.clientHistoryList.first.companyId!
+                                .trim()
+                                .isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.business,
+                                  size: 14,
+                                  color: primary,
+                                ),
+                                const SizedBox(width: 4),
+
+                                Expanded(
+                                  child: Text(
+                                    vm.clientHistoryList.first.companyId!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        const SizedBox(height: 3),
+
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.phone_android,
+                              size: 14,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.phone,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
-                      Text(
-                        widget.phone,
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                    ],
+                      ],
+                    ),
                   )
                 ],
               ),
@@ -191,8 +245,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                   Expanded(
                     child: _infoBox(
                       "Total Tickets",
-                      vm.ticketsList.length.toString(),
-                    ),
+                        vm.clientHistoryList.length.toString()                    ),
                   ),
                 ],
               )
@@ -228,19 +281,19 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
     Widget _buildTicketList() {
       return Consumer<TicketsViewModel>(
         builder: (context, vm, child) {
-          if (vm.isLoading) {
+          if (vm.clientHistoryLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (vm.ticketsList.isEmpty) {
+          if (vm.clientHistoryList.isEmpty) {
             return const Center(child: Text("No tickets found"));
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(12),
-            itemCount: vm.ticketsList.length,
+            itemCount: vm.clientHistoryList.length,
             itemBuilder: (context, index) {
-              final ticket = vm.ticketsList[index];
+              final ticket = vm.clientHistoryList[index];
 
               return _ticketCard(ticket);
             },
@@ -631,14 +684,125 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
           if ((ticket.queryType ?? "").isNotEmpty)
             _detailRow("Query Type", ticket.queryType!),
 
+          if ((ticket.description ?? "").isNotEmpty)
+            _detailRow(
+              "Description",
+              ticket.description!
+                  .replaceAll(RegExp(r'<[^>]*>'), '')
+                  .trim(),
+            ),
+
           if ((ticket.assignee ?? "").isNotEmpty)
             _detailRow("Assigned To", ticket.assignee!),
 
-          if ((ticket.startDate ?? "").isNotEmpty)
-            _detailRow("Start Date", formatDate(ticket.startDate)),
+          /// Start + Due date in single row
+          if ((ticket.startDate ?? "").isNotEmpty ||
+              (ticket.dueDate ?? "").isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
 
-          if ((ticket.dueDate ?? "").isNotEmpty)
-            _detailRow("Due Date", formatDate(ticket.dueDate)),
+                  /// Start Date
+                  if ((ticket.startDate ?? "").isNotEmpty)
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: Colors.blue,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Start Date",
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Text(
+                                    formatDate(ticket.startDate),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  if ((ticket.startDate ?? "").isNotEmpty &&
+                      (ticket.dueDate ?? "").isNotEmpty)
+                    const SizedBox(width: 10),
+
+                  /// Due Date
+                  if ((ticket.dueDate ?? "").isNotEmpty)
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.event,
+                              size: 14,
+                              color: Colors.orange,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Due Date",
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Text(
+                                    formatDate(ticket.dueDate),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -668,5 +832,19 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+
+    final vm = Provider.of<TicketsViewModel>(
+      context,
+      listen: false,
+    );
+
+    vm.commentController.clear();
+
+    super.dispose();
   }
 }

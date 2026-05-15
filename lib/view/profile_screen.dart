@@ -162,7 +162,7 @@ class ProfileScreen extends StatelessWidget {
 
           /// 🔻 SYSTEM VERSION (NOW BELOW BUTTON)
           const Text(
-            "System Version 4.8.2-AF © 2026\nflowupS CallDesk",
+            "System Version 1.0.0-AF © 2026\nflowupS CallDesk",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,

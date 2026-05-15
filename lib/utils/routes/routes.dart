@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_new_project/utils/routes/routes_names.dart';
 import 'package:my_new_project/view/callsList_screen.dart';
 import 'package:my_new_project/view/clientHistory_screen.dart';
+import 'package:my_new_project/view/createCustomer_screen.dart';
 import 'package:my_new_project/view/dashboard_screen.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
@@ -74,6 +75,10 @@ class Routes {
       case (RouteNames.reportsScreen):
         return MaterialPageRoute(
             builder: (BuildContext context) => const ReportsScreen());
+
+        case (RouteNames.createCustomerScreen):
+        return MaterialPageRoute(
+            builder: (BuildContext context) => const CreateCustomerScreen());
 
       case (RouteNames.searchCallScreen):
         return MaterialPageRoute(

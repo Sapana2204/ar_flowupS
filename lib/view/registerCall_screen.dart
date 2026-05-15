@@ -453,7 +453,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                             child: Text(user.name ?? ""),
                           );
                         }).toList(),
-        
                         onChanged: (value) {
                           if (value != null) {
                             vm.setSelectedAdmin(value);
@@ -466,41 +465,33 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               ),
         
               const SizedBox(height: 12),
-              if (widget.mode == RegisterCallMode.edit)
-                _buildStatusDropdown(),
-        
-              Consumer<QueryViewModel>(
-                builder: (context, vm, _) {
-        
-                  final isOpen = (vm.selectedStatus ?? "").toLowerCase() == "open";
-        
-                  if (widget.mode == RegisterCallMode.create || isOpen) {
-                    return const SizedBox(); // 👈 hide
-                  }
-        
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 15),
-                      _buildTextField(
-                        "Reason",
-                        "Enter reason",
-                        reasonController,
-                      ),
-                    ],
-                  );
-                },
-              ),
-        
-              // const SizedBox(height: 12),
-        
-              // _buildTextField(
-              //   "Comments",
-              //   "Enter comments",
-              //   commentsController,
-              //   maxLines: 3,
+              // if (widget.mode == RegisterCallMode.edit)
+              //   _buildStatusDropdown(),
+              //
+              // Consumer<QueryViewModel>(
+              //   builder: (context, vm, _) {
+              //
+              //     final isOpen = (vm.selectedStatus ?? "").toLowerCase() == "open";
+              //
+              //     if (widget.mode == RegisterCallMode.create || isOpen) {
+              //       return const SizedBox(); // 👈 hide
+              //     }
+              //
+              //     return Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         const SizedBox(height: 15),
+              //         _buildTextField(
+              //           "Reason",
+              //           "Enter reason",
+              //           reasonController,
+              //         ),
+              //       ],
+              //     );
+              //   },
               // ),
-        
+
+
               // const SizedBox(height: 12),
               //
               // _buildTextField(
@@ -832,55 +823,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     );
   }
 
-  Widget _buildStatusDropdown() {
-    return Consumer<QueryViewModel>(
-      builder: (context, vm, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Query Status"),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 4),
-                ],
-              ),
-              child: vm.isLoading
-                  ? const Padding(
-                padding: EdgeInsets.all(12),
-                child: Center(child: CircularProgressIndicator()),
-              )
-                  : DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: vm.statusList.any(
-                          (e) => e.categoryName == vm.selectedStatus)
-                      ? vm.selectedStatus
-                      : null,
-                  hint: const Text("Select Status"),
-                  items: vm.statusList.map((item) {
-                    return DropdownMenuItem(
-                      value: item.categoryName,
-                      child: Text(item.categoryName ?? ""),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      vm.setSelectedStatus(value);
-                    }
-                  },
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   IconData getCallIcon(CallType? type) {
     switch (type) {
@@ -1024,6 +966,36 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                         },
                       ),
                     ),
+
+                    /// ➕ CREATE CUSTOMER BUTTON
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: GestureDetector(
+                          onTap: () async {
+                            Navigator.pop(context);
+
+                            await Navigator.pushNamed(
+                              context,
+                              RouteNames.createCustomerScreen,
+                            );
+
+                            vm.fetchClients();
+                          },
+                          child: const Text(
+                            "+ Create Client",
+                            style: TextStyle(
+                              color: primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
 
                     /// 📋 LIST
                     Expanded(
@@ -1315,6 +1287,51 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
           ],
         );
       },
+    );
+  }
+
+  InputDecoration commonInputDecoration({
+    required String hint,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(
+        color: Colors.grey.shade500,
+        fontSize: 14,
+      ),
+
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+
+      filled: true,
+      fillColor: Colors.white,
+
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: Colors.grey.shade200,
+        ),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(
+          color: primary,
+          width: 1.2,
+        ),
+      ),
     );
   }
 }

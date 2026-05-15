@@ -15,6 +15,12 @@ class TicketsViewModel extends ChangeNotifier {
   List<Data> _ticketsList = [];
   List<Data> get ticketsList => _ticketsList;
 
+  List<Data> _clientHistoryList = [];
+  List<Data> get clientHistoryList => _clientHistoryList;
+
+  bool _clientHistoryLoading = false;
+  bool get clientHistoryLoading => _clientHistoryLoading;
+
   String _error = "";
   String get error => _error;
 
@@ -111,9 +117,11 @@ class TicketsViewModel extends ChangeNotifier {
         final name = ticket.clientId?.toLowerCase() ?? "";
         final phone = ticket.contactNo ?? "";
         final ticketNo = ticket.ticketNo?.toLowerCase() ?? "";
+        final queryType = ticket.queryType?.toLowerCase() ?? "";
+        final description = ticket.description?.toLowerCase() ?? "";
 
         return name.contains(query.toLowerCase()) ||
-            phone.contains(query) ||
+            phone.contains(query) ||queryType.contains(query)||description.contains(query)||
             ticketNo.contains(query.toLowerCase());
       }).toList();
     }
@@ -164,20 +172,23 @@ class TicketsViewModel extends ChangeNotifier {
 
   Future<void> fetchClientHistory(int clientId) async {
     try {
-      _isLoading = true;
+      _clientHistoryLoading = true;
       notifyListeners();
 
-      final response = await _repository.fetchClientTickets(clientId);
+      final response =
+      await _repository.fetchClientTickets(clientId);
 
       if (response.data != null) {
-        _ticketsList = response.data!;
+        _clientHistoryList = response.data!;
+      } else {
+        _clientHistoryList = [];
       }
 
-      _error = "";
     } catch (e) {
-      _error = e.toString();
+      debugPrint(e.toString());
+      _clientHistoryList = [];
     } finally {
-      _isLoading = false;
+      _clientHistoryLoading = false;
       notifyListeners();
     }
   }

@@ -14,6 +14,7 @@ class RouteNames {
   static const String updateCallScreen = "update_call_screen";
   static const String leadsScreen = "leads_screen";
   static const String resetPasswordScreen = "reset_password_screen";
+  static const String createCustomerScreen = "create_customer_screen";
 
 
 }
