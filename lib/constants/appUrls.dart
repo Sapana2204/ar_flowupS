@@ -1,11 +1,11 @@
 class AppUrls {
   // static const baseUrl = "https://flowups-be.onrender.com/api/v1";
-  static const baseUrl = "http://192.168.1.23:3000/api/v1";  //local
+  static const baseUrl = "https://api.calldesk.flowups.in/api/v1";  //local
   // static const baseUrl = "http://10.168.243.83:3000/api/v1";  //local
 
   /// SOCKET URL (IMPORTANT - no /api/v1)
-  // static const socketUrl = "http://10.168.243.83";
-  static const socketUrl = "http://192.168.1.23";
+  static const socketUrl = "https://api.calldesk.flowups.in";
+  // static const socketUrl = "http://192.168.1.23";
   static const unreadCount = "$baseUrl/notifications/unread-count";
 
   //API end points
