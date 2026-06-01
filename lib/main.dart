@@ -4,6 +4,7 @@ import 'package:my_new_project/utils/routes/routes.dart';
 import 'package:my_new_project/utils/routes/routes_names.dart';
 import 'package:my_new_project/viewModel/login_viewmodel.dart';
 import 'package:my_new_project/viewmodel/customers_viewmodel.dart';
+import 'package:my_new_project/viewModel/dashboard_viewmodel.dart';
 import 'package:my_new_project/viewmodel/map_viewmodel.dart';
 import 'package:my_new_project/viewmodel/query_viewmodel.dart';
 import 'package:my_new_project/viewmodel/tickets_viewmodel.dart';
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => QueryViewModel()),
         ChangeNotifierProvider(create: (_) => MapViewModel()),
         ChangeNotifierProvider(create: (_) => CustomersViewModel()),
+        ChangeNotifierProvider(create: (_) => DashboardViewModel()),
 
       ],
       child: MaterialApp(

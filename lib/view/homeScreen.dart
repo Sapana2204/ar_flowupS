@@ -247,13 +247,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
 
-                _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const PayrollScreen()),
-                  );
-                }),
+                // _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
+                //   Navigator.pop(context);
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (_) => const PayrollScreen()),
+                //   );
+                // }),
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
                   Navigator.pop(context);

@@ -9,13 +9,16 @@ class LoginRepository {
   final NetworkApiServices _api = NetworkApiServices(); // ✅ ADD THIS
 
   Future<Map<String, dynamic>> loginApi(
-      String username, String password) async {
+      String username,
+      String password,
+      ) async {
 
     final uri = Uri.parse(AppUrls.loginEndPoint); // ✅ UPDATED
 
     final requestBody = {
       "username": username,
       "password": password,
+      "isMobile": true,
     };
 
     try {

@@ -48,12 +48,18 @@ class LoginViewModel with ChangeNotifier {
 
   /// ✅ LOGIN API
   Future<void> loginApi(
-      String username, String password, BuildContext context) async {
+      String username,
+      String password,
+      BuildContext context,
+      ) async {
 
     setLoading(true);
 
     try {
-      final response = await _loginRepository.loginApi(username, password);
+      final response = await _loginRepository.loginApi(
+        username,
+        password,
+      );
 
       final loginModel = LoginModel.fromJson(response);
 
@@ -101,6 +107,8 @@ class LoginViewModel with ChangeNotifier {
       }
 
     } catch (e) {
+      print("error is: $e");
+
       Utils.showToast(e.toString());
     } finally {
       setLoading(false);

@@ -227,24 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 25),
 
-                /// SIGNUP
-                // Center(
-                //   child: Text.rich(
-                //     TextSpan(
-                //       text: AppStrings.noAccount,
-                //       style: TextStyle(color: textSecondary),
-                //       children: [
-                //         TextSpan(
-                //           text: AppStrings.requestAccess,
-                //           style: TextStyle(
-                //             color: primary,
-                //             fontWeight: FontWeight.w600,
-                //           ),
-                //         )
-                //       ],
-                //     ),
-                //   ),
-                // )
+
               ],
             ),
           ),
