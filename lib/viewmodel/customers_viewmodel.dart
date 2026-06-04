@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/createCustomer_model.dart';
+import '../model/customerProduct_model.dart';
 import '../model/customers_model.dart';
 import '../model/updateCustomer_model.dart';
 import '../repository/customers_repository.dart';
@@ -23,6 +24,10 @@ class CustomersViewModel extends ChangeNotifier {
   bool get hasMore => _hasMore;   // ✅ THIS LINE IS MISSING
 
   String _searchText = "";
+
+  List<ProductData> _products = [];
+
+  List<ProductData> get products => _products;
 
   void setSearchText(String value) {
     _searchText = value;
@@ -124,5 +129,14 @@ class CustomersViewModel extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+
+  Future<void> fetchProducts() async {
+    try {
+      _products = await _repo.getProducts();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Product Error: $e");
+    }
   }
 }

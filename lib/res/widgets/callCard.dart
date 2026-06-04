@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../model/tickets_model.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/enums/register_call_mode.dart';
+import '../../view/ticketDetails_dialogue.dart';
 import '../../view/registerCall_screen.dart';
 
 class CallCard extends StatelessWidget {
@@ -14,36 +15,37 @@ class CallCard extends StatelessWidget {
     required this.ticket,
   });
 
-  Color getStatusColor(String status) {
-    switch (status) {
-      case "NEW":
-        return Colors.blue;
-      case "IN PROGRESS":
-        return Colors.orange;
-      case "CLOSED":
-        return Colors.grey;
-      default:
-        return Colors.black;
+  Color hexToColor(String? hexColor) {
+    if (hexColor == null || hexColor.isEmpty) {
+      return Colors.grey;
+    }
+
+    try {
+      hexColor = hexColor.replaceAll("#", "");
+
+      if (hexColor.length == 6) {
+        hexColor = "FF$hexColor";
+      }
+
+      return Color(int.parse(hexColor, radix: 16));
+    } catch (e) {
+      return Colors.grey;
     }
   }
 
-  Color getPriorityColor(String priority) {
-    switch (priority) {
-      case "HIGH":
-        return Colors.red;
-      case "MEDIUM":
-        return Colors.amber;
-      case "LOW":
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
 
-    return Container(
+    return InkWell(
+        borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => TicketDetailsDialog(ticket: ticket),
+        );
+      },
+    child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: white,
@@ -72,7 +74,7 @@ class CallCard extends StatelessWidget {
               ),
               _tag(
                 ticket.ticketStatus ?? "",
-                getStatusColor(ticket.ticketStatus ?? ""),
+                hexToColor(ticket.statusColor),
               ),
             ],
           ),
@@ -88,7 +90,7 @@ class CallCard extends StatelessWidget {
               ),
               _tag(
                 ticket.ticketPriority ?? "",
-                getPriorityColor(ticket.ticketPriority ?? ""),
+                hexToColor(ticket.priorityColor),
               ),
             ],
           ),
@@ -155,8 +157,8 @@ class CallCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+    );  }
 
   Color getDueDateColor(String? date) {
     if (date == null || date.isEmpty) return Colors.green;

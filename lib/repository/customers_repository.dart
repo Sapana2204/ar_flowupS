@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../data/network/network_api_services.dart';
 import '../constants/appUrls.dart';
 import '../model/createCustomer_model.dart';
+import '../model/customerProduct_model.dart';
 import '../model/customers_model.dart';
 import '../model/updateCustomer_model.dart';
 
@@ -59,5 +60,37 @@ class CustomersRepository {
       "${AppUrls.updateCustomer}${model.customerId}",
       model.toJson(),
     );
+  }
+
+
+  /// GET PRODUCTS
+  Future<List<ProductData>> getProducts() async {
+    try {
+      final response = await _api.getPostApiResponse(
+        AppUrls.searchList,
+        {
+          "text": "",
+          "system": "new",
+          "tableName": "products",
+          "wherec": "product_name",
+          "status": false,
+          "curpage": 0,
+          "list": "product_id,product_name",
+        },
+      );
+
+      final List<ProductData> products = [];
+
+      if (response["data"] != null) {
+        for (var item in response["data"]) {
+          products.add(ProductData.fromJson(item));
+        }
+      }
+
+      return products;
+    } catch (e) {
+      debugPrint("Product Error: $e");
+      rethrow;
+    }
   }
 }

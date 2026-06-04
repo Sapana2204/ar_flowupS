@@ -11,6 +11,7 @@ import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';
 import '../utils/enums/register_call_mode.dart';
 import '../utils/routes/routes_names.dart';
+import '../viewModel/dashboard_viewmodel.dart';
 import '../viewModel/login_viewmodel.dart';
 import '../viewmodel/query_viewmodel.dart';
 import '../viewmodel/tickets_viewmodel.dart';
@@ -334,21 +335,21 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         
               const SizedBox(height: 12),
         
-              _buildTextFieldWithAction(
-                "WhatsApp Number",
-                "Enter WhatsApp number",
-                Icons.chat,
-                whatsappController,
-                Icons.phone,
-                    () {
-                  setState(() {
-                    whatsappController.text = phoneController.text; // optional auto-fill
-                  });
-                },
-                keyboardType: TextInputType.phone, // ✅ ADD
-              ),
+              // _buildTextFieldWithAction(
+              //   "WhatsApp Number",
+              //   "Enter WhatsApp number",
+              //   Icons.chat,
+              //   whatsappController,
+              //   Icons.phone,
+              //       () {
+              //     setState(() {
+              //       whatsappController.text = phoneController.text; // optional auto-fill
+              //     });
+              //   },
+              //   keyboardType: TextInputType.phone, // ✅ ADD
+              // ),
         
-              const SizedBox(height: 12),
+              // const SizedBox(height: 12),
         
               _buildTextField(
                 "Contact Person",
@@ -365,22 +366,22 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         
               const SizedBox(height: 12),
         
-              _buildTextField(
-                "Email",
-                "Enter email address",
-                emailController,
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return null;
-                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                  if (!emailRegex.hasMatch(value)) {
-                    return "Enter valid email";
-                  }
-                  return null;
-                },
-              ),
-        
-              const SizedBox(height: 20),
+              // _buildTextField(
+              //   "Email",
+              //   "Enter email address",
+              //   emailController,
+              //   keyboardType: TextInputType.emailAddress,
+              //   validator: (value) {
+              //     if (value == null || value.isEmpty) return null;
+              //     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+              //     if (!emailRegex.hasMatch(value)) {
+              //       return "Enter valid email";
+              //     }
+              //     return null;
+              //   },
+              // ),
+              //
+              // const SizedBox(height: 20),
         
               /// CALL DETAILS
               const Text(
@@ -541,41 +542,65 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       ),
 
       bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          color: Color(0xFFF5F6FA),
-          child: SizedBox(
-            height: 50,
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _onRegisterCallPressed,
-              icon: const Icon(Icons.call),
-              label: Text(
-                widget.mode == RegisterCallMode.edit
-                    ? "Update Call"
-                    : "Register Call",
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+        child: Consumer<TicketsViewModel>(
+          builder: (context, vm, child) {
+            final isLoading = widget.mode == RegisterCallMode.edit
+                ? vm.isUpdating
+                : vm.isCreating;
+
+            return Container(
+              padding: const EdgeInsets.all(12),
+              color: const Color(0xFFF5F6FA),
+              child: SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : _onRegisterCallPressed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                      : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.call),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.mode == RegisterCallMode.edit
+                            ? "Update Call"
+                            : "Register Call",
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
   Future<void> _onRegisterCallPressed() async {
+    final vm = Provider.of<TicketsViewModel>(context, listen: false);
+
+    if (vm.isCreating || vm.isUpdating) return;
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    final vm = Provider.of<TicketsViewModel>(context, listen: false);
     final ticketVm = Provider.of<TicketsViewModel>(context, listen: false); // ✅ ADD
     final queryVm = Provider.of<QueryViewModel>(context, listen: false);
-    final loginVm = Provider.of<LoginViewModel>(context, listen: false); // ✅ ADD
     final existing = ticketVm.ticketDetail?.data?.isNotEmpty == true
         ? ticketVm.ticketDetail!.data!.first
         : null;
@@ -645,12 +670,24 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
       /// ✅ PRINT FULL REQUEST
       print("📤 UPDATE REQUEST: ${ticket.toJson()}");
+
+
       final success = await vm.updateTicket(ticket);
 
       if (success) {
+
+        // ✅ Refresh Dashboard API
+        await Provider.of<DashboardViewModel>(
+          context,
+          listen: false,
+        ).getDashboardData();
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ Call Updated Successfully")),
+          const SnackBar(
+            content: Text("✅ Call Updated Successfully"),
+          ),
         );
+
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -682,13 +719,25 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     );
     /// ✅ PRINT FULL REQUEST
     print("📤 CREATE REQUEST: ${ticket.toJson()}");
+
     final success = await vm.createTicket(ticket);
 
     if (success) {
+
+      // ✅ Refresh Dashboard API
+      await Provider.of<DashboardViewModel>(
+        context,
+        listen: false,
+      ).getDashboardData();
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ Call Registered Successfully")),
+        const SnackBar(
+          content: Text("✅ Call Registered Successfully"),
+        ),
       );
+
       Navigator.pop(context);
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(vm.createMessage)),
@@ -1203,6 +1252,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       ],
     );
   }
+
   Widget _buildStartDateField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

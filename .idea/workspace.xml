@@ -4,19 +4,28 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="changed baseurl">
-      <change afterPath="$PROJECT_DIR$/lib/model/dashboard_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/repository/dashboard_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/viewmodel/dashboard_viewmodel.dart" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="Piechart changes">
+      <change afterPath="$PROJECT_DIR$/lib/model/customerProduct.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/customerProduct_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/profile_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/repository/profile_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/ticketDetails_dialogue.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/viewmodel/profile_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repository/login_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/login_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/createCustomer_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/createCustomer_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/customers_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customers_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/customers_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/customers_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/res/widgets/callCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/callCard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/createCustomer_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/createCustomer_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/loginScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/loginScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/profile_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/profile_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/customers_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/customers_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -51,6 +60,9 @@
 }</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
@@ -263,7 +275,15 @@
       <option name="project" value="LOCAL" />
       <updated>1779362580751</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="passed isMobile parameter and changed and integrated dashboard UI and API integration">
+      <option name="closed" value="true" />
+      <created>1780313420569</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1780313420570</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -285,6 +305,8 @@
     <MESSAGE value="changes" />
     <MESSAGE value="added query search and show query in ticket history" />
     <MESSAGE value="changed baseurl" />
-    <option name="LAST_COMMIT_MESSAGE" value="changed baseurl" />
+    <MESSAGE value="passed isMobile parameter and changed and integrated dashboard UI and API integration" />
+    <MESSAGE value="Piechart changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Piechart changes" />
   </component>
 </project>

@@ -30,6 +30,7 @@ class AppUrls {
   static const String ticketHistory =
       "/tickets/history";
 
-
+  static const String profile =
+      "/users/profile";
 
 }

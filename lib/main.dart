@@ -6,11 +6,10 @@ import 'package:my_new_project/viewModel/login_viewmodel.dart';
 import 'package:my_new_project/viewmodel/customers_viewmodel.dart';
 import 'package:my_new_project/viewModel/dashboard_viewmodel.dart';
 import 'package:my_new_project/viewmodel/map_viewmodel.dart';
+import 'package:my_new_project/viewModel/profile_viewmodel.dart';
 import 'package:my_new_project/viewmodel/query_viewmodel.dart';
 import 'package:my_new_project/viewmodel/tickets_viewmodel.dart';
-
 import 'package:provider/provider.dart';
-
 import 'data/network/navigation_service.dart';
 
 void main() {
@@ -30,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MapViewModel()),
         ChangeNotifierProvider(create: (_) => CustomersViewModel()),
         ChangeNotifierProvider(create: (_) => DashboardViewModel()),
+        ChangeNotifierProvider(create: (_) => ProfileViewModel()),
 
       ],
       child: MaterialApp(

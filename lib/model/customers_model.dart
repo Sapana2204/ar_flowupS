@@ -1,3 +1,5 @@
+import 'customerProduct.dart';
+
 class CustomersModel {
   bool? success;
   List<CustomerData>? data;
@@ -36,6 +38,36 @@ class CustomerData {
   String? createdDate;
   String? status;
 
+  /// AMC
+  String? isAmc;
+  String? amcTermPeriod;
+  String? amcStartDate;
+  String? amcEndDate;
+
+  /// Products
+  List<CustomerProduct>? customerProducts;
+
+  CustomerData({
+    this.customerId,
+    this.name,
+    this.contactPerson,
+    this.email,
+    this.mobileNo,
+    this.waNo,
+    this.panNumber,
+    this.gstNumber,
+    this.companyName,
+    this.address,
+    this.createdBy,
+    this.createdDate,
+    this.status,
+    this.isAmc,
+    this.amcTermPeriod,
+    this.amcStartDate,
+    this.amcEndDate,
+    this.customerProducts,
+  });
+
   CustomerData.fromJson(Map<String, dynamic> json) {
     customerId = json['customer_id'];
     name = json['name']?.toString();
@@ -47,9 +79,26 @@ class CustomerData {
     gstNumber = json['gst_number']?.toString();
     companyName = json['company_name']?.toString();
     address = json['address']?.toString();
-    createdBy = json['created_by']?.toString();     // 🔥 FIX
+    createdBy = json['created_by']?.toString();
     createdDate = json['created_date']?.toString();
     status = json['status']?.toString();
+
+    /// AMC
+    isAmc = json['is_amc']?.toString();
+    amcTermPeriod = json['amc_term_period']?.toString();
+    amcStartDate = json['amc_start_date']?.toString();
+    amcEndDate = json['amc_end_date']?.toString();
+
+    /// Products
+    if (json['customer_products'] != null) {
+      customerProducts = <CustomerProduct>[];
+
+      json['customer_products'].forEach((v) {
+        customerProducts!.add(
+          CustomerProduct.fromJson(v),
+        );
+      });
+    }
   }
 }
 

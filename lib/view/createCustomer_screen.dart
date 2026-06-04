@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../model/createCustomer_model.dart';
+import '../model/customerProduct_model.dart';
 import '../model/updateCustomer_model.dart';
 import '../utils/app_colors.dart';
 import '../viewmodel/customers_viewmodel.dart';
@@ -32,15 +33,32 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   final panController = TextEditingController();
   final gstController = TextEditingController();
   final addressController = TextEditingController();
+  bool isAmc = false;
+
+  DateTime? amcStartDate;
+  DateTime? amcEndDate;
+
+  String? selectedAmcPeriod;
+
+  List<int?> selectedProducts = [];
+  List<TextEditingController> serialControllers = [];
 
   @override
   void initState() {
     super.initState();
 
+    Future.microtask(() {
+      Provider.of<CustomersViewModel>(
+        context,
+        listen: false,
+      ).fetchProducts();
+    });
+
     if (widget.isEdit && widget.customerId != null) {
       _loadCustomer();
     }
   }
+
   Future<void> _loadCustomer() async {
     final vm = Provider.of<CustomersViewModel>(context, listen: false);
 
@@ -56,6 +74,43 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     panController.text = customer.panNumber ?? "";
     gstController.text = customer.gstNumber ?? "";
     addressController.text = customer.address ?? "";
+    isAmc = customer.isAmc == "yes";
+
+    selectedAmcPeriod = switch (customer.amcTermPeriod) {
+      "3_month" => "3 Months",
+      "6_month" => "6 Months",
+      "1_year" => "1 Year",
+      _ => null,
+    };
+
+    if (customer.amcEndDate != null &&
+        customer.amcEndDate!.isNotEmpty) {
+      amcEndDate = DateTime.tryParse(
+        customer.amcEndDate!,
+      );
+    }
+
+    if (customer.amcStartDate != null &&
+        customer.amcStartDate!.isNotEmpty) {
+      amcStartDate = DateTime.tryParse(
+        customer.amcStartDate!,
+      );
+    }
+
+    selectedProducts.clear();
+    serialControllers.clear();
+
+    for (final product in customer.customerProducts ?? []) {
+      selectedProducts.add(
+        int.tryParse(product.productId ?? ""),
+      );
+
+      serialControllers.add(
+        TextEditingController(
+          text: product.serialNumber ?? "",
+        ),
+      );
+    }
 
     setState(() {});
   }
@@ -127,6 +182,262 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                 _labelField("Address", addressController, maxLines: 2),
               ]),
 
+              const SizedBox(height: 16),
+
+              const Text(
+                "AMC DETAILS",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+
+              const SizedBox(height: 10),
+
+              _card([
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Is AMC",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Switch(
+                      value: isAmc,
+                      activeColor: primary,
+                      onChanged: (value) {
+                        setState(() {
+                          isAmc = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+
+                if (isAmc) ...[
+                  DropdownButtonFormField<String>(
+                    isDense: true,
+                    value: selectedAmcPeriod,
+                    decoration: InputDecoration(
+                      labelText: "AMC Period",
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF5F6FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: "3 Months",
+                        child: Text("3 Months"),
+                      ),
+                      DropdownMenuItem(
+                        value: "6 Months",
+                        child: Text("6 Months"),
+                      ),
+                      DropdownMenuItem(
+                        value: "1 Year",
+                        child: Text("1 Year"),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedAmcPeriod = value;
+                      });
+                      _calculateAmcEndDate();
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _dateField(
+                          label: "Start Date",
+                          selectedDate: amcStartDate,
+                          onTap: () async {
+                            final date = await pickDate(context);
+
+                            if (date != null) {
+                              setState(() {
+                                amcStartDate = date;
+                              });
+
+                              _calculateAmcEndDate();
+                            }
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: _readOnlyDateField(
+                          label: "End Date",
+                          selectedDate: amcEndDate,
+                        ),
+                      ),
+                    ],
+                  ),
+                ]
+              ]),
+
+              const SizedBox(height: 16),
+
+              const Text(
+                "PRODUCTS",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+
+              const SizedBox(height: 10),
+
+              _card([
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Products",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Assign products and serial numbers for this customer.",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(
+                      height: 34,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            selectedProducts.add(null);
+                            serialControllers.add(TextEditingController());
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.add,
+                          size: 16,
+                        ),
+                        label: const Text(
+                          "Add",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 0,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+
+                const SizedBox(height: 15),
+                ...List.generate(
+                  selectedProducts.length,
+                      (index) => Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Column(
+                      children: [
+
+                        /// Product Dropdown
+                        DropdownButtonFormField<int>(
+                          value: selectedProducts[index],
+                          isDense: true,
+                          decoration: InputDecoration(
+                            labelText: "Select Product",
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF5F6FA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          items: vm.products.map((product) {
+                            return DropdownMenuItem<int>(
+                              value: product.productId,
+                              child: Text(product.productName ?? ""),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedProducts[index] = value;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        /// Serial No
+                        TextFormField(
+                          controller: serialControllers[index],
+                          decoration: InputDecoration(
+                            labelText: "Serial Number",
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF5F6FA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                serialControllers[index].dispose();
+                                serialControllers.removeAt(index);
+                                selectedProducts.removeAt(index);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              ]),
 
 
             ],
@@ -162,6 +473,141 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       ),
     );
   }
+
+
+
+  Widget _readOnlyDateField({
+    required String label,
+    required DateTime? selectedDate,
+  }) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+        suffixIcon: Icon(
+          Icons.calendar_month,
+          color: primary,
+          size: 20,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF5F6FA),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      child: Text(
+        selectedDate == null
+            ? "Auto"
+            : "${selectedDate.day.toString().padLeft(2, '0')}/"
+            "${selectedDate.month.toString().padLeft(2, '0')}/"
+            "${selectedDate.year}",
+        style: const TextStyle(fontSize: 14),
+      ),
+    );
+  }
+
+  void _calculateAmcEndDate() {
+    if (amcStartDate == null || selectedAmcPeriod == null) return;
+
+    switch (selectedAmcPeriod) {
+      case '3 Months':
+        amcEndDate = DateTime(
+          amcStartDate!.year,
+          amcStartDate!.month + 3,
+          amcStartDate!.day,
+        );
+        break;
+
+      case '6 Months':
+        amcEndDate = DateTime(
+          amcStartDate!.year,
+          amcStartDate!.month + 6,
+          amcStartDate!.day,
+        );
+        break;
+
+      case '1 Year':
+        amcEndDate = DateTime(
+          amcStartDate!.year + 1,
+          amcStartDate!.month,
+          amcStartDate!.day,
+        );
+        break;
+    }
+
+    setState(() {});
+  }
+
+  Future<DateTime?> pickDate(BuildContext context) async {
+    return showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: primary,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: primary,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+  }
+
+  Widget _dateField({
+    required String label,
+    required DateTime? selectedDate,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+          suffixIcon: Icon(
+            Icons.calendar_month,
+            color: primary,
+            size: 20,
+          ),
+          filled: true,
+          fillColor: const Color(0xFFF5F6FA),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        child: Text(
+          selectedDate == null
+              ? "Select"
+              : "${selectedDate.day.toString().padLeft(2, '0')}/"
+              "${selectedDate.month.toString().padLeft(2, '0')}/"
+              "${selectedDate.year}",
+          style: const TextStyle(fontSize: 14),
+        ),
+      ),
+    );
+  }
+
 
   Widget _card(List<Widget> children) {
     return Container(
@@ -289,6 +735,20 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       return;
     }
 
+    final productList = <Map<String, dynamic>>[];
+
+    for (int i = 0; i < selectedProducts.length; i++) {
+      final product = vm.products.firstWhere(
+            (e) => e.productId == selectedProducts[i],
+      );
+
+      productList.add({
+        "product_id": product.productId.toString(),
+        "product_name": product.productName,
+        "serial_number": serialControllers[i].text,
+      });
+    }
+
     /// ➕ CREATE MODE
     final model = CreateCustomer(
       name: nameController.text,
@@ -299,6 +759,19 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       panNumber: panController.text,
       gstNo: gstController.text,
       address: addressController.text,
+
+      isAmc: isAmc ? "yes" : "no",
+      amcTermPeriod: getAmcApiValue(),
+
+      amcStartDate: amcStartDate == null
+          ? null
+          : amcStartDate!.toIso8601String().split('T').first,
+
+      amcEndDate: amcEndDate == null
+          ? null
+          : amcEndDate!.toIso8601String().split('T').first,
+
+      customerProducts: productList,
     );
 
     final success = await vm.createCustomer(model);
@@ -312,6 +785,19 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("❌ Failed")),
       );
+    }
+  }
+
+  String? getAmcApiValue() {
+    switch (selectedAmcPeriod) {
+      case "3 Months":
+        return "3_month";
+      case "6 Months":
+        return "6_month";
+      case "1 Year":
+        return "1_year";
+      default:
+        return null;
     }
   }
 }

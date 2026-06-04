@@ -61,6 +61,7 @@ class TicketsViewModel extends ChangeNotifier {
 
   bool historyLoading = false;
 
+
   void setSearchText(String value) {
     _searchText = value;
   }

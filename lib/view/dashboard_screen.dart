@@ -6,6 +6,7 @@ import '../utils/app_strings.dart';
 import '../utils/routes/routes_names.dart';
 import '../viewModel/dashboard_viewmodel.dart';
 import '../viewModel/login_viewmodel.dart';
+import 'package:pie_chart/pie_chart.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,6 +23,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardViewModel>().getDashboardData();
     });
+  }
+
+  Color hexToColor(String hex) {
+    hex = hex.replaceAll('#', '');
+
+    if (hex.length == 6) {
+      hex = 'FF$hex';
+    }
+
+    return Color(int.parse(hex, radix: 16));
   }
 
   @override
@@ -57,8 +68,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         closedCount = value;
       }
     }
+    final ticketStatus =
+        dashboardVM.dashboardModel?.data?.charts?.ticketStatus ?? [];
 
-    final totalCalls = openCount + activeCount + closedCount;
+    final Map<String, double> pieData = {};
+    final List<Color> pieColors = [];
+
+    int totalTickets = 0;
+
+    for (final item in ticketStatus) {
+      if (item is Map<String, dynamic>) {
+        final int value = item['value'] ?? 0;
+
+        pieData[item['label'] ?? 'Unknown'] = value.toDouble();
+
+        totalTickets += value;
+
+        if (item['color'] != null) {
+          pieColors.add(hexToColor(item['color']));
+        }
+      }
+    }
+
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -120,57 +151,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
 
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
 
             /// FILTER
-            Row(
-              children: [
-                _chip(AppStrings.yesterday, false),
-                const SizedBox(width: 8),
-                _chip(AppStrings.today, true),
-                const SizedBox(width: 8),
-                _chip(AppStrings.tomorrow, false),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            /// STATUS CARD
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: _cardDecoration(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    AppStrings.filteredStatus,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _statusBox(
-                        openCount.toString(),
-                        AppStrings.open,
-                      ),
-                      _statusBox(
-                        activeCount.toString(),
-                        AppStrings.active,
-                      ),
-                      _statusBox(
-                        closedCount.toString(),
-                        AppStrings.closed,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            // Row(
+            //   children: [
+            //     _chip(AppStrings.yesterday, false),
+            //     const SizedBox(width: 8),
+            //     _chip(AppStrings.today, true),
+            //     const SizedBox(width: 8),
+            //     _chip(AppStrings.tomorrow, false),
+            //   ],
+            // ),
+            //
+            // const SizedBox(height: 20),
+            //
+            // /// STATUS CARD
+            // Container(
+            //   padding: const EdgeInsets.all(16),
+            //   decoration: _cardDecoration(),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       const Text(
+            //         AppStrings.filteredStatus,
+            //         style: TextStyle(
+            //           fontWeight: FontWeight.bold,
+            //         ),
+            //       ),
+            //
+            //       const SizedBox(height: 15),
+            //
+            //       Row(
+            //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //         children: [
+            //           _statusBox(
+            //             openCount.toString(),
+            //             AppStrings.open,
+            //           ),
+            //           _statusBox(
+            //             activeCount.toString(),
+            //             AppStrings.active,
+            //           ),
+            //           _statusBox(
+            //             closedCount.toString(),
+            //             AppStrings.closed,
+            //           ),
+            //         ],
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
             const SizedBox(height: 20),
 
@@ -190,36 +221,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   const SizedBox(height: 20),
 
-                  Center(
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: primary.withOpacity(0.15),
-                      ),
-                      child: Center(
-                        child: Text(
-                          totalCalls.toString(),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                  SizedBox(
+                    height: 180,
+                    child: Row(
+                      children: [
+                        /// PIE CHART
+                        Expanded(
+                          flex: 2,
+                          child: PieChart(
+                            dataMap: pieData,
+                            animationDuration: const Duration(milliseconds: 800),
+                            chartRadius: 90,
+                            chartType: ChartType.ring,
+                            ringStrokeWidth: 25,
+                            centerText: totalTickets.toString(),
+                            colorList: pieColors,
+                            legendOptions: const LegendOptions(
+                              showLegends: false,
+                            ),
+                            chartValuesOptions: const ChartValuesOptions(
+                              showChartValues: false,
+                            ),
                           ),
                         ),
-                      ),
+
+                        // const SizedBox(width: 16),
+
+                        /// STATUS LEGEND
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: ticketStatus.map<Widget>((item) {
+                              if (item is Map<String, dynamic>) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  child: _legendItem(
+                                    hexToColor(item['color'] ?? '#0078D4'),
+                                    '${item['label']} (${item['value']})',
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            }).toList(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
-                  const SizedBox(height: 15),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text("● ${AppStrings.open}"),
-                      Text("● ${AppStrings.active}"),
-                      Text("● ${AppStrings.closed}"),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -317,6 +370,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _legendItem(Color color, String text) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

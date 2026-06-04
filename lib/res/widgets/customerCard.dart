@@ -7,6 +7,29 @@ class CustomerCard extends StatelessWidget {
   final CustomerData customer;
 
   const CustomerCard({super.key, required this.customer});
+  bool get hasAmc => customer.isAmc?.toLowerCase() == "yes";
+
+  bool get isAmcExpired {
+    if (customer.amcEndDate == null ||
+        customer.amcEndDate!.isEmpty) {
+      return false;
+    }
+
+    final endDate = DateTime.parse(customer.amcEndDate!);
+    return endDate.isBefore(DateTime.now());
+  }
+
+  bool get isAmcExpiringSoon {
+    if (customer.amcEndDate == null ||
+        customer.amcEndDate!.isEmpty) {
+      return false;
+    }
+
+    final endDate = DateTime.parse(customer.amcEndDate!);
+    final daysLeft = endDate.difference(DateTime.now()).inDays;
+
+    return daysLeft >= 0 && daysLeft <= 30;
+  }
 
   Color getStatusColor(String? status) {
     switch (status?.toLowerCase()) {
@@ -25,6 +48,14 @@ class CustomerCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: white,
+        border: Border.all(
+          color: hasAmc
+              ? (isAmcExpired
+              ? Colors.red.shade300
+              : Colors.green.shade300)
+              : Colors.grey.shade300,
+          width: hasAmc ? 1.5 : 1,
+        ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -52,10 +83,22 @@ class CustomerCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              _tag(
-                customer.status ?? "",
-                getStatusColor(customer.status),
-              ),
+              Row(
+                children: [
+                  _tag(
+                    customer.status ?? "",
+                    getStatusColor(customer.status),
+                  ),
+
+                  if (hasAmc) ...[
+                    const SizedBox(width: 6),
+                    _tag(
+                      "AMC",
+                      Colors.blue,
+                    ),
+                  ],
+                ],
+              )
             ],
           ),
 
@@ -101,7 +144,60 @@ class CustomerCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 10),
+          if (hasAmc) ...[
+            const SizedBox(height: 10),
 
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: isAmcExpired
+                    ? Colors.red.withOpacity(0.08)
+                    : isAmcExpiringSoon
+                    ? Colors.orange.withOpacity(0.08)
+                    : Colors.green.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isAmcExpired
+                        ? Icons.warning_amber_rounded
+                        : Icons.verified,
+                    size: 18,
+                    color: isAmcExpired
+                        ? Colors.red
+                        : isAmcExpiringSoon
+                        ? Colors.orange
+                        : Colors.green,
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: Text(
+                      isAmcExpired
+                          ? "AMC Expired on ${customer.amcEndDate}"
+                          : isAmcExpiringSoon
+                          ? "AMC Expiring Soon (${customer.amcEndDate})"
+                          : "AMC Valid Till ${customer.amcEndDate}",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isAmcExpired
+                            ? Colors.red
+                            : isAmcExpiringSoon
+                            ? Colors.orange
+                            : Colors.green,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           /// 🔹 ADDRESS BOX
           // if ((customer.address ?? "").isNotEmpty)
           //   Container(
