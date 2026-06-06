@@ -9,6 +9,16 @@ class UpdateCustomer {
   String? gstNumber;
   String? address;
 
+  String? isAmc;
+  String? amcTermPeriod;
+  String? amcStartDate;
+  String? amcEndDate;
+  String? status;
+
+  List<Map<String, dynamic>>? customerProducts;
+  List<String>? productIds;
+  List<Map<String, dynamic>>? products;
+
   UpdateCustomer({
     this.customerId,
     this.name,
@@ -19,6 +29,14 @@ class UpdateCustomer {
     this.panNumber,
     this.gstNumber,
     this.address,
+    this.isAmc,
+    this.amcTermPeriod,
+    this.amcStartDate,
+    this.amcEndDate,
+    this.status,
+    this.customerProducts,
+    this.productIds,
+    this.products,
   });
 
   Map<String, dynamic> toJson() {
@@ -32,6 +50,17 @@ class UpdateCustomer {
       "gst_number": gstNumber,
       "address": address,
       "contact_person": contactPerson,
+
+      "is_amc": isAmc,
+      "amc_term_period": amcTermPeriod,
+      "amc_start_date": amcStartDate,
+      "amc_end_date": amcEndDate,
+
+      "status": status,
+
+      "customer_products": customerProducts ?? [],
+      "product_ids": productIds ?? [],
+      "products": products ?? [],
     };
   }
 }

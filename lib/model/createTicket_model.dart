@@ -14,6 +14,10 @@ class CreateTicket {
   int? modifiedBy;
   String? status;
   String? contactPerson;
+  String? productId;
+  String? productName;
+  String? productSerialNumber;
+  String? productAddOns;
 
   CreateTicket({
     this.ticketId,
@@ -31,6 +35,10 @@ class CreateTicket {
     this.modifiedBy,
     this.status,
     this.contactPerson,
+    this.productId,
+    this.productName,
+    this.productSerialNumber,
+    this.productAddOns,
   });
 
   Map<String, dynamic> toJson() {
@@ -50,6 +58,10 @@ class CreateTicket {
       "modified_by": modifiedBy,
       "status": status,
       "contact_person": contactPerson,
+      "product_id": productId,
+      "product_name": productName,
+      "product_serial_number": productSerialNumber,
+      "product_add_ons": productAddOns ?? "[]",
     };
   }
 }

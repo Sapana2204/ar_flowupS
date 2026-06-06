@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/adminData_model.dart';
 import '../model/clientData_model.dart';
+import '../model/customerProduct.dart';
 import '../model/queryTypes_model.dart';
 import '../repository/query_repository.dart';
 
@@ -42,6 +43,14 @@ class QueryViewModel extends ChangeNotifier {
 
   String? _selectedStatus;
   String? get selectedStatus => _selectedStatus;
+
+  CustomerProduct? _selectedProduct;
+  CustomerProduct? get selectedProduct => _selectedProduct;
+
+  void setSelectedProduct(CustomerProduct? product) {
+    _selectedProduct = product;
+    notifyListeners();
+  }
 
   void setSelectedClient(ClientData value) {
     _selectedClient = value;
@@ -152,6 +161,7 @@ class QueryViewModel extends ChangeNotifier {
 
   void resetSelections() {
     _selectedClient = null;
+    _selectedProduct = null; // ADD
     _selectedQuery = null;
     _selectedPriority = null;
     _selectedAdmin = null;

@@ -83,6 +83,10 @@ class Data {
   String? statusColor;
   String? priorityColor;
   String? typeColor;
+  String? productId;
+  String? productName;
+  String? productSerialNumber;
+  String? productAddOns;
 
   Data({
     this.ticketId,
@@ -107,6 +111,10 @@ class Data {
     this.statusColor,
     this.priorityColor,
     this.typeColor,
+    this.productId,
+    this.productName,
+    this.productSerialNumber,
+    this.productAddOns,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -132,6 +140,12 @@ class Data {
     statusColor = json['status_color']?.toString();
     priorityColor = json['priority_color']?.toString();
     typeColor = json['type_color']?.toString();
+    productId = json['product_id']?.toString();
+    productName = json['product_name']?.toString();
+    productSerialNumber =
+        json['product_serial_number']?.toString();
+    productAddOns =
+        json['product_add_ons']?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -159,6 +173,11 @@ class Data {
     dataMap['status_color'] = statusColor;
     dataMap['priority_color'] = priorityColor;
     dataMap['type_color'] = typeColor;
+    dataMap['product_id'] = productId;
+    dataMap['product_name'] = productName;
+    dataMap['product_serial_number'] =
+        productSerialNumber;
+    dataMap['product_add_ons'] = productAddOns;
 
     return dataMap;
   }

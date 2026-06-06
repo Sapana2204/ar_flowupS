@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:provider/provider.dart';
 import '../model/createTicket_model.dart';
+import '../model/customerProduct.dart';
+import '../model/customers_model.dart';
 import '../model/updateTicket_model.dart';
 import '../utils/app_colors.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -13,6 +15,7 @@ import '../utils/enums/register_call_mode.dart';
 import '../utils/routes/routes_names.dart';
 import '../viewModel/dashboard_viewmodel.dart';
 import '../viewModel/login_viewmodel.dart';
+import '../viewmodel/customers_viewmodel.dart';
 import '../viewmodel/query_viewmodel.dart';
 import '../viewmodel/tickets_viewmodel.dart';
 
@@ -37,6 +40,10 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   final FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
   final _formKey = GlobalKey<FormState>();
+
+  CustomerData? selectedCustomer;
+  CustomerProduct? selectedProduct;
+  bool isLoadingProducts = false;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -131,23 +138,36 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
         /// ✅ 🔥 VERY IMPORTANT: SET CLIENT
         if (data.clientId != null) {
-          // final clientMatch = queryVm.clientList.firstWhere(
-          //       (c) => c.customerId.toString() == data.clientId.toString(),
-          //   orElse: () => queryVm.clientList.first,
-          // );
-          //
-          // queryVm.setSelectedClient(clientMatch);
-          //
-          // nameController.text = clientMatch.name ?? "";
-          // phoneController.text = clientMatch.mobileNo ?? "";
-
           final clientMatch = queryVm.clientList.where(
                 (c) => c.customerId.toString() == data.clientId.toString(),
           ).toList();
 
           if (clientMatch.isNotEmpty) {
-            queryVm.setSelectedClient(clientMatch.first);
+            final customerVm =
+            Provider.of<CustomersViewModel>(
+              context,
+              listen: false,
+            );
 
+            final customer =
+            await customerVm.getCustomerById(
+              clientMatch.first.customerId!,
+            );
+
+            selectedCustomer = customer;
+            if (customer != null &&
+                data.productId != null) {
+              try {
+                selectedProduct =
+                    customer.customerProducts?.firstWhere(
+                          (p) =>
+                      p.productId.toString() ==
+                          data.productId.toString(),
+                    );
+              } catch (_) {}
+            }
+            queryVm.setSelectedClient(clientMatch.first);
+            print(ticketVm.ticketDetail?.data?.first.toJson());
             nameController.text = clientMatch.first.name ?? "";
             phoneController.text = clientMatch.first.mobileNo ?? "";
           }
@@ -310,6 +330,10 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                   ),
                 ],
               ),
+
+              const SizedBox(height: 12),
+
+              _buildProductDropdown(),
         
               const SizedBox(height: 12),
         
@@ -465,51 +489,14 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                 },
               ),
         
-              const SizedBox(height: 12),
-              // if (widget.mode == RegisterCallMode.edit)
-              //   _buildStatusDropdown(),
-              //
-              // Consumer<QueryViewModel>(
-              //   builder: (context, vm, _) {
-              //
-              //     final isOpen = (vm.selectedStatus ?? "").toLowerCase() == "open";
-              //
-              //     if (widget.mode == RegisterCallMode.create || isOpen) {
-              //       return const SizedBox(); // 👈 hide
-              //     }
-              //
-              //     return Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         const SizedBox(height: 15),
-              //         _buildTextField(
-              //           "Reason",
-              //           "Enter reason",
-              //           reasonController,
-              //         ),
-              //       ],
-              //     );
-              //   },
-              // ),
 
+              if (widget.mode == RegisterCallMode.edit) ...[
+                const SizedBox(height: 12),
+                _buildStatusDropdown(),
+              ],
 
-              // const SizedBox(height: 12),
-              //
-              // _buildTextField(
-              //   "Product Type",
-              //   "Enter product type",
-              //   productTypeController,
-              // ),
-              //
-              // const SizedBox(height: 12),
-              //
-              // _buildTextField(
-              //   "Product Serial No",
-              //   "Enter serial number",
-              //   serialNoController,
-              // ),
               const SizedBox(height: 15),
-        
+
               /// DESCRIPTION
               const Text("Description"),
               const SizedBox(height: 8),
@@ -664,6 +651,10 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         createdDate: existing?.createdDate,
         companyId: existing?.companyId,
         ticketNo: existing?.ticketNo,
+        productId: selectedProduct?.productId,
+        productName: selectedProduct?.productName,
+        productSerialNumber: selectedProduct?.serialNumber,
+        productAddOns: "[]",
 
       );
 
@@ -716,6 +707,10 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       status: "active",
       // whatsappNo: whatsappController.text,
       contactPerson: contactPersonController.text,
+      productId: selectedProduct?.productId,
+      productName: selectedProduct?.productName,
+      productSerialNumber: selectedProduct?.serialNumber,
+      productAddOns: "[]",
     );
     /// ✅ PRINT FULL REQUEST
     print("📤 CREATE REQUEST: ${ticket.toJson()}");
@@ -836,6 +831,114 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
   String removeHtmlTags(String htmlString) {
     return htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
+  }
+
+  Widget _buildProductDropdown() {
+    final products = selectedCustomer?.customerProducts ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Product"),
+        const SizedBox(height: 6),
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+              ),
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<CustomerProduct>(
+              isExpanded: true,
+              value: selectedProduct,
+              hint: Text(
+                selectedCustomer == null
+                    ? "Select Client First"
+                    : products.isEmpty
+                    ? "No Products Available"
+                    : "Select Product",
+              ),
+              items: products.map((product) {
+                return DropdownMenuItem<CustomerProduct>(
+                  value: product,
+                  child: Text(
+                    "${product.productName} (${product.serialNumber})",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: products.isEmpty
+                  ? null
+                  : (value) {
+                setState(() {
+                  selectedProduct = value;
+                });
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusDropdown() {
+    return Consumer<QueryViewModel>(
+      builder: (context, vm, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Status"),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+
+                  value: vm.statusList.any(
+                        (e) => e.categoryName == vm.selectedStatus,
+                  )
+                      ? vm.selectedStatus
+                      : null,
+
+                  hint: const Text("Select Status"),
+
+                  items: vm.statusList.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item.categoryName,
+                      child: Text(item.categoryName ?? ""),
+                    );
+                  }).toList(),
+
+                  onChanged: (value) {
+                    if (value != null) {
+                      vm.setSelectedStatus(value);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildTextField(
@@ -1058,14 +1161,36 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                                 return ListTile(
                                   title: Text(client.name ?? ""),
                                   subtitle: Text(client.mobileNo ?? ""),
-                                  onTap: () {
+                                  onTap: () async {
                                     vm.setSelectedClient(client);
 
-                                    /// ✅ FIX: force UI update
                                     setState(() {
+                                      selectedCustomer = null;
+                                      selectedProduct = null;
+                                      isLoadingProducts = true;
+                                    });
+
+                                    final customerVm =
+                                    Provider.of<CustomersViewModel>(
+                                      context,
+                                      listen: false,
+                                    );
+
+                                    final customer =
+                                        await customerVm.getCustomerById(
+                                      client.customerId!,
+                                    );
+
+                                    if (!mounted) return;
+
+                                    this.setState(() {
+                                      selectedCustomer = customer;
+                                      isLoadingProducts = false;
+                                    });
+                                    /// ✅ FIX: force UI update
+                                    this.setState(() {
                                       nameController.text = client.name ?? "";
-                                      phoneController.text =
-                                          client.mobileNo ?? "";
+                                      phoneController.text = client.mobileNo ?? "";
                                     });
 
                                     Navigator.pop(context);

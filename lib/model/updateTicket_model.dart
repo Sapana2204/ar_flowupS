@@ -18,6 +18,10 @@ class UpdateTicketModel {
   String? createdDate;
   String? modifiedDate;
   String? ticketNo;
+  String? productId;
+  String? productName;
+  String? productSerialNumber;
+  String? productAddOns;
 
   UpdateTicketModel(
       {this.ticketId,
@@ -38,7 +42,13 @@ class UpdateTicketModel {
         this.reason,
         this.createdDate,
         this.modifiedDate,
-        this.ticketNo});
+        this.ticketNo,
+        this.productId,
+        this.productName,
+        this.productSerialNumber,
+        this.productAddOns,
+
+      });
 
   UpdateTicketModel.fromJson(Map<String, dynamic> json) {
     ticketId = json['ticket_id'];
@@ -60,6 +70,10 @@ class UpdateTicketModel {
     createdDate = json['created_date'];
     modifiedDate = json['modified_date'];
     ticketNo = json['ticket_no'];
+    productId = json['product_id']?.toString();
+    productName = json['product_name'];
+    productSerialNumber = json['product_serial_number'];
+    productAddOns = json['product_add_ons'];
   }
 
   Map<String, dynamic> toJson() {
@@ -83,6 +97,10 @@ class UpdateTicketModel {
     data['created_date'] = this.createdDate;
     data['modified_date'] = this.modifiedDate;
     data['ticket_no'] = this.ticketNo;
+    data['product_id'] = productId;
+    data['product_name'] = productName;
+    data['product_serial_number'] = productSerialNumber;
+    data['product_add_ons'] = productAddOns ?? "[]";
     return data;
   }
 }

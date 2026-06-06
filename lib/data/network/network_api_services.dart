@@ -6,6 +6,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:my_new_project/data/network/socket_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../constants/api_headers.dart';
 import '../../constants/appUrls.dart';
 import '../../model/login_model.dart';
 import '../../utils/routes/routes_names.dart';
@@ -15,6 +16,7 @@ import 'navigation_service.dart';
 
 class NetworkApiServices extends BaseApiServices {
   @override
+
   Future<dynamic> getGetApiResponse(String url, {String? token}) async {
     dynamic jsonResponse;
 
@@ -23,12 +25,7 @@ class NetworkApiServices extends BaseApiServices {
 
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          "Content-Type": "application/json",
-          if (token != null && token.isNotEmpty)
-            "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 10));
+        headers: ApiHeaders.headers(token: token),      ).timeout(const Duration(seconds: 10));
 
       print("📤 GET API: $url");
       print("📥 Response status: ${response.statusCode}");
@@ -49,12 +46,7 @@ class NetworkApiServices extends BaseApiServices {
 
       String completeUrl = url.startsWith("http") ? url : AppUrls.baseUrl + url;
 
-      final headers = {
-        "Content-Type": "application/json",
-        'Accept': 'application/json, text/plain, */*',
-        if (token != null && token.isNotEmpty) "Authorization": "Bearer $token",
-      };
-
+      final headers = ApiHeaders.headers(token: token);
       final response = await http.post(
         Uri.parse(completeUrl),
         headers: headers,
@@ -126,9 +118,9 @@ class NetworkApiServices extends BaseApiServices {
       var request = http.MultipartRequest('POST', Uri.parse(completeUrl));
 
       // Add headers
-      if (token != null && token.isNotEmpty) {
-        request.headers['Authorization'] = 'Bearer $token';
-      }
+      request.headers.addAll(
+        ApiHeaders.multipartHeaders(token: token),
+      );
 
       request.fields.addAll(fields);
 
@@ -161,12 +153,7 @@ class NetworkApiServices extends BaseApiServices {
 
       final response = await http.delete(
         Uri.parse(url),
-        headers: {
-          "Content-Type": "application/json",
-          if (token != null && token.isNotEmpty)
-            "Authorization": "Bearer $token",
-        },
-      );
+        headers: ApiHeaders.headers(token: token),      );
 
       print("📤 DELETE API: $url");
       print("📥 Response status: ${response.statusCode}");
@@ -227,13 +214,7 @@ class NetworkApiServices extends BaseApiServices {
 
       String completeUrl = url.startsWith("http") ? url : AppUrls.baseUrl + url;
 
-      final headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json, text/plain, */*",
-        if (token != null && token.isNotEmpty)
-          "Authorization": "Bearer $token",
-      };
-
+      final headers = ApiHeaders.headers(token: token);
       final response = await http.put(
         Uri.parse(completeUrl),
         headers: headers,

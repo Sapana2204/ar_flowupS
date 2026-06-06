@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -177,7 +179,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
               const SizedBox(height: 10),
 
               _card([
-                _labelField("PAN Number", panController),
+                // _labelField("PAN Number", panController),
                 _labelField("GST Number", gstController),
                 _labelField("Address", addressController, maxLines: 2),
               ]),
@@ -314,7 +316,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            "Assign products and serial numbers for this customer.",
+                            "Assign products and serial numbers ",
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 12,
@@ -382,13 +384,37 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                               borderSide: BorderSide.none,
                             ),
                           ),
-                          items: vm.products.map((product) {
+                          items: vm.products
+                              .where((product) {
+                            return !selectedProducts.contains(product.productId) ||
+                                product.productId == selectedProducts[index];
+                          })
+                              .map((product) {
                             return DropdownMenuItem<int>(
                               value: product.productId,
                               child: Text(product.productName ?? ""),
                             );
-                          }).toList(),
+                          })
+                              .toList(),
                           onChanged: (value) {
+                            if (value == null) return;
+
+                            // Check duplicate product
+                            final alreadySelected = selectedProducts.asMap().entries.any(
+                                  (entry) =>
+                              entry.key != index &&
+                                  entry.value == value,
+                            );
+
+                            if (alreadySelected) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("This product is already added."),
+                                ),
+                              );
+                              return;
+                            }
+
                             setState(() {
                               selectedProducts[index] = value;
                             });
@@ -701,12 +727,47 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
 
   /// SUBMIT
   Future<void> _submit() async {
+
+
     if (!_formKey.currentState!.validate()) return;
 
     final vm = Provider.of<CustomersViewModel>(context, listen: false);
 
+// Check duplicate products
+    final selectedIds = selectedProducts.whereType<int>().toList();
+
+    if (selectedIds.length != selectedIds.toSet().length) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Duplicate products are not allowed for the same customer.",
+          ),
+        ),
+      );
+      return;
+    }
+
     /// ✏️ EDIT MODE
     if (widget.isEdit) {
+
+      final customerProducts = <Map<String, dynamic>>[];
+      final productIds = <String>[];
+
+      for (int i = 0; i < selectedProducts.length; i++) {
+
+        final product = vm.products.firstWhere(
+              (e) => e.productId == selectedProducts[i],
+        );
+
+        customerProducts.add({
+          "product_id": product.productId.toString(),
+          "product_name": product.productName,
+          "serial_number": serialControllers[i].text,
+        });
+
+        productIds.add(product.productId.toString());
+      }
+
       final model = UpdateCustomer(
         customerId: widget.customerId,
         name: nameController.text,
@@ -717,7 +778,30 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         panNumber: panController.text,
         gstNumber: gstController.text,
         address: addressController.text,
+
+        isAmc: isAmc ? "yes" : "no",
+        amcTermPeriod: getAmcApiValue(),
+
+        amcStartDate: amcStartDate == null
+            ? null
+            : amcStartDate!.toIso8601String().split('T').first,
+
+        amcEndDate: amcEndDate == null
+            ? null
+            : amcEndDate!.toIso8601String().split('T').first,
+
+        status: "active",
+
+        customerProducts: customerProducts,
+        productIds: productIds,
+        products: customerProducts,
       );
+
+      print("========== UPDATE CUSTOMER REQUEST ==========");
+      print(
+        const JsonEncoder.withIndent('  ').convert(model.toJson()),
+      );
+      print("============================================");
 
       final success = await vm.updateCustomer(model);
 
