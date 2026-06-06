@@ -22,6 +22,7 @@ class UpdateTicketModel {
   String? productName;
   String? productSerialNumber;
   String? productAddOns;
+  String? expectedMinutes;
 
   UpdateTicketModel(
       {this.ticketId,
@@ -47,6 +48,7 @@ class UpdateTicketModel {
         this.productName,
         this.productSerialNumber,
         this.productAddOns,
+        this.expectedMinutes
 
       });
 
@@ -74,6 +76,8 @@ class UpdateTicketModel {
     productName = json['product_name'];
     productSerialNumber = json['product_serial_number'];
     productAddOns = json['product_add_ons'];
+    expectedMinutes = json['expected_minutes'];
+
   }
 
   Map<String, dynamic> toJson() {
@@ -101,6 +105,7 @@ class UpdateTicketModel {
     data['product_name'] = productName;
     data['product_serial_number'] = productSerialNumber;
     data['product_add_ons'] = productAddOns ?? "[]";
+    data['expected_minutes'] = expectedMinutes;
     return data;
   }
 }

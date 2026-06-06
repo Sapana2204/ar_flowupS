@@ -35,6 +35,9 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   final panController = TextEditingController();
   final gstController = TextEditingController();
   final addressController = TextEditingController();
+  List<TextEditingController> addOnInputControllers = [];
+  List<List<String>> productAddOns = [];
+
   bool isAmc = false;
 
   DateTime? amcStartDate;
@@ -62,35 +65,36 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   }
 
   Future<void> _loadCustomer() async {
-    final vm = Provider.of<CustomersViewModel>(context, listen: false);
+    final vm = Provider.of<CustomersViewModel>(
+      context,
+      listen: false,
+    );
 
-    final customer = await vm.getCustomerById(widget.customerId!);
+    final customer = await vm.getCustomerById(
+      widget.customerId!,
+    );
 
     if (customer == null) return;
 
     nameController.text = customer.name ?? "";
-    contactPersonController.text = customer.contactPerson ?? "";
+    contactPersonController.text =
+        customer.contactPerson ?? "";
     mobileController.text = customer.mobileNo ?? "";
     whatsappController.text = customer.waNo ?? "";
     emailController.text = customer.email ?? "";
     panController.text = customer.panNumber ?? "";
     gstController.text = customer.gstNumber ?? "";
     addressController.text = customer.address ?? "";
+
     isAmc = customer.isAmc == "yes";
 
-    selectedAmcPeriod = switch (customer.amcTermPeriod) {
+    selectedAmcPeriod = switch (
+    customer.amcTermPeriod) {
       "3_month" => "3 Months",
       "6_month" => "6 Months",
       "1_year" => "1 Year",
       _ => null,
     };
-
-    if (customer.amcEndDate != null &&
-        customer.amcEndDate!.isNotEmpty) {
-      amcEndDate = DateTime.tryParse(
-        customer.amcEndDate!,
-      );
-    }
 
     if (customer.amcStartDate != null &&
         customer.amcStartDate!.isNotEmpty) {
@@ -99,10 +103,22 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       );
     }
 
+    if (customer.amcEndDate != null &&
+        customer.amcEndDate!.isNotEmpty) {
+      amcEndDate = DateTime.tryParse(
+        customer.amcEndDate!,
+      );
+    }
+
+    /// Clear old data
     selectedProducts.clear();
     serialControllers.clear();
+    addOnInputControllers.clear();
+    productAddOns.clear();
 
-    for (final product in customer.customerProducts ?? []) {
+    /// Load products
+    for (final product
+    in customer.customerProducts ?? []) {
       selectedProducts.add(
         int.tryParse(product.productId ?? ""),
       );
@@ -110,6 +126,18 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       serialControllers.add(
         TextEditingController(
           text: product.serialNumber ?? "",
+        ),
+      );
+
+      /// Empty controller used for entering new addon
+      addOnInputControllers.add(
+        TextEditingController(),
+      );
+
+      /// Existing addons from API
+      productAddOns.add(
+        List<String>.from(
+          product.addOns ?? [],
         ),
       );
     }
@@ -332,7 +360,16 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                         onPressed: () {
                           setState(() {
                             selectedProducts.add(null);
-                            serialControllers.add(TextEditingController());
+
+                            serialControllers.add(
+                              TextEditingController(),
+                            );
+
+                            addOnInputControllers.add(
+                              TextEditingController(),
+                            );
+
+                            productAddOns.add([]);
                           });
                         },
                         icon: const Icon(
@@ -442,6 +479,69 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                           ),
                         ),
 
+                        const SizedBox(height: 10),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: addOnInputControllers[index],
+                                decoration: InputDecoration(
+                                  labelText: "Add-On Feature",
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF5F6FA),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            IconButton(
+                              icon: const Icon(Icons.add_circle, color: Colors.green),
+                              onPressed: () {
+                                final addon =
+                                addOnInputControllers[index].text.trim();
+
+                                if (addon.isEmpty) return;
+
+                                setState(() {
+                                  productAddOns[index].add(addon);
+                                  addOnInputControllers[index].clear();
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: productAddOns[index]
+                              .map(
+                                (addon) => Chip(
+                              label: Text(addon),
+                              deleteIcon: const Icon(Icons.close, size: 18),
+                              onDeleted: () {
+                                setState(() {
+                                  productAddOns[index].remove(addon);
+                                });
+                              },
+                            ),
+                          )
+                              .toList(),
+                        ),
+
                         Align(
                           alignment: Alignment.centerRight,
                           child: IconButton(
@@ -452,7 +552,12 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                             onPressed: () {
                               setState(() {
                                 serialControllers[index].dispose();
+                                addOnInputControllers[index].dispose();
+
                                 serialControllers.removeAt(index);
+                                addOnInputControllers.removeAt(index);
+
+                                productAddOns.removeAt(index);
                                 selectedProducts.removeAt(index);
                               });
                             },
@@ -691,9 +796,24 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
               }
 
               /// 📱 Mobile validation
-              if (isPhoneField) {
-                if (v == null || v.isEmpty) return "Mobile number required";
-                if (v.length != 10) return "Enter valid 10-digit mobile number";
+              final isMobileField =
+              label.toLowerCase().contains("mobile");
+
+              if (isMobileField) {
+                if (v == null || v.isEmpty) {
+                  return "Mobile number required";
+                }
+
+                if (v.length != 10) {
+                  return "Enter valid 10-digit mobile number";
+                }
+              }
+
+              if (label.toLowerCase().contains("whatsapp") &&
+                  v != null &&
+                  v.isNotEmpty &&
+                  v.length != 10) {
+                return "Enter valid WhatsApp number";
               }
 
               /// 📧 Email validation
@@ -728,8 +848,14 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   /// SUBMIT
   Future<void> _submit() async {
 
+    print("===== SUBMIT CLICKED =====");
+    print("selectedProducts : $selectedProducts");
+    print("productAddOns : $productAddOns");
+    final isValid = _formKey.currentState!.validate();
 
-    if (!_formKey.currentState!.validate()) return;
+    print("FORM VALID = $isValid");
+
+    if (!isValid) return;
 
     final vm = Provider.of<CustomersViewModel>(context, listen: false);
 
@@ -758,11 +884,11 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         final product = vm.products.firstWhere(
               (e) => e.productId == selectedProducts[i],
         );
-
         customerProducts.add({
           "product_id": product.productId.toString(),
           "product_name": product.productName,
           "serial_number": serialControllers[i].text,
+          "add_ons": productAddOns[i],
         });
 
         productIds.add(product.productId.toString());
@@ -820,18 +946,26 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     }
 
     final productList = <Map<String, dynamic>>[];
+    print("STEP 1");
 
     for (int i = 0; i < selectedProducts.length; i++) {
+      print("STEP 2 : ${selectedProducts[i]}");
+
       final product = vm.products.firstWhere(
             (e) => e.productId == selectedProducts[i],
       );
+
+      print("STEP 3 : ${product.productName}");
 
       productList.add({
         "product_id": product.productId.toString(),
         "product_name": product.productName,
         "serial_number": serialControllers[i].text,
+        "add_ons": productAddOns[i],
       });
     }
+
+    print("STEP 4");
 
     /// ➕ CREATE MODE
     final model = CreateCustomer(
@@ -857,9 +991,18 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
 
       customerProducts: productList,
     );
+    print("REQUEST JSON");
+    print(
+      const JsonEncoder.withIndent('  ')
+          .convert(model.toJson()),
+    );
+
+    print("STEP 5");
 
     final success = await vm.createCustomer(model);
 
+    print("STEP 6");
+    print("API RESULT = $success");
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("✅ Customer Created")),

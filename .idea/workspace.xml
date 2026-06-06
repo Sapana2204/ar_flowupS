@@ -4,17 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="Piechart changes">
-      <change afterPath="$PROJECT_DIR$/lib/constants/api_headers.dart" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="Products changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/model/createTicket_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/createTicket_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/tickets_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/tickets_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/updateCustomer_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/updateCustomer_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/customerProduct.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customerProduct.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/model/updateTicket_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/updateTicket_model.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/createCustomer_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/createCustomer_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/query_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/query_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -279,7 +275,15 @@
       <option name="project" value="LOCAL" />
       <updated>1780572818545</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Products changes">
+      <option name="closed" value="true" />
+      <created>1780736516144</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1780736516144</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -303,6 +307,7 @@
     <MESSAGE value="changed baseurl" />
     <MESSAGE value="passed isMobile parameter and changed and integrated dashboard UI and API integration" />
     <MESSAGE value="Piechart changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Piechart changes" />
+    <MESSAGE value="Products changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Products changes" />
   </component>
 </project>

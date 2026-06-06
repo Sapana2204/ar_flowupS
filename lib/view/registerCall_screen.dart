@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
@@ -40,11 +42,12 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   final FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
   final _formKey = GlobalKey<FormState>();
-
+  String? selectedAddOn;
   CustomerData? selectedCustomer;
   CustomerProduct? selectedProduct;
   bool isLoadingProducts = false;
-
+  List<String> selectedAddOns = [];
+  TextEditingController expectedTimeController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController dateController = TextEditingController();
@@ -161,9 +164,25 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                 selectedProduct =
                     customer.customerProducts?.firstWhere(
                           (p) =>
-                      p.productId.toString() ==
-                          data.productId.toString(),
+                      p.serialNumber?.toString() ==
+                          data.productSerialNumber?.toString(),
                     );
+                // Restore Add-ons
+                if (data.productAddOns != null &&
+                    data.productAddOns!.isNotEmpty) {
+                  try {
+                    final decoded =
+                    List<String>.from(jsonDecode(data.productAddOns!));
+
+                    selectedAddOns = decoded;
+
+                    if (decoded.isNotEmpty) {
+                      selectedAddOn = decoded.first;
+                    }
+                  } catch (e) {
+                    print("Add-on parse error: $e");
+                  }
+                }
               } catch (_) {}
             }
             queryVm.setSelectedClient(clientMatch.first);
@@ -413,14 +432,30 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 10),
-        
-        
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildDropdownField(),
-                  ),
-                ],
+
+
+              Consumer<QueryViewModel>(
+                builder: (context, vm, child) {
+                  final isCustomization =
+                      vm.selectedQuery?.toLowerCase() == "customizations";
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildDropdownField(),
+                      ),
+
+                      if (isCustomization) ...[
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          child: _buildAddOnsField(),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
         
               const SizedBox(height: 15),
@@ -440,8 +475,21 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               const SizedBox(height: 15),
         
               /// PRIORITY
-              _buildPriorityDropdown(),
-        
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildPriorityDropdown(),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: _buildExpectedTimeField(),
+                  ),
+                ],
+              ),
+
               const SizedBox(height: 15),
         
               /// ASSIGN TO
@@ -654,7 +702,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         productId: selectedProduct?.productId,
         productName: selectedProduct?.productName,
         productSerialNumber: selectedProduct?.serialNumber,
-        productAddOns: "[]",
+        productAddOns: jsonEncode(selectedAddOns),
+
 
       );
 
@@ -710,7 +759,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       productId: selectedProduct?.productId,
       productName: selectedProduct?.productName,
       productSerialNumber: selectedProduct?.serialNumber,
-      productAddOns: "[]",
+      productAddOns: jsonEncode(selectedAddOns),
+      expectedMinutes: expectedTimeController.text,
     );
     /// ✅ PRINT FULL REQUEST
     print("📤 CREATE REQUEST: ${ticket.toJson()}");
@@ -833,13 +883,99 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     return htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
   }
 
+
+  Widget _buildAddOnsField() {
+    final addOns = selectedProduct?.addOns ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Add-ons",
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 6),
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+              ),
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: addOns.contains(selectedAddOn)
+                  ? selectedAddOn
+                  : null,
+              hint: Text(
+                addOns.isEmpty
+                    ? "No Add-ons Available"
+                    : "Select Add-on",
+              ),
+              items: addOns.map((addon) {
+                return DropdownMenuItem<String>(
+                  value: addon,
+                  child: Text(addon),
+                );
+              }).toList(),
+              onChanged: addOns.isEmpty
+                  ? null
+                  : (value) {
+                setState(() {
+                  selectedAddOn = value;
+
+                  // Keep API format as List<String>
+                  selectedAddOns =
+                  value == null ? [] : [value];
+                });
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpectedTimeField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Expected Time (Minutes)"),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: expectedTimeController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
+          decoration: InputDecoration(
+            hintText: "Enter Minutes",
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildProductDropdown() {
     final products = selectedCustomer?.customerProducts ?? [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Product"),
+        const Text("Products"),
         const SizedBox(height: 6),
 
         Container(
@@ -874,11 +1010,11 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                   ),
                 );
               }).toList(),
-              onChanged: products.isEmpty
-                  ? null
-                  : (value) {
+              onChanged: (value) {
                 setState(() {
                   selectedProduct = value;
+                  selectedAddOns.clear();
+                  selectedAddOn = null;
                 });
               },
             ),

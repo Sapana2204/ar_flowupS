@@ -18,6 +18,7 @@ class CreateTicket {
   String? productName;
   String? productSerialNumber;
   String? productAddOns;
+  String? expectedMinutes;
 
   CreateTicket({
     this.ticketId,
@@ -39,6 +40,7 @@ class CreateTicket {
     this.productName,
     this.productSerialNumber,
     this.productAddOns,
+    this.expectedMinutes
   });
 
   Map<String, dynamic> toJson() {
@@ -62,6 +64,7 @@ class CreateTicket {
       "product_name": productName,
       "product_serial_number": productSerialNumber,
       "product_add_ons": productAddOns ?? "[]",
+      "expected_minutes": expectedMinutes,
     };
   }
 }
