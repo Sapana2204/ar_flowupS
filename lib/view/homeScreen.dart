@@ -38,6 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isDialogShowing = false;
   StreamSubscription<ServiceStatus>? _locationStatusSub;
+  bool isSignedIn = false;
+  bool _statusDialogShown = false;
+
 
   final List<Widget> _pages = const [
     DashboardScreen(),
@@ -78,6 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final latest = await _repo.fetchNotifications();
       notificationNotifier.value = latest;
       });
+
   }
 
   /// 🔷 Dynamic Title
@@ -103,11 +107,35 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(_title),
         actions: _currentIndex == 0
             ? [
+          /// Attendance Status Icon
+          IconButton(
+            onPressed: _changeAttendanceStatus,
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSignedIn
+                    ? Colors.green.shade50
+                    : Colors.orange.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isSignedIn
+                    ? Icons.work_history_rounded
+                    : Icons.fingerprint_rounded,
+                color: isSignedIn
+                    ? Colors.green
+                    : Colors.orange,
+                size: 22,
+              ),
+            ),
+          ),
+
+          /// Notifications
           Stack(
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications),
-                onPressed: _showNotificationPanel, // ✅ now correct
+                onPressed: _showNotificationPanel,
               ),
 
               if (notificationCount > 0)
@@ -299,6 +327,101 @@ class _HomeScreenState extends State<HomeScreen> {
       leading: Icon(icon, color: primary),
       title: Text(title),
       onTap: onTap,
+    );
+  }
+
+  void _changeAttendanceStatus() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isSignedIn
+                    ? Icons.logout_rounded
+                    : Icons.login_rounded,
+                size: 36,
+                color: isSignedIn
+                    ? Colors.red
+                    : Colors.green,
+              ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                isSignedIn ? "Sign Out" : "Sign In",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              Text(
+                isSignedIn
+                    ? "End today's work session?"
+                    : "Start today's work session?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+          actionsPadding:
+          const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(color: primary),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+
+                      setState(() {
+                        isSignedIn = !isSignedIn;
+                      });
+
+                      // API call here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSignedIn
+                          ? Colors.red
+                          : Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(
+                      isSignedIn
+                          ? "Sign Out"
+                          : "Sign In",
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -526,6 +649,15 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    /// Show attendance dialog only once
+    if (!_statusDialogShown) {
+      _statusDialogShown = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _changeAttendanceStatus();
+      });
+    }
+
     /// ✅ STEP 3: Start tracking ONLY if allowed
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
@@ -546,6 +678,19 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       );
     });
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    if (!_statusDialogShown) {
+      _statusDialogShown = true;
+
+      Future.delayed(
+        const Duration(milliseconds: 500),
+            () => _showAttendanceDialog(),
+      );
+    }
   }
 
   void _showLocationDialog({bool openSettings = false}) {
@@ -582,6 +727,65 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+
+  void _showAttendanceDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Attendance"),
+          content: const Text(
+            "Please select your current status",
+          ),
+          actions: [
+            ElevatedButton.icon(
+              icon: const Icon(Icons.login),
+              label: const Text("Sign In"),
+              onPressed: () async {
+                Navigator.pop(context);
+
+                setState(() {
+                  isSignedIn = true;
+                });
+
+                await _updateAttendance("signin");
+              },
+            ),
+
+            ElevatedButton.icon(
+              icon: const Icon(Icons.logout),
+              label: const Text("Sign Out"),
+              onPressed: () async {
+                Navigator.pop(context);
+
+                setState(() {
+                  isSignedIn = false;
+                });
+
+                await _updateAttendance("signout");
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _updateAttendance(String status) async {
+    try {
+      await NetworkApiServices().getPostApiResponse(
+        "/users/attendance",
+        {
+          "status": status, // signin / signout
+        },
+      );
+
+      print("Attendance Updated: $status");
+    } catch (e) {
+      print(e);
+    }
   }
 
   void _handleLogout() async {

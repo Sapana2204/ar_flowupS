@@ -95,6 +95,17 @@ class CallCard extends StatelessWidget {
             ],
           ),
 
+          const SizedBox(height: 8),
+
+          Row(
+            children: [
+              _tag(
+                ticket.queryType ?? "",
+                hexToColor(ticket.typeColor),
+              ),
+            ],
+          ),
+
           const SizedBox(height: 10),
 
           Container(

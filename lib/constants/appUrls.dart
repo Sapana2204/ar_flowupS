@@ -15,6 +15,9 @@ class AppUrls {
   static const ticketsList = "$baseUrl/tickets";
   static const queryTypes = "$baseUrl/system/searchSlugList";
   static const searchList = "$baseUrl/system/searchList";
+  static const searchAssignee =
+      "$baseUrl/system/searchAssignee";
+
   static const createTicket = "$baseUrl/tickets/create";
   static const ticketDetailsById = "$baseUrl/tickets/";
   static const updateTicket = "$baseUrl/tickets/";

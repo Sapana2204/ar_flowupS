@@ -87,6 +87,7 @@ class Data {
   String? productName;
   String? productSerialNumber;
   String? productAddOns;
+  String? expectedMinutes;
 
   Data({
     this.ticketId,
@@ -115,6 +116,7 @@ class Data {
     this.productName,
     this.productSerialNumber,
     this.productAddOns,
+    this.expectedMinutes
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -146,6 +148,7 @@ class Data {
         json['product_serial_number']?.toString();
     productAddOns =
         json['product_add_ons']?.toString();
+    expectedMinutes = json['expected_minutes']?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -178,7 +181,7 @@ class Data {
     dataMap['product_serial_number'] =
         productSerialNumber;
     dataMap['product_add_ons'] = productAddOns;
-
+    dataMap['expected_minutes'] = expectedMinutes;
     return dataMap;
   }
 }

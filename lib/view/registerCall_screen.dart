@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../model/createTicket_model.dart';
 import '../model/customerProduct.dart';
 import '../model/customers_model.dart';
@@ -105,6 +106,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
         final data = list.first;
 
+        print("===== EDIT TICKET DATA =====");
+        print(data.toJson());
+        print("productAddOns = ${data.productAddOns}");
+        print("expectedMinutes = ${data.expectedMinutes}");
+        print("productSerialNumber = ${data.productSerialNumber}");
+        expectedTimeController.text =
+            data.expectedMinutes ?? "";
         /// ✅ TEXT FIELDS
         phoneController.text = data.contactNo ?? "";
         contactPersonController.text = data.contactPerson ?? "";
@@ -168,16 +176,23 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                           data.productSerialNumber?.toString(),
                     );
                 // Restore Add-ons
+                selectedAddOns.clear();
                 if (data.productAddOns != null &&
                     data.productAddOns!.isNotEmpty) {
                   try {
-                    final decoded =
-                    List<String>.from(jsonDecode(data.productAddOns!));
+                    String addOnString = data.productAddOns!.trim();
 
-                    selectedAddOns = decoded;
+                    // Remove brackets
+                    addOnString =
+                        addOnString.replaceAll('[', '').replaceAll(']', '');
 
-                    if (decoded.isNotEmpty) {
-                      selectedAddOn = decoded.first;
+                    if (addOnString.isNotEmpty) {
+                      selectedAddOns = addOnString
+                          .split(',')
+                          .map((e) => e.trim())
+                          .toList();
+
+                      selectedAddOn = selectedAddOns.first;
                     }
                   } catch (e) {
                     print("Add-on parse error: $e");
@@ -185,6 +200,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                 }
               } catch (_) {}
             }
+            print("Available AddOns: ${selectedProduct?.addOns}");
+            print("Selected AddOns: $selectedAddOns");
+            print("Selected AddOn: $selectedAddOn");
             queryVm.setSelectedClient(clientMatch.first);
             print(ticketVm.ticketDetail?.data?.first.toJson());
             nameController.text = clientMatch.first.name ?? "";
@@ -196,13 +214,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       /// ✅ CREATE MODE ONLY (DON’T OVERRIDE EDIT)
       else {
         _setDefaultAdmin(queryVm, loginVm);
-
-        // final client = queryVm.selectedClient;
-        // if (client != null) {
-        //   nameController.text = client.name ?? "";
-        //   phoneController.text = client.mobileNo ?? "";
-        // }
-
         final client = queryVm.selectedClient;
         if (client != null) {
           nameController.text = client.name ?? "";
@@ -355,45 +366,60 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               _buildProductDropdown(),
         
               const SizedBox(height: 12),
-        
-              _buildTextFieldWithAction(
-                "Client Contact No",
-                "+1 (555) 000-000",
-                Icons.phone,
-                phoneController,
-                Icons.history,
-                getRecentCalls,
-                keyboardType: TextInputType.phone, // ✅ ADD
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Phone number required";
-                  }
-                  if (value.length < 10) {
-                    return "Enter valid phone number";
-                  }
-                  return null;
-                },
-                enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
+
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildTextFieldWithAction(
+                      "Client Contact No",
+                      "+1 (555) 000-000",
+                      Icons.phone,
+                      phoneController,
+                      Icons.history,
+                      getRecentCalls,
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Phone number required";
+                        }
+                        if (value.length < 10) {
+                          return "Enter valid phone number";
+                        }
+                        return null;
+                      },
+                      enabled: widget.mode != RegisterCallMode.edit,
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: SizedBox(
+                      height: 35,
+                      width: 35,
+                      child: ElevatedButton(
+                        onPressed: _makePhoneCall,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.call,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
         
               const SizedBox(height: 12),
-        
-              // _buildTextFieldWithAction(
-              //   "WhatsApp Number",
-              //   "Enter WhatsApp number",
-              //   Icons.chat,
-              //   whatsappController,
-              //   Icons.phone,
-              //       () {
-              //     setState(() {
-              //       whatsappController.text = phoneController.text; // optional auto-fill
-              //     });
-              //   },
-              //   keyboardType: TextInputType.phone, // ✅ ADD
-              // ),
-        
-              // const SizedBox(height: 12),
-        
+
               _buildTextField(
                 "Contact Person",
                 "Enter contact person name",
@@ -408,24 +434,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
               ),
         
               const SizedBox(height: 12),
-        
-              // _buildTextField(
-              //   "Email",
-              //   "Enter email address",
-              //   emailController,
-              //   keyboardType: TextInputType.emailAddress,
-              //   validator: (value) {
-              //     if (value == null || value.isEmpty) return null;
-              //     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-              //     if (!emailRegex.hasMatch(value)) {
-              //       return "Enter valid email";
-              //     }
-              //     return null;
-              //   },
-              // ),
-              //
-              // const SizedBox(height: 20),
-        
+
               /// CALL DETAILS
               const Text(
                 "CALL DETAILS",
@@ -519,11 +528,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                             : null,
         
                         hint: const Text("Select User"),
-        
+
                         items: vm.adminList.map((user) {
                           return DropdownMenuItem<String>(
                             value: user.name,
-                            child: Text(user.name ?? ""),
+                            child: Text(
+                              "${user.name} (${user.pendingTicketsCount ?? 0} Pending)",
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -556,9 +567,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
                   if (value == null || value.isEmpty) {
                     return "Description required";
                   }
-                  // if (value.length < 10) {
-                  //   return "Minimum 10 characters required";
-                  // }
+
                   return null;
                 },
                 decoration: InputDecoration(
@@ -625,6 +634,27 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _makePhoneCall() async {
+    final phone = phoneController.text.trim();
+
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Phone number not available")),
+      );
+      return;
+    }
+
+    final Uri uri = Uri(scheme: 'tel', path: phone);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Unable to open dialer")),
+      );
+    }
   }
 
   Future<void> _onRegisterCallPressed() async {
@@ -703,6 +733,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
         productName: selectedProduct?.productName,
         productSerialNumber: selectedProduct?.serialNumber,
         productAddOns: jsonEncode(selectedAddOns),
+        expectedMinutes: expectedTimeController.text, // 👈 ADD THIS
 
 
       );
@@ -1296,7 +1327,23 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
                                 return ListTile(
                                   title: Text(client.name ?? ""),
-                                  subtitle: Text(client.mobileNo ?? ""),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(client.mobileNo ?? ""),
+
+                                      ...(client.customerProducts ?? []).map(
+                                            (p) => Text(
+                                          "SN: ${p.serialNumber}",
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   onTap: () async {
                                     vm.setSelectedClient(client);
 

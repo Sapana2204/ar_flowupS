@@ -32,16 +32,18 @@ class QueryRepository {
   /// 🔹 FETCH ADMIN LIST
   Future<List<AdminData>> fetchAdmins() async {
     final response = await _apiService.getPostApiResponse(
-      AppUrls.searchList, // or direct URL if not added
+      AppUrls.searchAssignee,
       {
         "text": "",
+        "system": "new",
         "tableName": "admin",
         "wherec": "name",
+        "status": false,
         "list": "adminID,name",
-        "slug": null,
-        "status": "false"
       },
     );
+
+    print("ASSIGNEE RESPONSE => $response");
 
     if (response['data'] != null) {
       return (response['data'] as List)
@@ -61,7 +63,8 @@ class QueryRepository {
         "tableName": "customer",
         "wherec": "name",
         "status": false,
-        "list": "customer_id,name,created_date,mobile_no"
+        "list":
+        "customer_id,name,created_date,mobile_no,customer_products"
       },
     );
 
