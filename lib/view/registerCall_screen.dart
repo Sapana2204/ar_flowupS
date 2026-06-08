@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../model/createTicket_model.dart';
@@ -646,15 +647,16 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       return;
     }
 
-    final Uri uri = Uri(scheme: 'tel', path: phone);
+    final status = await Permission.phone.request();
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
+    if (!status.isGranted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Unable to open dialer")),
+        const SnackBar(content: Text("Phone permission denied")),
       );
+      return;
     }
+
+    await FlutterPhoneDirectCaller.callNumber(phone);
   }
 
   Future<void> _onRegisterCallPressed() async {
