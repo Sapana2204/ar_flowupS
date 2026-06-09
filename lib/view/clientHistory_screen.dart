@@ -550,34 +550,50 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                     ],
                   ),
 
-                  const SizedBox(height: 12),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color:
-                      (vm.workLogSummary?.canAddLog == "Y")                          ? Colors.green.withOpacity(.1)
-                          : Colors.red.withOpacity(.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      (vm.workLogSummary?.canAddLog == "Y")                          ? "Can Add Work Log"
-                          : "Work Log Limit Reached",
-                      style: TextStyle(
-                        color:
-                        (vm.workLogSummary?.canAddLog == "Y")                            ? Colors.green
-                            : Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(height: 12),
+                  //
+                  // Container(
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 12,
+                  //     vertical: 8,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color:
+                  //     (vm.workLogSummary?.canAddLog == "Y")                          ? Colors.green.withOpacity(.1)
+                  //         : Colors.red.withOpacity(.1),
+                  //     borderRadius: BorderRadius.circular(20),
+                  //   ),
+                  //   child: Text(
+                  //     (vm.workLogSummary?.canAddLog == "Y")                          ? "Can Add Work Log"
+                  //         : "Work Log Limit Reached",
+                  //     style: TextStyle(
+                  //       color:
+                  //       (vm.workLogSummary?.canAddLog == "Y")                            ? Colors.green
+                  //           : Colors.red,
+                  //       fontWeight: FontWeight.w600,
+                  //     ),
+                  //   ),
+                  // ),
 
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: Row(
+                children: [
+                  Text(
+                    "Work Logs (${vm.workLogsList.length})",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 5),
 
             Expanded(
               child: vm.workLogsList.isEmpty

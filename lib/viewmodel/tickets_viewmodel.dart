@@ -367,14 +367,23 @@ class TicketsViewModel extends ChangeNotifier {
       final response =
       await _repository.updateWorkLog(model);
 
+      print("UPDATE RESPONSE => $response");
+
       if (response["success"] == true) {
+        print("FETCHING WORK LOGS");
+
         await fetchTicketWorkLogs(model.ticketId);
+
+        print("RETURNING TRUE");
+
         return true;
       }
 
+      print("RETURNING FALSE");
       return false;
-    } catch (e) {
-      debugPrint("❌ Update Work Log Error: $e");
+    } catch (e, s) {
+      print("UPDATE ERROR => $e");
+      print(s);
       return false;
     } finally {
       updateWorkLogLoading = false;

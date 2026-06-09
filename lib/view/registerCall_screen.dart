@@ -1724,20 +1724,18 @@ class _RegisterCallScreenState
                       "completed",
                     );
 
-                    final success =
-                    await vm
-                        .updateWorkLog(
-                      model,
-                    );
+                    final success = await vm.updateWorkLog(model);
+
+                    print("SUCCESS => $success");
 
                     if (success) {
-                      _activeWorkLogId =
-                      null;
+                      print("BEFORE POP");
+
+                      _activeWorkLogId = null;
 
                       if (mounted) {
-                        Navigator.pop(
-                          context,
-                        );
+                        Navigator.of(context).pop();
+                        print("AFTER POP");
                       }
                     }
                   },
