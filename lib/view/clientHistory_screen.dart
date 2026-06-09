@@ -42,7 +42,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
     super.initState();
 
     _tabController = TabController(
-      length: widget.mode == RegisterCallMode.edit ? 3 : 1,
+      length: widget.mode == RegisterCallMode.edit ? 4 : 1,
       vsync: this,
     );
 
@@ -66,6 +66,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
           widget.ticketId != null) {
 
         await vm.fetchComments(
+          widget.ticketId!,
+        );
+
+        await vm.fetchTicketWorkLogs(
           widget.ticketId!,
         );
 
@@ -99,6 +103,9 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
               const Tab(text: "Comments"),
 
             if (widget.mode == RegisterCallMode.edit)
+              const Tab(text: "Work Log"),
+
+            if (widget.mode == RegisterCallMode.edit)
               const Tab(text: "Ticket History"),
           ],
         ),
@@ -114,17 +121,21 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
           Column(
             children: [
               _buildClientHeader(),
+
+              _buildCustomerInfo(),
+
               Expanded(
                 child: _buildTicketList(),
               ),
             ],
           ),
 
-          /// COMMENTS
           if (widget.mode == RegisterCallMode.edit)
             _buildCommentsScreen(),
 
-          /// TICKET HISTORY
+          if (widget.mode == RegisterCallMode.edit)
+            _buildWorkLogTab(),
+
           if (widget.mode == RegisterCallMode.edit)
             _buildHistoryTab(),
         ],
@@ -256,6 +267,172 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
     );
   }
 
+  Widget _buildCustomerInfo() {
+    return Consumer<TicketsViewModel>(
+      builder: (context, vm, child) {
+        if (vm.clientHistoryList.isEmpty) {
+          return const SizedBox();
+        }
+
+        final customer = vm.clientHistoryList.first;
+
+        return Container(
+          margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+
+              /// Top Row
+              /// Top Row
+              Row(
+                children: [
+
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.person_outline,
+                      color: primary,
+                      size: 20,
+                    ),
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: Text(
+                      customer.contactPerson ?? "-",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: customer.activeAmc == "y"
+                          ? Colors.green.withOpacity(0.12)
+                          : Colors.red.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      customer.activeAmc == "y"
+                          ? "AMC Active"
+                          : "AMC Inactive",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: customer.activeAmc == "y"
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              /// Product Card
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+
+                    const Icon(
+                      Icons.inventory_2_outlined,
+                      size: 18,
+                      color: primary,
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+
+                          Text(
+                            customer.productName ?? "-",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+
+                          const SizedBox(height: 2),
+
+                          Text(
+                            "SN: ${customer.productSerialNumber ?? "-"}",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              /// Addons
+              if ((customer.productAddOns ?? "").isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        Chip(
+                          materialTapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
+                          visualDensity:
+                          VisualDensity.compact,
+                          label: Text(
+                            customer.productAddOns!,
+                            style:
+                            const TextStyle(fontSize: 11),
+                          ),
+                          backgroundColor:
+                          primary.withOpacity(0.08),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   /// 🔹 INFO BOX
   Widget _infoBox(String title, String value) {
     return Container(
@@ -301,6 +478,263 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
         },
       );
     }
+
+  Widget _buildWorkLogTab() {
+    return Consumer<TicketsViewModel>(
+      builder: (context, vm, child) {
+
+        if (vm.workLogsLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return Column(
+          children: [
+
+            /// Summary Card
+            Container(
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+
+                  Row(
+                    children: [
+
+                      Expanded(
+                        child: _infoBox(
+                          "Expected",
+                            "${vm.workLogSummary?.expectedMinutes ?? 0} min"
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: _infoBox(
+                          "Logged",
+                            "${vm.workLogSummary?.loggedMinutes ?? 0} min"                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+
+                      Expanded(
+                        child: _infoBox(
+                          "Remaining",
+                            "${vm.workLogSummary?.remainingMinutes ?? 0} min"                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: _infoBox(
+                          "Overtime",
+                            "${vm.workLogSummary?.overtimeMinutes ?? 0} min"                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                      (vm.workLogSummary?.canAddLog == "Y")                          ? Colors.green.withOpacity(.1)
+                          : Colors.red.withOpacity(.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      (vm.workLogSummary?.canAddLog == "Y")                          ? "Can Add Work Log"
+                          : "Work Log Limit Reached",
+                      style: TextStyle(
+                        color:
+                        (vm.workLogSummary?.canAddLog == "Y")                            ? Colors.green
+                            : Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                ],
+              ),
+            ),
+
+            Expanded(
+              child: vm.workLogsList.isEmpty
+                  ? const Center(
+                child: Text("No work logs found"),
+              )
+                  : ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                ),
+                itemCount: vm.workLogsList.length,
+                itemBuilder: (context, index) {
+
+                  final log = vm.workLogsList[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        /// LEFT ICON
+                        Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            color: primary.withOpacity(.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.work_history_outlined,
+                            color: primary,
+                            size: 20,
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        /// CONTENT
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              /// NAME + MINUTES
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      log.employeeName ?? "-",
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "${log.spentMinutes ?? 0} min",
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+
+                              const SizedBox(height: 8),
+
+                              /// DETAILS
+                              Text(
+                                log.workDetails ?? "",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade800,
+                                  height: 1.4,
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.schedule,
+                                    size: 13,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  const SizedBox(width: 4),
+
+                                  Text(
+                                    "${log.workDate ?? ""} • ${log.workTime ?? ""}",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+
+                                  const Spacer(),
+
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.withOpacity(.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      log.workStatus ?? "",
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 
   Widget _buildHistoryTab() {
@@ -619,6 +1053,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
       },
     );
   }
+
+
   /// 🔹 TICKET CARD
   Widget _ticketCard(Data ticket) {
     Color statusColor;

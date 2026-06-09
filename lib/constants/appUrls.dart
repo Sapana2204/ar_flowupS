@@ -36,4 +36,11 @@ class AppUrls {
   static const String profile =
       "/users/profile";
 
+  static const String ticketWorkLogs =
+      "$baseUrl/tickets/work-logs";
+  static const String createWorkLog =
+      "$baseUrl/tickets/work-logs/create";
+  static const String updateWorkLog =
+      "$baseUrl/tickets/work-logs/update";
+
 }

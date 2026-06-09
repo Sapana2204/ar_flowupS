@@ -7,9 +7,11 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../model/createTicket_model.dart';
+import '../model/createWorkLog_model.dart';
 import '../model/customerProduct.dart';
 import '../model/customers_model.dart';
 import '../model/updateTicket_model.dart';
+import '../model/updateWorkLog_model.dart';
 import '../utils/app_colors.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -39,7 +41,9 @@ class RegisterCallScreen extends StatefulWidget {
   State<RegisterCallScreen> createState() => _RegisterCallScreenState();
 }
 
-class _RegisterCallScreenState extends State<RegisterCallScreen> {
+class _RegisterCallScreenState
+    extends State<RegisterCallScreen>
+    with WidgetsBindingObserver {
   String priority = "Medium";
   final FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
@@ -62,10 +66,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   TextEditingController serialNoController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
   TextEditingController whatsappController = TextEditingController();
+  int? _activeWorkLogId;
+  DateTime? _callStartTime;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final queryVm = Provider.of<QueryViewModel>(context, listen: false);
@@ -225,6 +232,21 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       setState(() {});
     });
   }
+
+  @override
+  void didChangeAppLifecycleState(
+      AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _activeWorkLogId != null) {
+      Future.delayed(
+        const Duration(milliseconds: 500),
+            () {
+          _showCallDetailsDialog();
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -395,27 +417,28 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
 
                   const SizedBox(width: 8),
 
-                  Padding(
-                    padding: const EdgeInsets.only(top: 30),
-                    child: SizedBox(
-                      height: 35,
-                      width: 35,
-                      child: ElevatedButton(
-                        onPressed: _makePhoneCall,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                  if (widget.mode == RegisterCallMode.edit)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30),
+                      child: SizedBox(
+                        height: 35,
+                        width: 35,
+                        child: ElevatedButton(
+                          onPressed: _makePhoneCall,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                        ),
-                        child: const Icon(
-                          Icons.call,
-                          color: Colors.white,
+                          child: const Icon(
+                            Icons.call,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
         
@@ -638,25 +661,73 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   }
 
   Future<void> _makePhoneCall() async {
+    print("STEP 1");
+
     final phone = phoneController.text.trim();
 
+    print("PHONE: $phone");
+    print("TICKET ID: ${widget.ticketId}");
+
     if (phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Phone number not available")),
-      );
       return;
     }
 
     final status = await Permission.phone.request();
 
+    print("PERMISSION: $status");
+
     if (!status.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Phone permission denied")),
-      );
       return;
     }
 
-    await FlutterPhoneDirectCaller.callNumber(phone);
+    try {
+      print("STEP 2");
+
+      final vm = Provider.of<TicketsViewModel>(
+        context,
+        listen: false,
+      );
+
+      _callStartTime = DateTime.now();
+
+      print("STEP 3");
+
+      final createModel = CreateWorkLogModel(
+        ticketId: widget.ticketId!,
+        workStartAt: DateFormat(
+          'yyyy-MM-dd HH:mm:ss',
+        ).format(_callStartTime!),
+        spentMinutes: 0,
+        workDetails: "Call Started",
+        workStatus: "working",
+      );
+
+      print("PAYLOAD: ${createModel.toJson()}");
+      print("PHONE => $phone");
+      print("TICKET ID => ${widget.ticketId}");
+      print("STARTING CREATE WORK LOG");
+      final response =
+      await vm.createWorkLogAndReturnId(
+        createModel,
+      );
+
+      print("WORK LOG RESPONSE: $response");
+
+      if (response != null) {
+        _activeWorkLogId = response;
+      }
+
+      print("CALLING NUMBER");
+
+      await FlutterPhoneDirectCaller.callNumber(
+        phone,
+      );
+
+      print("CALL OPENED");
+    } catch (e, stackTrace) {
+      print("ERROR: $e");
+      print(stackTrace);
+    }
   }
 
   Future<void> _onRegisterCallPressed() async {
@@ -1395,6 +1466,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
   }
 
   void _clearAllFields() {
+    WidgetsBinding.instance.removeObserver(this);
     nameController.clear();
     phoneController.clear();
     dateController.clear();
@@ -1407,6 +1479,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
     serialNoController.clear();
     startDateController.clear();
     whatsappController.clear();
+    expectedTimeController.dispose();
+
+    super.dispose();
   }
 
   Widget _buildPriorityDropdown() {
@@ -1591,6 +1666,93 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       ],
     );
   }
+
+  void _showCallDetailsDialog() {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Call Details"),
+          content: TextField(
+            controller: controller,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              hintText: "Enter call details",
+            ),
+          ),
+          actions: [
+            Consumer<TicketsViewModel>(
+              builder: (context, vm, child) {
+                return ElevatedButton(
+                  onPressed: vm.updateWorkLogLoading
+                      ? null
+                      : () async {
+                    if (controller.text
+                        .trim()
+                        .isEmpty) {
+                      ScaffoldMessenger.of(
+                          context)
+                          .showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Call details required",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final minutes =
+                        DateTime.now()
+                            .difference(
+                          _callStartTime!,
+                        )
+                            .inMinutes;
+
+                    final model =
+                    UpdateWorkLogModel(
+                      workLogId:
+                      _activeWorkLogId!,
+                      ticketId:
+                      widget.ticketId!,
+                      workDetails:
+                      controller.text.trim(),
+                      workStatus:
+                      "completed",
+                    );
+
+                    final success =
+                    await vm
+                        .updateWorkLog(
+                      model,
+                    );
+
+                    if (success) {
+                      _activeWorkLogId =
+                      null;
+
+                      if (mounted) {
+                        Navigator.pop(
+                          context,
+                        );
+                      }
+                    }
+                  },
+                  child: const Text(
+                    "Submit",
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildDropdownField() {
     return Consumer<QueryViewModel>(
       builder: (context, vm, child) {
@@ -1694,4 +1856,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen> {
       ),
     );
   }
+
+
 }

@@ -4,13 +4,19 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="product, customizations and dialer">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="dialer changes">
+      <change afterPath="$PROJECT_DIR$/lib/model/createWorkLog_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/updateWorkLog_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/workLogSummary_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/workLog_model.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/tickets_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/tickets_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/tickets_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/tickets_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -299,7 +305,15 @@
       <option name="project" value="LOCAL" />
       <updated>1780917747225</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="dialer changes">
+      <option name="closed" value="true" />
+      <created>1780919102911</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1780919102911</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -326,6 +340,7 @@
     <MESSAGE value="Products changes" />
     <MESSAGE value="Addons changes" />
     <MESSAGE value="product, customizations and dialer" />
-    <option name="LAST_COMMIT_MESSAGE" value="product, customizations and dialer" />
+    <MESSAGE value="dialer changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="dialer changes" />
   </component>
 </project>

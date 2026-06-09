@@ -381,17 +381,17 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             Row(
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(color: primary),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 10),
+                // Expanded(
+                //   child: OutlinedButton(
+                //     onPressed: () => Navigator.pop(context),
+                //     child: const Text(
+                //       "Cancel",
+                //       style: TextStyle(color: primary),
+                //     ),
+                //   ),
+                // ),
+                //
+                // const SizedBox(width: 10),
 
                 Expanded(
                   child: ElevatedButton(

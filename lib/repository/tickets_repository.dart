@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import '../data/network/network_api_services.dart';
 import '../model/comment_model.dart';
+import '../model/createWorkLog_model.dart';
 import '../model/createTicket_model.dart';
 import '../model/ticketHistory_model.dart';
 import '../model/tickets_model.dart';
 import '../constants/appUrls.dart';
 import '../model/updateTicket_model.dart';
+import '../model/updateWorkLog_model.dart';
 
 class TicketsRepository {
   final _apiService = NetworkApiServices();
@@ -166,6 +168,72 @@ class TicketsRepository {
           .toList();
     } catch (e) {
       debugPrint("❌ Ticket History Error: $e");
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchTicketWorkLogs(
+      int ticketId,
+      ) async {
+    try {
+      final response = await _apiService.getPostApiResponse(
+        AppUrls.ticketWorkLogs,
+        {
+          "ticket_id": ticketId,
+        },
+      );
+
+      return response;
+    } catch (e) {
+      debugPrint("❌ Work Logs Error: $e");
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> createWorkLog(
+      CreateWorkLogModel model,
+      ) async {
+    try {
+      print("════════ CREATE WORK LOG API ════════");
+      print("URL => ${AppUrls.createWorkLog}");
+      print("PAYLOAD => ${model.toJson()}");
+
+      final response = await _apiService.getPutApiResponse(
+        AppUrls.createWorkLog,
+        model.toJson(),
+      );
+
+      print("RESPONSE => $response");
+      print("═════════════════════════════════════");
+
+      return response;
+    } catch (e, s) {
+      print("❌ CREATE WORK LOG ERROR => $e");
+      print(s);
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> updateWorkLog(
+      UpdateWorkLogModel model,
+      ) async {
+    try {
+      print("════════ UPDATE WORK LOG API ════════");
+      print("URL => ${AppUrls.updateWorkLog}");
+      print("PAYLOAD => ${model.toJson()}");
+
+      final response = await _apiService.getPostApiResponse(
+        AppUrls.updateWorkLog,
+        model.toJson(),
+      );
+
+      print("RESPONSE => $response");
+      print("═════════════════════════════════════");
+
+      return response;
+    } catch (e, s) {
+      print("❌ UPDATE WORK LOG ERROR => $e");
+      print(s);
       rethrow;
     }
   }

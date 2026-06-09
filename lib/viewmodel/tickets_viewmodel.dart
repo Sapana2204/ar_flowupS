@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import '../model/comment_model.dart';
+import '../model/createWorkLog_model.dart';
 import '../model/createTicket_model.dart';
 import '../model/ticketHistory_model.dart';
 import '../model/tickets_model.dart';
 import '../model/updateTicket_model.dart';
+import '../model/updateWorkLog_model.dart';
+import '../model/workLogSummary_model.dart';
+import '../model/workLog_model.dart';
 import '../repository/tickets_repository.dart';
 
 class TicketsViewModel extends ChangeNotifier {
@@ -61,6 +65,13 @@ class TicketsViewModel extends ChangeNotifier {
 
   bool historyLoading = false;
 
+  bool workLogsLoading = false;
+
+  List<WorkLog> workLogsList = [];
+
+  WorkLogSummary? workLogSummary;
+  bool createWorkLogLoading = false;
+  bool updateWorkLogLoading = false;
 
   void setSearchText(String value) {
     _searchText = value;
@@ -295,5 +306,103 @@ class TicketsViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> fetchTicketWorkLogs(int ticketId) async {
+    try {
+      workLogsLoading = true;
+      notifyListeners();
+
+      final response =
+      await _repository.fetchTicketWorkLogs(ticketId);
+
+      workLogsList =
+          (response["data"] as List?)
+              ?.map((e) => WorkLog.fromJson(e))
+              .toList() ??
+              [];
+
+      workLogSummary = response["summary"] != null
+          ? WorkLogSummary.fromJson(response["summary"])
+          : null;
+
+    } catch (e) {
+      debugPrint("❌ Work Logs Error: $e");
+    } finally {
+      workLogsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> createWorkLog(
+      CreateWorkLogModel model,
+      ) async {
+    try {
+      createWorkLogLoading = true;
+      notifyListeners();
+
+      final response =
+      await _repository.createWorkLog(model);
+
+      if (response["success"] == true) {
+        await fetchTicketWorkLogs(model.ticketId);
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint("❌ Create Work Log Error: $e");
+      return false;
+    } finally {
+      createWorkLogLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateWorkLog(
+      UpdateWorkLogModel model,
+      ) async {
+    try {
+      updateWorkLogLoading = true;
+      notifyListeners();
+
+      final response =
+      await _repository.updateWorkLog(model);
+
+      if (response["success"] == true) {
+        await fetchTicketWorkLogs(model.ticketId);
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint("❌ Update Work Log Error: $e");
+      return false;
+    } finally {
+      updateWorkLogLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<int?> createWorkLogAndReturnId(
+      CreateWorkLogModel model,
+      ) async {
+    try {
+      print("VM CREATE WORK LOG START");
+
+      final response =
+      await _repository.createWorkLog(model);
+
+      print("VM RESPONSE => $response");
+
+      if (response["success"] == true) {
+        return response["insertId"];
+      }
+
+      return null;
+    } catch (e, s) {
+      print("❌ VM CREATE ERROR => $e");
+      print(s);
+      return null;
+    }
+  }
 
 }
