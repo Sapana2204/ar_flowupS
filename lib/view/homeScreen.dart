@@ -102,7 +102,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+      if (!isSignedIn) {
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.fingerprint_rounded,
+                  size: 80,
+                  color: Colors.orange,
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Attendance Required",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                const Text(
+                  "Please Sign In to continue using the app",
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 25),
+
+                ElevatedButton(
+                  onPressed: () async {
+                    setState(() {
+                      isSignedIn = true;
+                    });
+
+                    await _updateAttendance("signin");
+                  },
+                  child: const Text("Sign In"),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return Scaffold(
       appBar: AppBar(
         title: Text(_title),
         actions: _currentIndex == 0
@@ -737,7 +783,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return AlertDialog(
           title: const Text("Attendance"),
           content: const Text(
-            "Please select your current status",
+            "Please Sign In to continue using the application",
           ),
           actions: [
             ElevatedButton.icon(
@@ -746,25 +792,11 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () async {
                 Navigator.pop(context);
 
+                await _updateAttendance("signin");
+
                 setState(() {
                   isSignedIn = true;
                 });
-
-                await _updateAttendance("signin");
-              },
-            ),
-
-            ElevatedButton.icon(
-              icon: const Icon(Icons.logout),
-              label: const Text("Sign Out"),
-              onPressed: () async {
-                Navigator.pop(context);
-
-                setState(() {
-                  isSignedIn = false;
-                });
-
-                await _updateAttendance("signout");
               },
             ),
           ],

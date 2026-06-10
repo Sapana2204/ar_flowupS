@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../model/assignee_model.dart';
+import '../model/company_model.dart';
+import '../viewmodel/workReport_viewmodel.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -9,11 +14,10 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-
   /// 🔹 FILTER VALUES
-  String? selectedClient;
+  AssigneeModel? selectedEmployee;
+  CompanyModel? selectedCompany;
   String? selectedStatus;
-  String? selectedAssignedBy;
   String? selectedResolvedBy;
   DateTimeRange? selectedDateRange;
 
@@ -42,167 +46,192 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   void initState() {
     super.initState();
-    filteredTickets = allTickets;
+
+    Future.microtask(() async {
+      final vm = context.read<WorkReportViewModel>();
+
+      await vm.loadWorkReportData(); // Employee + Company dropdowns
+
+      await vm.getWorkReport(); // Work report data
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Reports"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _openFilterSheet,
-          ),
-          PopupMenuButton(
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: "excel", child: Text("Export Excel")),
-              const PopupMenuItem(value: "pdf", child: Text("Export PDF")),
-            ],
-            onSelected: (val) {
-              if (val == "excel") _exportExcel();
-              if (val == "pdf") _exportPDF();
-            },
-          )
-        ],
-      ),
-
-      body: Column(
-        children: [
-
-          /// 🔍 SEARCH BAR
-          const Padding(
-            padding: EdgeInsets.all(10),
-
-          ),
-
-          /// 📊 COUNT
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "${filteredTickets.length} results found",
-                style: const TextStyle(fontWeight: FontWeight.w500),
+        appBar: AppBar(
+          title: const Text("Reports"),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.filter_list),
+              onPressed: _openFilterSheet,
+            ),
+            PopupMenuButton(
+              itemBuilder: (_) => [
+                const PopupMenuItem(
+                    value: "excel", child: Text("Export Excel")),
+                const PopupMenuItem(value: "pdf", child: Text("Export PDF")),
+              ],
+              onSelected: (val) {
+                if (val == "excel") _exportExcel();
+                if (val == "pdf") _exportPDF();
+              },
+            )
+          ],
+        ),
+        body: Consumer<WorkReportViewModel>(
+            builder: (context, dropdownVm, child) {
+          return Column(
+            children: [
+              /// SEARCH BAR (STICKY)
+              const Padding(
+                padding: EdgeInsets.all(12),
               ),
+
+              /// SUMMARY SECTION (STICKY)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _summaryCard(
+                        title: "Total Logs",
+                        value: "29",
+                        icon: Icons.description_outlined,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _summaryCard(
+                        title: "Total Time",
+                        value: "7h 24m",
+                        icon: Icons.access_time,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _summaryCard(
+                        title: "Employees",
+                        value: "4",
+                        icon: Icons.people_outline,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _summaryCard(
+                        title: "Tickets",
+                        value: "7",
+                        icon: Icons.confirmation_num_outlined,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              /// COMPANY SUMMARY TITLE
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: const [
+                    Icon(Icons.business),
+                    SizedBox(width: 8),
+                    Text(
+                      "Company Summary",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              /// COMPANY CARDS (STICKY)
+              SizedBox(
+                height: 110,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    _companyCard(
+                      company: "ABC Inc",
+                      time: "5h 47m",
+                      logs: "19 logs",
+                    ),
+                    _companyCard(
+                      company: "AR Infotech",
+                      time: "1h 18m",
+                      logs: "8 logs",
+                    ),
+                    _companyCard(
+                      company: "Others",
+                      time: "19m",
+                      logs: "2 logs",
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              /// ONLY REPORTS SCROLL
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  itemCount: filteredTickets.length,
+                  itemBuilder: (context, index) {
+                    return _reportCard(filteredTickets[index]);
+                  },
+                ),
+              ),
+            ],
+          );
+        }));
+  }
+
+  Widget _summaryCard({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
             ),
           ),
-
-          const SizedBox(height: 5),
-
-          /// 📋 LIST
-          Expanded(
-            child: filteredTickets.isEmpty
-                ? const Center(child: Text("No data found"))
-                : ListView.builder(
-              itemCount: filteredTickets.length,
-                itemBuilder: (context, index) {
-                  final ticket = filteredTickets[index];
-
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade300),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade200,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-
-                        /// 🔹 LEFT ID BOX
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            children: [
-                              const Text("ID",
-                                  style: TextStyle(fontSize: 10, color: Colors.grey)),
-                              Text(
-                                "#TK-${index + 100}",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(width: 12),
-
-                        /// 🔹 MAIN CONTENT
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-
-                              /// TITLE
-                              Text(
-                                ticket["client"],
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600, fontSize: 14),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              /// SUB INFO
-                              Row(
-                                children: [
-                                  const Icon(Icons.business, size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    ticket["assignedBy"],
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Icon(Icons.access_time,
-                                      size: 14, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    DateFormat('dd MMM').format(ticket["date"]),
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              /// STATUS BADGE
-                              Container(
-                                padding:
-                                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(ticket["status"]),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  ticket["status"].toUpperCase(),
-                                  style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        /// 🔹 RIGHT ARROW
-                        const Icon(Icons.chevron_right, color: Colors.grey),
-                      ],
-                    ),
-                  );
-                }
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -210,21 +239,185 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case "Open":
-        return Colors.orange;
-      case "In Progress":
-        return Colors.blue;
-      case "Resolved":
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
+  Widget _companyCard({
+    required String company,
+    required String time,
+    required String logs,
+  }) {
+    return Container(
+      width: 180,
+      margin: const EdgeInsets.only(right: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            company,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            time,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            logs,
+            style: const TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _reportCard(Map<String, dynamic> ticket) {
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 4,
+      ),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade300,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Row 1
+          Row(
+            children: [
+              Expanded(
+                child: _infoItem(
+                  "Date",
+                  "09-06-2026",
+                ),
+              ),
+              Expanded(
+                child: _infoItem(
+                  "Time",
+                  "05:14 PM",
+                ),
+              ),
+              Expanded(
+                child: _infoItem(
+                  "Employee",
+                  "Sapana",
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 6),
+
+          /// Row 2
+          Row(
+            children: [
+              Expanded(
+                child: _infoItem(
+                  "Ticket",
+                  "TKT-34",
+                ),
+              ),
+              Expanded(
+                child: _infoItem(
+                  "Client",
+                  "Sapana",
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 6),
+
+          /// Row 3
+          Row(
+            children: [
+              Expanded(
+                child: _infoItem(
+                  "Company",
+                  "AR Infotech",
+                ),
+              ),
+              Expanded(
+                child: _infoItem(
+                  "Spent",
+                  "2m",
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            "Work Details",
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(height: 2),
+
+          Text(
+            ticket["client"] ?? "",
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoItem(String title, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 10,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
   }
 
   /// 🔹 FILTER SHEET
   void _openFilterSheet() {
+    final workReportvm = context.read<WorkReportViewModel>();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -247,7 +440,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     /// 🔹 HEADER
                     const Center(
                       child: Text(
@@ -277,7 +469,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         Expanded(
                           child: _dateField(
                             selectedDateRange?.start,
-                                () async {
+                            () async {
                               final picked = await showDatePicker(
                                 context: context,
                                 firstDate: DateTime(2020),
@@ -301,7 +493,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         Expanded(
                           child: _dateField(
                             selectedDateRange?.end,
-                                () async {
+                            () async {
                               final picked = await showDatePicker(
                                 context: context,
                                 firstDate: DateTime(2020),
@@ -323,46 +515,77 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     ),
 
                     const SizedBox(height: 16),
-
+                    if (workReportvm.isLoading)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+            else ...[
                     /// 🔹 DROPDOWNS
-                    _sectionTitle("CLIENT"),
-                    _modernDropdown(
-                        "All Clients",
-                        ["ABC Corp", "XYZ Ltd"],
-                        selectedClient, (val) {
-                      setModalState(() => selectedClient = val);
-                    }),
+                    _sectionTitle("EMPLOYEE"),
+
+                    DropdownButtonFormField<AssigneeModel>(
+                      value: selectedEmployee,
+                      hint: const Text("Select Employee"),
+                      items: workReportvm.assigneeList.map((employee) {
+                        return DropdownMenuItem<AssigneeModel>(
+                          value: employee,
+                          child: Text(employee.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setModalState(() {
+                          selectedEmployee = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
 
                     const SizedBox(height: 12),
 
-                    _sectionTitle("RESOLVED BY"),
-                    _modernDropdown(
-                        "Any Agent",
-                        ["Rahul", "Amit"],
-                        selectedResolvedBy, (val) {
-                      setModalState(() => selectedResolvedBy = val);
-                    }),
+                    _sectionTitle("COMPANY"),
 
-                    const SizedBox(height: 12),
-
-                    _sectionTitle("ASSIGNED BY"),
-                    _modernDropdown(
-                        "Any Manager",
-                        ["Admin", "Manager"],
-                        selectedAssignedBy, (val) {
-                      setModalState(() => selectedAssignedBy = val);
-                    }),
-
-                    const SizedBox(height: 12),
-
-                    _sectionTitle("STATUS"),
-                    _modernDropdown(
-                        "All Statuses",
-                        ["Open", "In Progress", "Resolved"],
-                        selectedStatus, (val) {
-                      setModalState(() => selectedStatus = val);
-                    }),
-
+                    DropdownButtonFormField<CompanyModel>(
+                      value: selectedCompany,
+                      hint: const Text("Select Company"),
+                      items: workReportvm.companyList.map((company) {
+                        return DropdownMenuItem<CompanyModel>(
+                          value: company,
+                          child: Text(company.companyName),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setModalState(() {
+                          selectedCompany = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+],
                     const SizedBox(height: 20),
 
                     /// 🔹 ACTION BUTTONS
@@ -372,9 +595,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           child: OutlinedButton(
                             onPressed: () {
                               setState(() {
-                                selectedClient = null;
-                                selectedStatus = null;
-                                selectedAssignedBy = null;
+                                selectedEmployee = null;
+                                selectedCompany = null;                                selectedStatus = null;
                                 selectedResolvedBy = null;
                                 selectedDateRange = null;
                                 searchQuery = "";
@@ -469,15 +691,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return DropdownButtonFormField<String>(
       value: value,
       hint: Text(hint),
-      items: items
-          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-          .toList(),
+      items:
+          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
       onChanged: onChanged,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
         contentPadding:
-        const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -489,45 +710,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
   /// 🔹 APPLY FILTERS
   void _applyFilters() {
     filteredTickets = allTickets.where((ticket) {
-
       final matchesSearch =
-      ticket["client"].toLowerCase().contains(searchQuery.toLowerCase());
+          ticket["client"].toLowerCase().contains(searchQuery.toLowerCase());
 
-      final matchesClient =
-          selectedClient == null || ticket["client"] == selectedClient;
+      final matchesEmployee =
+          selectedEmployee == null ||
+              ticket["employeeId"] == selectedEmployee!.adminId;
 
-      final matchesStatus =
-          selectedStatus == null || ticket["status"] == selectedStatus;
+      final matchesCompany =
+          selectedCompany == null ||
+              ticket["companyId"] == selectedCompany!.companyId;
 
       final matchesDate = selectedDateRange == null ||
           (ticket["date"].isAfter(selectedDateRange!.start) &&
               ticket["date"].isBefore(selectedDateRange!.end));
 
-      return matchesSearch && matchesClient && matchesStatus && matchesDate;
-    }).toList();
+      return matchesSearch &&
+          matchesEmployee &&
+          matchesCompany &&
+          matchesDate;    }).toList();
 
     setState(() {});
-  }
-
-  /// 🔹 DROPDOWN
-  Widget _buildDropdown(String label, List<String> items, String? value,
-      Function(String?) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        hint: Text(label),
-        items: items
-            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-            .toList(),
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    );
   }
 
   /// 🔹 EXPORT (BASIC PLACEHOLDER)

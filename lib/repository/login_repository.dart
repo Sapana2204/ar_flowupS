@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../constants/appUrls.dart';
 import '../data/network/network_api_services.dart';
 import '../model/notification_model.dart';
+import '../utils/login_encryption.dart';
 
 class LoginRepository {
   final NetworkApiServices _api = NetworkApiServices(); // ✅ ADD THIS
@@ -20,6 +21,15 @@ class LoginRepository {
       "password": password,
       "isMobile": true,
     };
+
+    // final encryptedPassword =
+    // await LoginEncryption.encryptPassword(password);
+    //
+    // final requestBody = {
+    //   "username": username,
+    //   "encryptedPassword": encryptedPassword,
+    //   "isMobile": true,
+    // };
 
     try {
       print("📡 API URL: $uri");

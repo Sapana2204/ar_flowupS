@@ -43,4 +43,6 @@ class AppUrls {
   static const String updateWorkLog =
       "$baseUrl/tickets/work-logs/update";
 
+  static const workReport = "$baseUrl/reports/work-report";
+
 }
