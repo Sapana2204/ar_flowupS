@@ -6,14 +6,14 @@ import '../model/assignee_model.dart';
 import '../model/company_model.dart';
 import '../viewmodel/workReport_viewmodel.dart';
 
-class ReportsScreen extends StatefulWidget {
-  const ReportsScreen({super.key});
+class WorkReportScreen extends StatefulWidget {
+  const WorkReportScreen({super.key});
 
   @override
-  State<ReportsScreen> createState() => _ReportsScreenState();
+  State<WorkReportScreen> createState() => _WorkReportScreenState();
 }
 
-class _ReportsScreenState extends State<ReportsScreen> {
+class _WorkReportScreenState extends State<WorkReportScreen> {
   /// 🔹 FILTER VALUES
   AssigneeModel? selectedEmployee;
   CompanyModel? selectedCompany;
@@ -60,7 +60,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Reports"),
+          title: const Text("Work Report"),
           actions: [
             IconButton(
               icon: const Icon(Icons.filter_list),

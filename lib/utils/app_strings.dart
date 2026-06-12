@@ -41,7 +41,8 @@ class AppStrings {
   static const othersSection = "OTHERS";
 
   // Menu Items
-  static const reports = "Reports";
+  static const reports = "Work Report";
+  static const performanceReport = "Work Performance";
   static const logout = "Logout";
 
   // Screens (temporary placeholders)

@@ -9,6 +9,7 @@ import 'package:my_new_project/viewmodel/map_viewmodel.dart';
 import 'package:my_new_project/viewModel/profile_viewmodel.dart';
 import 'package:my_new_project/viewmodel/query_viewmodel.dart';
 import 'package:my_new_project/viewmodel/tickets_viewmodel.dart';
+import 'package:my_new_project/viewmodel/workPerformance_viewmodel.dart';
 import 'package:my_new_project/viewmodel/workReport_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'data/network/navigation_service.dart';
@@ -31,8 +32,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CustomersViewModel()),
         ChangeNotifierProvider(create: (_) => DashboardViewModel()),
         ChangeNotifierProvider(create: (_) => ProfileViewModel()),
-        ChangeNotifierProvider(create: (_) => WorkReportViewModel(),),
-
+        ChangeNotifierProvider(create: (_) => WorkReportViewModel()),
+        ChangeNotifierProvider(create: (_) => WorkPerformanceViewModel()),
+        ChangeNotifierProvider(create: (_) => AMCViewModel()),
       ],
       child: MaterialApp(
         navigatorKey: NavigationService.navigatorKey, // 🔥 ADD THIS LINE

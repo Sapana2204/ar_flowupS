@@ -8,8 +8,9 @@ import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/payroll_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
-import 'package:my_new_project/view/reports_screen.dart';
+import 'package:my_new_project/view/workReport_screen.dart';
 import 'package:my_new_project/view/userMarker_screen.dart';
+import 'package:my_new_project/view/workPerformanceReport_screen.dart';
 import 'package:provider/provider.dart';
 import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
@@ -321,6 +322,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
 
+                _drawerSimpleNav(Icons.people_alt_sharp, AppStrings.leads, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LeadsDashboard()),
+                  );
+                }),
+
                 // _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
                 //   Navigator.pop(context);
                 //   Navigator.push(
@@ -344,11 +353,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 /// 🔹 REPORTS
                 _sectionTitle(AppStrings.reportsSection),
 
-                _drawerSimpleNav(Icons.bar_chart, AppStrings.reports, () {
+                _drawerSimpleNav(Icons.add_chart, AppStrings.reports, () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                    MaterialPageRoute(builder: (_) => const WorkReportScreen()),
+                  );
+                }),
+
+                _drawerSimpleNav(Icons.bar_chart, AppStrings.performanceReport, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PerformanceReportScreen()),
                   );
                 }),
 

@@ -7,7 +7,7 @@ import 'package:my_new_project/view/dashboard_screen.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
-import 'package:my_new_project/view/reports_screen.dart';
+import 'package:my_new_project/view/workReport_screen.dart';
 import 'package:my_new_project/view/resetPassword_screen.dart';
 import 'package:my_new_project/view/searchCall_screen.dart';
 import 'package:my_new_project/view/updateCall_screen.dart';
@@ -74,7 +74,7 @@ class Routes {
 
       case (RouteNames.reportsScreen):
         return MaterialPageRoute(
-            builder: (BuildContext context) => const ReportsScreen());
+            builder: (BuildContext context) => const WorkReportScreen());
 
         case (RouteNames.createCustomerScreen):
         return MaterialPageRoute(
