@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/api_headers.dart';
 import '../../constants/appUrls.dart';
+import '../../constants/app_messages.dart';
+import '../../model/apiResponseMessage_model.dart';
 import '../../model/login_model.dart';
 import '../../utils/routes/routes_names.dart';
 import '../app_exceptions.dart';
@@ -168,7 +170,8 @@ class NetworkApiServices extends BaseApiServices {
   }
 
 
-  dynamic handleResponse(http.Response response) {
+
+  dynamic handleResponse(http.Response response) async {
     dynamic data;
 
     try {
@@ -177,34 +180,27 @@ class NetworkApiServices extends BaseApiServices {
       data = null;
     }
 
-    switch (response.statusCode) {
+    final message = data != null
+        ? ApiResponseMessage.fromResponse(data)
+        : "Something went wrong";
 
+    switch (response.statusCode) {
       case 200:
       case 201:
-        return data ?? response.body;
+        return data;
 
       case 400:
-        throw BadRequestException(
-          data?['message'] ?? "Bad Request",
-        );
+        throw BadRequestException(message);
 
       case 401:
-        _forceLogout();
-        throw UnauthorizedException(
-          data?['message'] ?? "Session expired. Please login again.",
-        );
+        await _forceLogout();
+        throw UnauthorizedException(message);
 
       case 404:
-      /// 🔥 FIX HERE
-        throw Exception(
-          data?['message'] ?? "Resource not found",
-        );
+        throw Exception(message);
 
       default:
-        throw InternetException(
-          data?['message'] ??
-              "${response.statusCode} : ${response.reasonPhrase}",
-        );
+        throw Exception(message);
     }
   }
 
@@ -263,8 +259,12 @@ class NetworkApiServices extends BaseApiServices {
   }
 
   Future<void> _forceLogout() async {
+    print("🚨 FORCE LOGOUT CALLED");
+    print(StackTrace.current);
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove("userData"); // ✅ FIX
+
+    await prefs.remove("userData");
 
     SocketService().disconnect();
 

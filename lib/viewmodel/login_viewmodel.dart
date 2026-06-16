@@ -43,7 +43,14 @@ class LoginViewModel with ChangeNotifier {
   /// ✅ Save user locally
   Future<void> saveUserData(LoginModel user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userData', jsonEncode(user.toJson()));
+
+    await prefs.setString(
+      'userData',
+      jsonEncode(user.toJson()),
+    );
+
+    print("✅ SAVED KEYS: ${prefs.getKeys()}");
+    print("✅ SAVED USERDATA: ${prefs.getString('userData')}");
   }
 
   /// ✅ LOGIN API
@@ -117,12 +124,22 @@ class LoginViewModel with ChangeNotifier {
 
   /// ✅ Logout
   Future<void> logout(BuildContext context) async {
+    try {
+      await NetworkApiServices().getPostApiResponse(
+        "/users/status",
+        {
+          "status": "inactive",
+        },
+      );
+    } catch (e) {
+      debugPrint("Status update failed: $e");
+    }
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove("userData"); // ✅ FIX
+    await prefs.remove("userData");
 
     _userData = null;
 
-    /// 🔥 DISCONNECT SOCKET
     SocketService().disconnect();
 
     Navigator.pushNamedAndRemoveUntil(
@@ -138,31 +155,69 @@ class LoginViewModel with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString('userData');
 
-    if (data != null) {
-      final user = LoginModel.fromJson(jsonDecode(data));
+    print("📦 STORED DATA: $data");
 
-      if (user.token != null) {
-        if (JwtDecoder.isExpired(user.token!)) {
-          await logout(context);
-          Utils.showToast("Session expired. Please login again.");
-        } else {
-          setUserData(user);
-
-          /// 🔥 AUTO LOGOUT TIMER (RE-SET EVERY APP OPEN)
-          final expiry = JwtDecoder.getExpirationDate(user.token!);
-          final duration = expiry.difference(DateTime.now());
-
-          Future.delayed(duration, () {
-            logout(context);
-            Utils.showToast("Session expired");
-          });
-
-          Navigator.pushReplacementNamed(context, RouteNames.home);
-        }
-      }
-    } else {
-      Navigator.pushReplacementNamed(context, RouteNames.login);
+    if (data == null) {
+      Navigator.pushReplacementNamed(
+        context,
+        RouteNames.login,
+      );
+      return;
     }
+
+    final user = LoginModel.fromJson(
+      jsonDecode(data),
+    );
+
+    if (user.token == null ||
+        JwtDecoder.isExpired(user.token!)) {
+
+      await prefs.remove('userData');
+
+      Navigator.pushReplacementNamed(
+        context,
+        RouteNames.login,
+      );
+
+      Utils.showToast(
+        "Session expired. Please login again.",
+      );
+      return;
+    }
+
+    /// Restore logged in user
+    setUserData(user);
+    SocketService().connect(
+      user.adminId.toString(),
+    );
+
+    print("✅ RESTORING SESSION");
+    print("👤 AdminID: ${user.adminId}");
+    print("👤 Username: ${user.username}");
+
+    /// Reconnect socket after app restart
+    SocketService().connect(
+      user.adminId.toString(),
+    );
+
+    /// Auto logout when token expires
+    final expiry = JwtDecoder.getExpirationDate(
+      user.token!,
+    );
+
+    final duration = expiry.difference(
+      DateTime.now(),
+    );
+
+    Future.delayed(duration, () {
+      logout(context);
+      Utils.showToast("Session expired");
+    });
+
+    Navigator.pushReplacementNamed(
+      context,
+      RouteNames.home,
+    );
   }
 
   Future<void> _sendLocationToServer() async {

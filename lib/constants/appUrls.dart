@@ -7,7 +7,7 @@ class AppUrls {
   static const socketUrl = "https://api.calldesk.flowups.in";
   // static const socketUrl = "http://192.168.1.23";
   static const unreadCount = "$baseUrl/notifications/unread-count";
-
+  static const userStatus = "$baseUrl/users/status";
 
   //API end points
   static const loginEndPoint = "$baseUrl/login";
@@ -48,4 +48,14 @@ class AppUrls {
       "$baseUrl/reports/user-performance";
 
   static const amcReminders = "$baseUrl/amc-reminders";
+  static const String sendAMCReminder =
+      "$baseUrl/amc-reminders/send";
+  static const String scheduleAMCVisit =
+      "$baseUrl/amc-reminders/visit";
+  static const String amcActivity =
+      "$baseUrl/amc-reminders/activity";
+
+  static const customerTicketReport =
+      "$baseUrl/reports/customer";
+
 }

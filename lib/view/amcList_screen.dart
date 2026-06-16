@@ -1,3 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../model/amc_model.dart';
+import '../res/widgets/amcCard.dart';
+import '../utils/app_colors.dart';
+import '../viewmodel/amc_viewmodel.dart';
+
 class AMCListScreen extends StatefulWidget {
   const AMCListScreen({super.key});
 

@@ -327,42 +327,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 itemBuilder: (context, index) {
                   final item = summary[index];
 
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: _cardDecoration(),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          item.value ?? "0",
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: primary,
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(15),
+                    onTap: () {
+                      final label = (item.label ?? "").toLowerCase();
+
+                      if (label.contains("total customer")) {
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.customersListScreen,
+                        );
+                      } else if (label.contains("open ticket")) {
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.callListScreen,
+                        );
+                      } else if (label.contains("today follow-ups")) {
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.callListScreen,
+                        );
+                      } else if (label.contains("amc active")) {
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.amcListScreen,
+                          arguments: "active",
+                        );
+                      } else if (label.contains("amc expiring")) {
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.amcListScreen,
+                          arguments: "expiring",
+                        );
+                      } else if (label.contains("amc expired")) {
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.amcListScreen,
+                          arguments: "expired",
+                        );
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: _cardDecoration(),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            item.value ?? "0",
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: primary,
+                            ),
                           ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Text(
-                          item.label ?? "",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
+                          const SizedBox(height: 8),
+                          Text(
+                            item.label ?? "",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        Text(
-                          item.delta ?? "",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey,
+                          const SizedBox(height: 4),
+                          Text(
+                            item.delta ?? "",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

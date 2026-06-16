@@ -3,12 +3,15 @@ import 'package:my_new_project/utils/app_colors.dart';
 import 'package:my_new_project/utils/routes/routes.dart';
 import 'package:my_new_project/utils/routes/routes_names.dart';
 import 'package:my_new_project/viewModel/login_viewmodel.dart';
+import 'package:my_new_project/viewmodel/amc_viewmodel.dart';
+import 'package:my_new_project/viewmodel/customerReport_viewmodel.dart';
 import 'package:my_new_project/viewmodel/customers_viewmodel.dart';
 import 'package:my_new_project/viewModel/dashboard_viewmodel.dart';
 import 'package:my_new_project/viewmodel/map_viewmodel.dart';
 import 'package:my_new_project/viewModel/profile_viewmodel.dart';
 import 'package:my_new_project/viewmodel/query_viewmodel.dart';
 import 'package:my_new_project/viewmodel/tickets_viewmodel.dart';
+import 'package:my_new_project/viewmodel/userStatus_viewmodel.dart';
 import 'package:my_new_project/viewmodel/workPerformance_viewmodel.dart';
 import 'package:my_new_project/viewmodel/workReport_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +38,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WorkReportViewModel()),
         ChangeNotifierProvider(create: (_) => WorkPerformanceViewModel()),
         ChangeNotifierProvider(create: (_) => AMCViewModel()),
+        ChangeNotifierProvider(create: (_) => UserStatusViewModel()),
+        ChangeNotifierProvider(
+          create: (_) => CustomerReportViewModel(),
+        ),
       ],
       child: MaterialApp(
         navigatorKey: NavigationService.navigatorKey, // 🔥 ADD THIS LINE

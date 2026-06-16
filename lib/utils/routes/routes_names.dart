@@ -6,6 +6,8 @@ class RouteNames {
   static const String dashboardScreen = "dashboard_screen";
   static const String welcomeScreen = "welcome_screen";
   static const String callListScreen = "call_list_screen";
+  static const String amcListScreen = "amc_list_screen";
+  static const String customersListScreen = "customer_list_screen";
   static const String clientHistoryScreen = "client_history_screen";
   static const String profileScreen = "profile_screen";
   static const String registerCallScreen = "register_call_screen";

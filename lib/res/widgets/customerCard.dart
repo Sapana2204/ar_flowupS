@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../model/customers_model.dart';
 import '../../utils/app_colors.dart';
 import '../../view/createCustomer_screen.dart';
+import '../../viewmodel/customerReport_viewmodel.dart';
+import 'customerReport.dart';
 
 class CustomerCard extends StatelessWidget {
   final CustomerData customer;
@@ -198,21 +202,6 @@ class CustomerCard extends StatelessWidget {
               ),
             ),
           ],
-          /// 🔹 ADDRESS BOX
-          // if ((customer.address ?? "").isNotEmpty)
-          //   Container(
-          //     padding: const EdgeInsets.all(10),
-          //     decoration: BoxDecoration(
-          //       color: backgroundColor,
-          //       borderRadius: BorderRadius.circular(10),
-          //     ),
-          //     child: Text(
-          //       customer.address ?? "",
-          //       style: const TextStyle(fontSize: 12),
-          //     ),
-          //   ),
-          //
-          // const SizedBox(height: 12),
 
           /// 🔹 ACTION ROW
           Row(
@@ -232,25 +221,129 @@ class CustomerCard extends StatelessWidget {
               ),
 
               /// Edit Button
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CreateCustomerScreen(
-                        isEdit: true,
-                        customerId: customer.customerId,
-                      ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.picture_as_pdf,
+                      color: Colors.red,
                     ),
-                  );                },
-              ),
+                    onPressed: () {
+                      _showReportDialog(context, customer.customerId);
+                    },
+                  ),
+
+                  IconButton(
+                    icon: const Icon(
+                      Icons.edit,
+                      color: Colors.blue,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CreateCustomerScreen(
+                            isEdit: true,
+                            customerId: customer.customerId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              )
             ],
           ),
         ],
       ),
     );
   }
+
+  void _showReportDialog(
+      BuildContext context,
+      int? customerId,
+      ) {
+    DateTime selectedDate = DateTime.now();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Customer Ticket Report"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.calendar_month),
+                    title: Text(
+                      "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}",
+                    ),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (picked != null) {
+                        setState(() {
+                          selectedDate = picked;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.download),
+                  label: const Text("Generate Report"),
+                  onPressed: () async {
+                    final vm = Provider.of<CustomerReportViewModel>(
+                      context,
+                      listen: false,
+                    );
+
+                    try {
+                      await vm.getCustomerReport(
+                        customerId: customerId!,
+                        fromDate: DateFormat('yyyy-MM-dd')
+                            .format(selectedDate),
+                      );
+
+                      Navigator.pop(context);
+
+                      if (vm.reportModel != null) {
+                        await PdfService.generateCustomerReportPdf(
+                          vm.reportModel!,
+                        );
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
 
   Widget _tag(String text, Color color) {
     return Container(
@@ -269,4 +362,5 @@ class CustomerCard extends StatelessWidget {
       ),
     );
   }
+
 }

@@ -68,7 +68,7 @@ class _CallsListScreenState extends State<CallsListScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text("Call List"),
+        title: const Text("Tickets List"),
         backgroundColor: primary,
       ),
 

@@ -25,6 +25,7 @@ class AppStrings {
   static const alerts = "Alerts";
   static const profile = "Profile";
   static const leads = "Leads";
+  static const amcmanagement = "AMC Reminders";
   static const payroll = "Payroll";
   static const registerCall = "Register Call";
   static const userMarkers = "User Markers";

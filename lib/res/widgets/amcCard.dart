@@ -1,5 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../../model/amc_model.dart';
+import '../../view/amcActivity_dialog.dart';
+import '../../view/amcReminder_dialog.dart';
+import '../../view/amcVisit_dialog.dart';
+import '../../viewmodel/amc_viewmodel.dart';
+import 'package:provider/provider.dart';
+
+
 class AMCReminderCard extends StatefulWidget {
-  final Data data;
+  final AMCData data;
 
   const AMCReminderCard({
     super.key,
@@ -144,10 +155,13 @@ class _AMCReminderCardState
               children: [
 
                 Expanded(
-                  child: _actionBtn(
-                    Icons.call,
-                    "Call",
-                    Colors.green,
+                  child: GestureDetector(
+                    onTap: () => _makeCall(item.mobileNo),
+                    child: _actionBtn(
+                      Icons.call,
+                      "Call",
+                      Colors.green,
+                    ),
                   ),
                 ),
 
@@ -158,6 +172,14 @@ class _AMCReminderCardState
                     Icons.notifications,
                     "Reminder",
                     Colors.orange,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AMCReminderDialog(
+                          data: item,
+                        ),
+                      );
+                    },
                   ),
                 ),
 
@@ -168,6 +190,14 @@ class _AMCReminderCardState
                     Icons.location_on,
                     "Visit",
                     Colors.blue,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AMCVisitDialog(
+                          data: item,
+                        ),
+                      );
+                    },
                   ),
                 ),
 
@@ -178,6 +208,32 @@ class _AMCReminderCardState
                     Icons.history,
                     "History",
                     Colors.purple,
+                    onTap: () async {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+
+                      final vm = context.read<AMCViewModel>();
+
+                      await vm.loadAMCActivity(
+                        customerId: item.customerId!,
+                      );
+
+                      Navigator.pop(context);
+
+                      if (!context.mounted) return;
+
+                      showDialog(
+                        context: context,
+                        builder: (_) => AMCActivityDialog(
+                          activity: vm.activityModel!,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -235,6 +291,25 @@ class _AMCReminderCardState
     );
   }
 
+  Future<void> _makeCall(String? mobileNo) async {
+    if (mobileNo == null || mobileNo.isEmpty) return;
+
+    final status = await Permission.phone.request();
+
+    if (!status.isGranted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Phone permission denied"),
+        ),
+      );
+      return;
+    }
+
+    await FlutterPhoneDirectCaller.callNumber(
+      mobileNo,
+    );
+  }
+
   Widget _smallInfo(
       String title,
       String value,
@@ -285,28 +360,31 @@ class _AMCReminderCardState
   Widget _actionBtn(
       IconData icon,
       String title,
-      Color color,
-      ) {
-    return Container(
-      height: 38,
-      decoration: BoxDecoration(
-        color: color.withOpacity(.1),
-        borderRadius:
-        BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisAlignment:
-        MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 16, color: color),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 9,
-              color: color,
+      Color color, {
+        VoidCallback? onTap,
+      }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: color.withOpacity(.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: color),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 9,
+                color: color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

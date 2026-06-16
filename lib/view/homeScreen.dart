@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:my_new_project/view/amcList_screen.dart';
 import 'package:my_new_project/view/customerList_screen.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
-import 'package:my_new_project/view/payroll_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 import 'package:my_new_project/view/workReport_screen.dart';
 import 'package:my_new_project/view/userMarker_screen.dart';
 import 'package:my_new_project/view/workPerformanceReport_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
 import '../model/notification_model.dart';
@@ -20,8 +21,10 @@ import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
 import '../utils/enums/register_call_mode.dart';
 import '../viewModel/login_viewmodel.dart';
+import '../viewmodel/userStatus_viewmodel.dart';
 import 'dashboard_screen.dart';
 import 'loginScreen.dart';
+import '../utils/utils.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -53,6 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _loadAttendanceState();
+
     _startLocationTracking();
     /// ✅ ADD THIS BLOCK HERE
     _locationStatusSub =
@@ -103,51 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-      if (!isSignedIn) {
-        return Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.fingerprint_rounded,
-                  size: 80,
-                  color: Colors.orange,
-                ),
-                const SizedBox(height: 20),
-
-                const Text(
-                  "Attendance Required",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                const Text(
-                  "Please Sign In to continue using the app",
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 25),
-
-                ElevatedButton(
-                  onPressed: () async {
-                    setState(() {
-                      isSignedIn = true;
-                    });
-
-                    await _updateAttendance("signin");
-                  },
-                  child: const Text("Sign In"),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
 
       return Scaffold(
       appBar: AppBar(
@@ -314,19 +274,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
 
-                _drawerSimpleNav(Icons.people_alt_sharp, AppStrings.leads, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LeadsDashboard()),
-                  );
-                }),
+                // _drawerSimpleNav(Icons.people_alt_sharp, AppStrings.leads, () {
+                //   Navigator.pop(context);
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (_) => const LeadsDashboard()),
+                //   );
+                // }),
 
-                _drawerSimpleNav(Icons.people_alt_sharp, AppStrings.leads, () {
+                _drawerSimpleNav(Icons.attach_money, AppStrings.amcmanagement, () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const LeadsDashboard()),
+                    MaterialPageRoute(builder: (_) => const AMCListScreen()),
                   );
                 }),
 
@@ -444,28 +404,40 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             Row(
               children: [
-                // Expanded(
-                //   child: OutlinedButton(
-                //     onPressed: () => Navigator.pop(context),
-                //     child: const Text(
-                //       "Cancel",
-                //       style: TextStyle(color: primary),
-                //     ),
-                //   ),
-                // ),
-                //
-                // const SizedBox(width: 10),
-
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context);
 
-                      setState(() {
-                        isSignedIn = !isSignedIn;
-                      });
+                      final statusVm =
+                      context.read<UserStatusViewModel>();
 
-                      // API call here
+                      final prefs = await SharedPreferences.getInstance();
+
+                      if (isSignedIn) {
+                        // SIGN OUT
+                        await statusVm.updateStatus("inactive");
+                        await _updateAttendance("signout");
+
+                        await prefs.remove("attendance_signed_in");
+
+                        setState(() {
+                          isSignedIn = false;
+                        });
+                      } else {
+                        // SIGN IN
+                        await statusVm.updateStatus("active");
+                        await _updateAttendance("signin");
+
+                        await prefs.setBool(
+                          "attendance_signed_in",
+                          true,
+                        );
+
+                        setState(() {
+                          isSignedIn = true;
+                        });
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isSignedIn
@@ -712,15 +684,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    /// Show attendance dialog only once
-    if (!_statusDialogShown) {
-      _statusDialogShown = true;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _changeAttendanceStatus();
-      });
-    }
-
     /// ✅ STEP 3: Start tracking ONLY if allowed
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
@@ -746,7 +709,7 @@ class _HomeScreenState extends State<HomeScreen> {
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    if (!_statusDialogShown) {
+    if (!_statusDialogShown && !isSignedIn) {
       _statusDialogShown = true;
 
       Future.delayed(
@@ -797,29 +760,72 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Attendance"),
-          content: const Text(
-            "Please Sign In to continue using the application",
-          ),
-          actions: [
-            ElevatedButton.icon(
-              icon: const Icon(Icons.login),
-              label: const Text("Sign In"),
-              onPressed: () async {
-                Navigator.pop(context);
-
-                await _updateAttendance("signin");
-
-                setState(() {
-                  isSignedIn = true;
-                });
-              },
+        return PopScope(
+          canPop: false, // Prevent back button
+          child: AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.fingerprint, color: Colors.orange),
+                SizedBox(width: 8),
+                Text("Attendance Required"),
+              ],
             ),
-          ],
+            content: const Text(
+              "Sign In is required to access FlowupS CallDesk.\n\n"
+                  "Your attendance and live location sharing must be started before using the application.\n\n"
+                  "Without Sign In, you will not be able to access any features of the app.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Utils.showToast(
+                    "Sign In is mandatory to use FlowupS CallDesk.",
+                  );
+
+                  await context.read<LoginViewModel>().logout(context);
+                },
+                child: const Text("Exit",style: TextStyle(color: primary),),
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.login),
+                label: const Text("Sign In"),
+                  onPressed: () async {
+                    Navigator.pop(context);
+
+                    final statusVm =
+                    context.read<UserStatusViewModel>();
+
+                    await statusVm.updateStatus("active");
+                    await _updateAttendance("signin");
+
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool("attendance_signed_in", true);
+
+                    setState(() {
+                      isSignedIn = true;
+                    });
+
+                    Utils.showToast(
+                      "You are signed in successfully. Your live location will be shared until you sign out.",
+                    );
+                  }
+              ),
+            ],
+          ),
         );
       },
     );
+  }
+
+  Future<void> _loadAttendanceState() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final signedIn =
+        prefs.getBool("attendance_signed_in") ?? false;
+
+    setState(() {
+      isSignedIn = signedIn;
+    });
   }
 
   Future<void> _updateAttendance(String status) async {
@@ -862,9 +868,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirm == true) {
+      try {
+        await context
+            .read<UserStatusViewModel>()
+            .updateStatus("inactive");
+      } catch (_) {}
+
+      await context.read<LoginViewModel>().logout(context);
+
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        ),
             (route) => false,
       );
     }

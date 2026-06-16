@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_new_project/utils/routes/routes_names.dart';
+import 'package:my_new_project/view/amcList_screen.dart';
 import 'package:my_new_project/view/callsList_screen.dart';
 import 'package:my_new_project/view/clientHistory_screen.dart';
 import 'package:my_new_project/view/createCustomer_screen.dart';
+import 'package:my_new_project/view/customerList_screen.dart';
 import 'package:my_new_project/view/dashboard_screen.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
@@ -34,21 +36,21 @@ class Routes {
         return MaterialPageRoute(
             builder: (BuildContext context) => const SplashScreen());
 
-      // case (RouteNames.getStartedScreen):
-      //   return MaterialPageRoute(
-      //       builder: (BuildContext context) => const getStartedScreen());
-
       case (RouteNames.dashboardScreen):
         return MaterialPageRoute(
             builder: (BuildContext context) => const DashboardScreen());
 
-      // case (RouteNames.welcomeScreen):
-      //   return MaterialPageRoute(
-      //       builder: (BuildContext context) => const WelcomeScreen());
-
       case (RouteNames.callListScreen):
         return MaterialPageRoute(
             builder: (BuildContext context) => const CallsListScreen());
+
+        case (RouteNames.customersListScreen):
+        return MaterialPageRoute(
+            builder: (BuildContext context) => const CustomersListScreen());
+
+        case (RouteNames.amcListScreen):
+        return MaterialPageRoute(
+            builder: (BuildContext context) => const AMCListScreen());
 
       case (RouteNames.clientHistoryScreen):
         final args = settings.arguments as Map<String, dynamic>;

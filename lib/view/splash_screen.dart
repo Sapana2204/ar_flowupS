@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../viewmodel/splash_service.dart';
+import 'package:provider/provider.dart';
+import '../viewModel/login_viewmodel.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,7 +14,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    SplashService.checkAuthentication(context);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LoginViewModel>()
+          .checkUserSession(context);
+    });
   }
 
   @override
