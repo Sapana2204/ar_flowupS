@@ -30,7 +30,7 @@ class _AMCListScreenState extends State<AMCListScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text("AMC Reminders"),
+        title: const Text("AMC Management"),
         backgroundColor: primary,
       ),
       body: Column(

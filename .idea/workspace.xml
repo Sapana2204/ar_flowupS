@@ -4,15 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="till customer ticket report ui">
-      <change afterPath="$PROJECT_DIR$/lib/view/pdfPreview_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ar_flowupS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ar_flowupS.iml" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="customer ticket report with pdf preview and share pdf done">
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/customerTicketReport_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customerTicketReport_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/login_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/login_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/login_encryption.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/login_encryption.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/amcList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/amcList_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -351,12 +349,19 @@
       <option name="project" value="LOCAL" />
       <updated>1781609841380</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="customer ticket report with pdf preview and share pdf done">
+      <option name="closed" value="true" />
+      <created>1781682736766</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1781682736766</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="recent calls changes done" />
     <MESSAGE value="app icon and app name set, client history and update call screen done" />
     <MESSAGE value="profile and reports screen done" />
     <MESSAGE value="api integration of login, calllist and register call screen dropdowns done" />
@@ -381,6 +386,7 @@
     <MESSAGE value="reports dropdown integration and api integration done" />
     <MESSAGE value="AMC ui" />
     <MESSAGE value="till customer ticket report ui" />
-    <option name="LAST_COMMIT_MESSAGE" value="till customer ticket report ui" />
+    <MESSAGE value="customer ticket report with pdf preview and share pdf done" />
+    <option name="LAST_COMMIT_MESSAGE" value="customer ticket report with pdf preview and share pdf done" />
   </component>
 </project>

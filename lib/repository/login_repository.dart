@@ -14,24 +14,26 @@ class LoginRepository {
       String password,
       ) async {
 
-    final uri = Uri.parse(AppUrls.loginEndPoint); // ✅ UPDATED
-
-    final requestBody = {
-      "username": username,
-      "password": password,
-      "isMobile": true,
-    };
-
-    // final encryptedPassword =
-    // await LoginEncryption.encryptPassword(password);
-    //
-    // final requestBody = {
-    //   "username": username,
-    //   "encryptedPassword": encryptedPassword,
-    //   "isMobile": true,
-    // };
-
     try {
+      print("🚀 LOGIN API START");
+      print("👤 Username: $username");
+
+      print("🔑 Starting password encryption...");
+
+      final encryptedPassword =
+      await LoginEncryption.encryptPassword(password);
+
+      print("✅ Encryption successful");
+      print("🔒 Encrypted Password Length: ${encryptedPassword.length}");
+
+      final uri = Uri.parse(AppUrls.loginEndPoint);
+
+      final requestBody = {
+        "username": username,
+        "encryptedPassword": encryptedPassword,
+        "isMobile": true,
+      };
+
       print("📡 API URL: $uri");
       print("📤 Request Headers: {Content-Type: application/json}");
       print("📤 Request Body: ${jsonEncode(requestBody)}");
@@ -47,20 +49,23 @@ class LoginRepository {
       print("📥 Status Code: ${response.statusCode}");
       print("📥 Response Body: ${response.body}");
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
 
+      if (response.statusCode == 200) {
         if (data['success'] == true) {
           return data;
         } else {
-          throw Exception(data['message'] ?? "Login failed");
+          throw Exception(data['message']);
         }
-      } else {
-        throw Exception("Server error: ${response.statusCode}");
       }
-    } catch (e) {
-      print("❌ API Error: $e");
-      throw Exception("Network/API error: $e");
+
+      throw Exception("Server error: ${response.statusCode}");
+    } catch (e, stackTrace) {
+      print("❌ LOGIN REPOSITORY ERROR");
+      print("❌ Error: $e");
+      print("❌ StackTrace:");
+      print(stackTrace);
+      rethrow;
     }
   }
 
