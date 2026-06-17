@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../model/customers_model.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_colors.dart' as AppColors;
 import '../../view/createCustomer_screen.dart';
 import '../../view/pdfPreview_screen.dart';
 import '../../viewmodel/customerReport_viewmodel.dart';
@@ -275,22 +276,81 @@ class CustomerCard extends StatelessWidget {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
+
             return AlertDialog(
-              title: const Text("Customer Ticket Report"),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              titlePadding: EdgeInsets.zero,
+              title: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.picture_as_pdf,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "Customer Ticket Report",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.calendar_month),
-                    title: Text(
-                      "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}",
+                  const SizedBox(height: 8),
+
+                  Text(
+                    "Report From Date",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
                     ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate: selectedDate,
                         firstDate: DateTime(2020),
                         lastDate: DateTime.now(),
+
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: ColorScheme.light(
+                                primary: AppColors.primary,
+                                onPrimary: Colors.white,
+                                surface: Colors.white,
+                                onSurface: Colors.black,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
 
                       if (picked != null) {
@@ -299,15 +359,62 @@ class CustomerCard extends StatelessWidget {
                         });
                       }
                     },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.primary.withOpacity(0.05),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_month,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              DateFormat('dd-MM-yyyy').format(selectedDate),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.edit_calendar,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
+                  child: const Text("Cancel", style: TextStyle(color: primary),),
                 ),
                 ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   icon: isGenerating
                       ? const SizedBox(
                     width: 18,
@@ -323,6 +430,10 @@ class CustomerCard extends StatelessWidget {
                         ? "Generating..."
                         : "Generate Report",
                   ),
+
+
+
+
                   onPressed: isGenerating
                       ? null
                       : () async {
@@ -374,6 +485,8 @@ class CustomerCard extends StatelessWidget {
                       }
                     }
                   },
+
+
                 ),
               ],
             );

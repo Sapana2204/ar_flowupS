@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="password encryption done">
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="ticket history changes done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/ticketHistory_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/ticketHistory_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -361,12 +360,19 @@
       <option name="project" value="LOCAL" />
       <updated>1781690710662</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="ticket history changes done">
+      <option name="closed" value="true" />
+      <created>1781693581837</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1781693581837</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="profile and reports screen done" />
     <MESSAGE value="api integration of login, calllist and register call screen dropdowns done" />
     <MESSAGE value="primary color theme changed according to 0xFF1399EA" />
     <MESSAGE value="api integration and register call complete" />
@@ -391,6 +397,7 @@
     <MESSAGE value="till customer ticket report ui" />
     <MESSAGE value="customer ticket report with pdf preview and share pdf done" />
     <MESSAGE value="password encryption done" />
-    <option name="LAST_COMMIT_MESSAGE" value="password encryption done" />
+    <MESSAGE value="ticket history changes done" />
+    <option name="LAST_COMMIT_MESSAGE" value="ticket history changes done" />
   </component>
 </project>
