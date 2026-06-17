@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../model/ticketHistory_model.dart';
 import '../model/tickets_model.dart';
 import '../utils/app_colors.dart';
 import '../utils/enums/register_call_mode.dart';
@@ -515,7 +516,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                       Expanded(
                         child: _infoBox(
                           "Expected",
-                            "${vm.workLogSummary?.expectedMinutes ?? 0} min"
+                            formatMinutes(vm.workLogSummary?.expectedMinutes ?? 0)
                         ),
                       ),
 
@@ -524,7 +525,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                       Expanded(
                         child: _infoBox(
                           "Logged",
-                            "${vm.workLogSummary?.loggedMinutes ?? 0} min"                        ),
+                            formatMinutes(vm.workLogSummary?.loggedMinutes ?? 0)                        ),
                       ),
                     ],
                   ),
@@ -537,7 +538,8 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                       Expanded(
                         child: _infoBox(
                           "Remaining",
-                            "${vm.workLogSummary?.remainingMinutes ?? 0} min"                        ),
+                            formatMinutes(vm.workLogSummary?.remainingMinutes ?? 0)
+                        ),
                       ),
 
                       const SizedBox(width: 10),
@@ -545,35 +547,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                       Expanded(
                         child: _infoBox(
                           "Overtime",
-                            "${vm.workLogSummary?.overtimeMinutes ?? 0} min"                        ),
+                            formatMinutes(vm.workLogSummary?.overtimeMinutes ?? 0)                      ),
                       ),
                     ],
                   ),
-
-                  // const SizedBox(height: 12),
-                  //
-                  // Container(
-                  //   padding: const EdgeInsets.symmetric(
-                  //     horizontal: 12,
-                  //     vertical: 8,
-                  //   ),
-                  //   decoration: BoxDecoration(
-                  //     color:
-                  //     (vm.workLogSummary?.canAddLog == "Y")                          ? Colors.green.withOpacity(.1)
-                  //         : Colors.red.withOpacity(.1),
-                  //     borderRadius: BorderRadius.circular(20),
-                  //   ),
-                  //   child: Text(
-                  //     (vm.workLogSummary?.canAddLog == "Y")                          ? "Can Add Work Log"
-                  //         : "Work Log Limit Reached",
-                  //     style: TextStyle(
-                  //       color:
-                  //       (vm.workLogSummary?.canAddLog == "Y")                            ? Colors.green
-                  //           : Colors.red,
-                  //       fontWeight: FontWeight.w600,
-                  //     ),
-                  //   ),
-                  // ),
 
                 ],
               ),
@@ -816,7 +793,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                           children: [
 
                             Text(
-                              history.userName ?? "User",
+                              history.changedByName ?? "User",
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -862,21 +839,15 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                               ),
                               children: [
 
-                                TextSpan(
-                                  text:
-                                  "${history.actionType ?? "Updated"}: ",
-                                  style: const TextStyle(
+                                const TextSpan(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
 
                                 TextSpan(
-                                  text: history.comment
-                                      ?.replaceAll(
-                                    RegExp(r'<[^>]*>'),
-                                    '',
-                                  ) ??
-                                      "",
+                                  text: getHistoryMessage(history)
+                                      .replaceAll(RegExp(r'<[^>]*>'), ''),
                                 ),
                               ],
                             ),
@@ -894,6 +865,20 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
     );
   }
 
+  String formatMinutes(int minutes) {
+    final hours = minutes ~/ 60;
+    final remainingMinutes = minutes % 60;
+
+    if (hours > 0 && remainingMinutes > 0) {
+      return "${hours}hr ${remainingMinutes}m";
+    }
+
+    if (hours > 0) {
+      return "${hours}hr";
+    }
+
+    return "${remainingMinutes}m";
+  }
 
   String _timeAgo(String? date) {
 
