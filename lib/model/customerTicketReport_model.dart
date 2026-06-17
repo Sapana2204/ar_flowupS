@@ -5,79 +5,75 @@ class CustomerTicketReportModel {
   String? message;
   Data? data;
 
-  CustomerTicketReportModel(
-      {this.success, this.code, this.type, this.message, this.data});
+  CustomerTicketReportModel({
+    this.success,
+    this.code,
+    this.type,
+    this.message,
+    this.data,
+  });
 
   CustomerTicketReportModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     code = json['code'];
     type = json['type'];
     message = json['message'];
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['code'] = this.code;
-    data['type'] = this.type;
-    data['message'] = this.message;
-    if (this.data != null) {
-      data['data'] = this.data!.toJson();
-    }
-    return data;
+    return {
+      'success': success,
+      'code': code,
+      'type': type,
+      'message': message,
+      'data': data?.toJson(),
+    };
   }
 }
 
 class Data {
   Customer? customer;
-  List<dynamic>? products;
-  List<dynamic>? tickets;
+  List<Product>? products;
+  List<Ticket>? tickets;
   Summary? summary;
   Filters? filters;
 
-  Data(
-      {this.customer, this.products, this.summary, this.tickets, this.filters});
+  Data({
+    this.customer,
+    this.products,
+    this.tickets,
+    this.summary,
+    this.filters,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
-    customer = json['customer'] != null
-        ? new Customer.fromJson(json['customer'])
-        : null;
-    if (json['products'] != null) {
-      products = <Null>[];
-      json['products'].forEach((v) {
-        products = json['products'];
-      });
-    }
+    customer =
+        json['customer'] != null ? Customer.fromJson(json['customer']) : null;
+
+    products =
+        (json['products'] as List?)?.map((e) => Product.fromJson(e)).toList() ??
+            [];
+
+    tickets =
+        (json['tickets'] as List?)?.map((e) => Ticket.fromJson(e)).toList() ??
+            [];
+
     summary =
-    json['summary'] != null ? new Summary.fromJson(json['summary']) : null;
-    if (json['tickets'] != null) {
-      tickets = <Null>[];
-      json['tickets'].forEach((v) {
-        tickets = json['tickets'];      });
-    }
+        json['summary'] != null ? Summary.fromJson(json['summary']) : null;
+
     filters =
-    json['filters'] != null ? new Filters.fromJson(json['filters']) : null;
+        json['filters'] != null ? Filters.fromJson(json['filters']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.customer != null) {
-      data['customer'] = this.customer!.toJson();
-    }
-    if (this.products != null) {
-      data['products'] = this.products!.map((v) => v.toJson()).toList();
-    }
-    if (this.summary != null) {
-      data['summary'] = this.summary!.toJson();
-    }
-    if (this.tickets != null) {
-      data['tickets'] = this.tickets!.map((v) => v.toJson()).toList();
-    }
-    if (this.filters != null) {
-      data['filters'] = this.filters!.toJson();
-    }
-    return data;
+    return {
+      'customer': customer?.toJson(),
+      'products': products?.map((e) => e.toJson()).toList(),
+      'tickets': tickets?.map((e) => e.toJson()).toList(),
+      'summary': summary?.toJson(),
+      'filters': filters?.toJson(),
+    };
   }
 }
 
@@ -88,28 +84,29 @@ class Customer {
   String? mobileNo;
   String? waNo;
   String? contactPerson;
+  String? companyName;
   int? companyId;
   String? isAmc;
-  String? companyName;
   String? amcStartDate;
   String? amcEndDate;
-  List<dynamic>? customerProducts;
+  List<Product>? customerProducts;
   String? createdDate;
 
-  Customer(
-      {this.customerId,
-        this.name,
-        this.email,
-        this.mobileNo,
-        this.waNo,
-        this.contactPerson,
-        this.companyName,
-        this.companyId,
-        this.isAmc,
-        this.amcStartDate,
-        this.amcEndDate,
-        this.customerProducts,
-        this.createdDate});
+  Customer({
+    this.customerId,
+    this.name,
+    this.email,
+    this.mobileNo,
+    this.waNo,
+    this.contactPerson,
+    this.companyName,
+    this.companyId,
+    this.isAmc,
+    this.amcStartDate,
+    this.amcEndDate,
+    this.customerProducts,
+    this.createdDate,
+  });
 
   Customer.fromJson(Map<String, dynamic> json) {
     customerId = json['customer_id'];
@@ -123,29 +120,119 @@ class Customer {
     isAmc = json['is_amc'];
     amcStartDate = json['amc_start_date'];
     amcEndDate = json['amc_end_date'];
-    customerProducts = json['customer_products'] ?? [];
+
+    customerProducts = (json['customer_products'] as List?)
+            ?.map((e) => Product.fromJson(e))
+            .toList() ??
+        [];
+
     createdDate = json['created_date'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['customer_id'] = this.customerId;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['mobile_no'] = this.mobileNo;
-    data['wa_no'] = this.waNo;
-    data['contact_person'] = this.contactPerson;
-    data['company_name'] = this.companyName;
-    data['company_id'] = this.companyId;
-    data['is_amc'] = this.isAmc;
-    data['amc_start_date'] = this.amcStartDate;
-    data['amc_end_date'] = this.amcEndDate;
-    if (this.customerProducts != null) {
-      data['customer_products'] =
-          this.customerProducts!.map((v) => v.toJson()).toList();
-    }
-    data['created_date'] = this.createdDate;
-    return data;
+    return {
+      'customer_id': customerId,
+      'name': name,
+      'email': email,
+      'mobile_no': mobileNo,
+      'wa_no': waNo,
+      'contact_person': contactPerson,
+      'company_name': companyName,
+      'company_id': companyId,
+      'is_amc': isAmc,
+      'amc_start_date': amcStartDate,
+      'amc_end_date': amcEndDate,
+      'customer_products': customerProducts?.map((e) => e.toJson()).toList(),
+      'created_date': createdDate,
+    };
+  }
+}
+
+class Product {
+  String? productId;
+  String? productName;
+  String? serialNumber;
+  List<String>? addOns;
+
+  Product({
+    this.productId,
+    this.productName,
+    this.serialNumber,
+    this.addOns,
+  });
+
+  Product.fromJson(Map<String, dynamic> json) {
+    productId = json['product_id']?.toString();
+    productName = json['product_name'];
+    serialNumber = json['serial_number'];
+    addOns = json['add_ons'] != null ? List<String>.from(json['add_ons']) : [];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'product_id': productId,
+      'product_name': productName,
+      'serial_number': serialNumber,
+      'add_ons': addOns,
+    };
+  }
+}
+
+class Ticket {
+  int? ticketId;
+  String? ticketNo;
+  String? description;
+  String? createdDate;
+  String? startDate;
+  String? dueDate;
+  String? contactPerson;
+  String? contactNo;
+  String? status;
+  String? priority;
+  String? productName;
+
+  Ticket({
+    this.ticketId,
+    this.ticketNo,
+    this.description,
+    this.createdDate,
+    this.startDate,
+    this.dueDate,
+    this.contactPerson,
+    this.contactNo,
+    this.status,
+    this.priority,
+    this.productName
+  });
+
+  Ticket.fromJson(Map<String, dynamic> json) {
+    ticketId = json['ticket_id'];
+    ticketNo = json['ticket_no'];
+    description = json['description'];
+    createdDate = json['created_date'];
+    startDate = json['start_date'];
+    dueDate = json['due_date'];
+    contactPerson = json['contact_person'];
+    contactNo = json['contact_no'];
+    status = json['status'];
+    priority = json['priority'];
+    productName = json['product_name'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'ticket_id': ticketId,
+      'ticket_no': ticketNo,
+      'description': description,
+      'created_date': createdDate,
+      'start_date': startDate,
+      'due_date': dueDate,
+      'contact_person': contactPerson,
+      'contact_no': contactNo,
+      'status': status,
+      'priority': priority,
+      'product_name': productName
+    };
   }
 }
 
@@ -155,7 +242,12 @@ class Summary {
   int? pending;
   int? overdue;
 
-  Summary({this.total, this.resolved, this.pending, this.overdue});
+  Summary({
+    this.total,
+    this.resolved,
+    this.pending,
+    this.overdue,
+  });
 
   Summary.fromJson(Map<String, dynamic> json) {
     total = json['total'];
@@ -165,12 +257,12 @@ class Summary {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['total'] = this.total;
-    data['resolved'] = this.resolved;
-    data['pending'] = this.pending;
-    data['overdue'] = this.overdue;
-    return data;
+    return {
+      'total': total,
+      'resolved': resolved,
+      'pending': pending,
+      'overdue': overdue,
+    };
   }
 }
 
@@ -178,17 +270,20 @@ class Filters {
   String? customerId;
   String? fromDate;
 
-  Filters({this.customerId, this.fromDate});
+  Filters({
+    this.customerId,
+    this.fromDate,
+  });
 
   Filters.fromJson(Map<String, dynamic> json) {
-    customerId = json['customer_id'];
+    customerId = json['customer_id']?.toString();
     fromDate = json['from_date'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['customer_id'] = this.customerId;
-    data['from_date'] = this.fromDate;
-    return data;
+    return {
+      'customer_id': customerId,
+      'from_date': fromDate,
+    };
   }
 }

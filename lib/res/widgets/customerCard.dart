@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../model/customers_model.dart';
 import '../../utils/app_colors.dart';
 import '../../view/createCustomer_screen.dart';
+import '../../view/pdfPreview_screen.dart';
 import '../../viewmodel/customerReport_viewmodel.dart';
 import 'customerReport.dart';
 
@@ -28,7 +29,7 @@ class CustomerCard extends StatelessWidget {
         customer.amcEndDate!.isEmpty) {
       return false;
     }
-
+    bool isGenerating = false;
     final endDate = DateTime.parse(customer.amcEndDate!);
     final daysLeft = endDate.difference(DateTime.now()).inDays;
 
@@ -265,6 +266,9 @@ class CustomerCard extends StatelessWidget {
       int? customerId,
       ) {
     DateTime selectedDate = DateTime.now();
+    final rootContext = context;
+
+    bool isGenerating = false; // <-- ADD HERE
 
     showDialog(
       context: context,
@@ -304,11 +308,30 @@ class CustomerCard extends StatelessWidget {
                   child: const Text("Cancel"),
                 ),
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.download),
-                  label: const Text("Generate Report"),
-                  onPressed: () async {
+                  icon: isGenerating
+                      ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Icon(Icons.download),
+                  label: Text(
+                    isGenerating
+                        ? "Generating..."
+                        : "Generate Report",
+                  ),
+                  onPressed: isGenerating
+                      ? null
+                      : () async {
+                    setState(() {
+                      isGenerating = true;
+                    });
+
                     final vm = Provider.of<CustomerReportViewModel>(
-                      context,
+                      rootContext,
                       listen: false,
                     );
 
@@ -319,19 +342,36 @@ class CustomerCard extends StatelessWidget {
                             .format(selectedDate),
                       );
 
-                      Navigator.pop(context);
-
                       if (vm.reportModel != null) {
+                        final fromDate = DateFormat('dd-MM-yyyy')
+                            .format(selectedDate);
+
+                        final pdfBytes =
                         await PdfService.generateCustomerReportPdf(
                           vm.reportModel!,
+                          fromDate,
                         );
+
+                        Navigator.pop(context);
+
+                        if (rootContext.mounted) {
+                          Navigator.of(rootContext).push(
+                            MaterialPageRoute(
+                              builder: (_) => PdfPreviewScreen(
+                                pdfBytes: pdfBytes,
+                                fileName:
+                                "Customer_Report_$customerId.pdf",
+                              ),
+                            ),
+                          );
+                        }
                       }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(e.toString()),
-                        ),
-                      );
+                    } finally {
+                      if (context.mounted) {
+                        setState(() {
+                          isGenerating = false;
+                        });
+                      }
                     }
                   },
                 ),

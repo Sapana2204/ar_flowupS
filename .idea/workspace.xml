@@ -4,44 +4,15 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="AMC ui">
-      <change afterPath="$PROJECT_DIR$/lib/constants/app_error_codes.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/constants/app_messages.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/constants/http_status_messages.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/model/amcActivity_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/model/apiResponseMessage_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/model/apiResult_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/model/customerTicketReport_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/model/scheduleAMCVisit_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/repository/customerReport_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/repository/userStatus_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/amcActivity_dialog.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/amcReminder_dialog.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/amcVisit_dialog.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/viewmodel/customerReport_viewmodel.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/viewmodel/userStatus_viewmodel.dart" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="till customer ticket report ui">
+      <change afterPath="$PROJECT_DIR$/lib/view/pdfPreview_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ar_flowupS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ar_flowupS.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/AMC_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/amc_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repository/amc_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/amc_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/res/widgets/amcCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/amcCard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/customerTicketReport_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customerTicketReport_model.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/utils/app_strings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_strings.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/utils/routes/routes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/routes/routes.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/utils/routes/routes_names.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/routes/routes_names.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/amcList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/amcList_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/splash_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/splash_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/amc_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/amc_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/splash_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/splash_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -372,12 +343,19 @@
       <option name="project" value="LOCAL" />
       <updated>1781246087338</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="till customer ticket report ui">
+      <option name="closed" value="true" />
+      <created>1781609841380</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1781609841380</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="splash, logo, dashboard and search by callID screens ui" />
     <MESSAGE value="recent calls changes done" />
     <MESSAGE value="app icon and app name set, client history and update call screen done" />
     <MESSAGE value="profile and reports screen done" />
@@ -402,6 +380,7 @@
     <MESSAGE value="dialer api integration done" />
     <MESSAGE value="reports dropdown integration and api integration done" />
     <MESSAGE value="AMC ui" />
-    <option name="LAST_COMMIT_MESSAGE" value="AMC ui" />
+    <MESSAGE value="till customer ticket report ui" />
+    <option name="LAST_COMMIT_MESSAGE" value="till customer ticket report ui" />
   </component>
 </project>

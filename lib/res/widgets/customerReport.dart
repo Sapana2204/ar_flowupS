@@ -1,73 +1,154 @@
 import 'dart:io';
-
+import 'dart:typed_data';
+import 'dart:typed_data';
+import 'package:file_saver/file_saver.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../../model/customerTicketReport_model.dart';
 
 class PdfService {
-  static Future<void> generateCustomerReportPdf(
+  static Future<Uint8List> generateCustomerReportPdf(
       CustomerTicketReportModel report,
+      String fromDate,
       ) async {
     final pdf = pw.Document();
 
     final customer = report.data?.customer;
     final summary = report.data?.summary;
     final tickets = report.data?.tickets ?? [];
+    final products = report.data?.products ?? [];
 
+    debugPrint(
+      "Tickets: ${report.data?.tickets?.length}",
+    );
+
+    debugPrint(
+      "Products: ${report.data?.products?.length}",
+    );
     pdf.addPage(
       pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(20),
         build: (context) => [
-          pw.Header(
-            level: 0,
+
+          /// HEADER
+          pw.Center(
             child: pw.Text(
               "Customer Ticket Report",
               style: pw.TextStyle(
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: pw.FontWeight.bold,
               ),
             ),
           ),
 
-          pw.SizedBox(height: 10),
+          pw.SizedBox(height: 5),
 
-          pw.Text("Customer : ${customer?.name ?? '-'}"),
-          pw.Text("Mobile : ${customer?.mobileNo ?? '-'}"),
-          pw.Text("Email : ${customer?.email ?? '-'}"),
-          pw.Text(
-            "Contact Person : ${customer?.contactPerson ?? '-'}",
+
+          pw.Center(
+            child: pw.Text(
+              "Report From Date: $fromDate",
+              style: const pw.TextStyle(
+                fontSize: 12,
+              ),
+            ),
+          ),
+          pw.SizedBox(height: 5),
+
+          pw.Center(
+            child: pw.Text(
+              "Generated On: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}",
+              style: const pw.TextStyle(fontSize: 11),
+            ),
+          ),
+
+          pw.SizedBox(height: 15),
+
+          /// CUSTOMER DETAILS
+          pw.Container(
+            padding: const pw.EdgeInsets.all(10),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+
+                pw.Text(
+                  customer?.name ?? "-",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+
+                pw.SizedBox(height: 10),
+
+                pw.Text("Email: ${customer?.email ?? '-'}"),
+                pw.Text("Mobile: ${customer?.mobileNo ?? '-'}"),
+                pw.Text(
+                  "Contact Person: ${customer?.contactPerson ?? '-'}",
+                ),
+                pw.Text(
+                  "AMC End Date: ${customer?.amcEndDate ?? '-'}",
+                ),
+                pw.Text(
+                  "AMC Status: ${customer?.isAmc == 'yes' ? 'AMC' : 'Non AMC'}",
+                ),
+              ],
+            ),
           ),
 
           pw.SizedBox(height: 20),
 
+          /// SUMMARY
           pw.Text(
             "Summary",
             style: pw.TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
 
-          pw.SizedBox(height: 8),
+          pw.SizedBox(height: 10),
 
-          pw.Row(
-            mainAxisAlignment:
-            pw.MainAxisAlignment.spaceBetween,
+          pw.Table(
+            border: pw.TableBorder.all(),
             children: [
-              pw.Text("Total : ${summary?.total ?? 0}"),
-              pw.Text("Resolved : ${summary?.resolved ?? 0}"),
-              pw.Text("Pending : ${summary?.pending ?? 0}"),
-              pw.Text("Overdue : ${summary?.overdue ?? 0}"),
+              pw.TableRow(
+                children: [
+                  _summaryCell(
+                    "Total Tickets",
+                    "${summary?.total ?? 0}",
+                  ),
+                  _summaryCell(
+                    "Resolved",
+                    "${summary?.resolved ?? 0}",
+                  ),
+                  _summaryCell(
+                    "Pending",
+                    "${summary?.pending ?? 0}",
+                  ),
+                  _summaryCell(
+                    "Overdue",
+                    "${summary?.overdue ?? 0}",
+                  ),
+                ],
+              ),
             ],
           ),
 
-          pw.SizedBox(height: 20),
+          pw.SizedBox(height: 25),
 
+          /// TICKETS
           pw.Text(
-            "Tickets",
+            "Ticket Support Report",
             style: pw.TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
@@ -77,22 +158,119 @@ class PdfService {
           if (tickets.isEmpty)
             pw.Text("No tickets found")
           else
-            pw.Text(
-              "Ticket table will be shown here.",
+            pw.TableHelper.fromTextArray(
+              headers: const [
+                "Ticket No",
+                "Description",
+                "Status",
+                "Priority",
+                "Product",
+                "Start Date",
+                "Due Date",
+              ],
+              data: tickets.map((ticket) {
+                return [
+                  ticket.ticketNo ?? "-",
+                  (ticket.description ?? "")
+                      .replaceAll(RegExp(r'<[^>]*>'), ''),
+                  ticket.status ?? "-",
+                  // ticket.priority ?? "-",
+                  // ticket.productName ?? "-",
+                  "-",
+                      "-",
+                  ticket.startDate ?? "-",
+                  ticket.dueDate ?? "-",
+                ];
+              }).toList(),
+            ),
+
+          pw.SizedBox(height: 25),
+
+          /// PRODUCTS
+          pw.Text(
+            "Customer Products",
+            style: pw.TextStyle(
+              fontSize: 18,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+
+          pw.SizedBox(height: 10),
+
+          if (products.isEmpty)
+            pw.Text("No products assigned")
+          else
+            pw.TableHelper.fromTextArray(
+              headers: const [
+                "Product",
+                "Serial Number",
+                "Add-ons",
+              ],
+              data: products.map((product) {
+                return [
+                  product.productName ?? "-",
+                  product.serialNumber ?? "-",
+                  (product.addOns ?? []).join(", "),
+                ];
+              }).toList(),
             ),
         ],
       ),
     );
 
-    final dir = await getTemporaryDirectory();
+    return pdf.save();
+  }
+
+  static pw.Widget _summaryCell(
+      String title,
+      String value,
+      ) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(10),
+      child: pw.Column(
+        children: [
+          pw.Text(
+            title,
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 5),
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<void> downloadPdf({
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    await FileSaver.instance.saveFile(
+      name: fileName.replaceAll('.pdf', ''),
+      bytes: pdfBytes,
+      ext: 'pdf',
+      mimeType: MimeType.pdf,
+    );
+  }
+
+  static Future<void> sharePdf({
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    final tempDir = await getTemporaryDirectory();
 
     final file = File(
-      "${dir.path}/customer_report_${customer?.customerId}.pdf",
+      "${tempDir.path}/$fileName",
     );
 
-    await file.writeAsBytes(
-      await pdf.save(),
-    );
+    await file.writeAsBytes(pdfBytes);
 
     await Share.shareXFiles(
       [XFile(file.path)],
