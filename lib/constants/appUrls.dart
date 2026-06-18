@@ -58,4 +58,10 @@ class AppUrls {
   static const customerTicketReport =
       "$baseUrl/reports/customer";
 
+  static const String ticketVisits =
+      "$baseUrl/tickets/visits";
+
+  static const String createVisit =
+      "$baseUrl/tickets/visits/create";
+
 }

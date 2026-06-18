@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_new_project/view/ticketVisit_dialog.dart';
 import 'package:provider/provider.dart';
 import '../model/ticketHistory_model.dart';
 import '../model/tickets_model.dart';
@@ -13,6 +14,7 @@ class ClientHistoryScreen extends StatefulWidget {
   final String? createdDate;
   final RegisterCallMode mode;
   final int? ticketId;
+  final bool showVisitTab;
 
   const ClientHistoryScreen({
     super.key,
@@ -22,6 +24,8 @@ class ClientHistoryScreen extends StatefulWidget {
     this.createdDate, // ✅ ADD
     this.mode = RegisterCallMode.create,
     this.ticketId,
+    this.showVisitTab = false,
+
 
   });
 
@@ -42,8 +46,13 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
   void initState() {
     super.initState();
 
+    final tabCount =
+    widget.mode == RegisterCallMode.edit
+        ? (widget.showVisitTab ? 5 : 4)
+        : 1;
+
     _tabController = TabController(
-      length: widget.mode == RegisterCallMode.edit ? 4 : 1,
+      length: tabCount,
       vsync: this,
     );
 
@@ -62,6 +71,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
         );
       }
 
+
       /// 🔹 Comments + Ticket history
       if (widget.mode == RegisterCallMode.edit &&
           widget.ticketId != null) {
@@ -75,6 +85,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
         );
 
         await vm.fetchTicketHistory(
+          widget.ticketId!,
+        );
+
+        await vm.fetchTicketVisits(
           widget.ticketId!,
         );
       }
@@ -108,6 +122,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
 
             if (widget.mode == RegisterCallMode.edit)
               const Tab(text: "Ticket History"),
+
+            if (widget.mode == RegisterCallMode.edit &&
+                widget.showVisitTab)
+              const Tab(text: "Visits"),
           ],
         ),
       ),
@@ -139,6 +157,10 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
 
           if (widget.mode == RegisterCallMode.edit)
             _buildHistoryTab(),
+
+          if (widget.mode == RegisterCallMode.edit &&
+              widget.showVisitTab)
+            _buildVisitsTab(),
         ],
       ),
     );
@@ -863,6 +885,200 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
         );
       },
     );
+  }
+
+  Widget _buildVisitsTab() {
+    return Consumer<TicketsViewModel>(
+      builder: (context, vm, child) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                  ),
+                  onPressed: _openVisitDialog,
+                  icon: const Icon(Icons.event_available),
+                  label: const Text("Schedule Visit"),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Expanded(
+                child: vm.visitsLoading
+                    ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+                    : vm.visitsList.isEmpty
+                    ? const Center(
+                  child: Text("No visits scheduled"),
+                )
+                    : ListView.builder(
+                  itemCount: vm.visitsList.length,
+                  itemBuilder: (context, index) {
+                    final visit = vm.visitsList[index];
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                        BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(.05),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding:
+                                const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue
+                                      .withOpacity(.1),
+                                  borderRadius:
+                                  BorderRadius.circular(
+                                      8),
+                                ),
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.blue,
+                                ),
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              Expanded(
+                                child: Text(
+                                  visit.employeeName ?? "-",
+                                  style:
+                                  const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight:
+                                    FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+
+                              Container(
+                                padding:
+                                const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: visit.visitStatus ==
+                                      "scheduled"
+                                      ? Colors.orange
+                                      .withOpacity(.1)
+                                      : Colors.green
+                                      .withOpacity(.1),
+                                  borderRadius:
+                                  BorderRadius.circular(
+                                      20),
+                                ),
+                                child: Text(
+                                  visit.visitStatus ?? "",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight:
+                                    FontWeight.w600,
+                                    color:
+                                    visit.visitStatus ==
+                                        "scheduled"
+                                        ? Colors.orange
+                                        : Colors.green,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          Text(
+                            visit.visitDetails ?? "",
+                            style: const TextStyle(
+                              fontSize: 13,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_today,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
+
+                              const SizedBox(width: 5),
+
+                              Text(
+                                visit.visitDate ?? "-",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+
+                              const SizedBox(width: 15),
+
+                              const Icon(
+                                Icons.access_time,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
+
+                              const SizedBox(width: 5),
+
+                              Text(
+                                visit.visitTime ?? "-",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openVisitDialog() async {
+    if (widget.ticketId == null) return;
+
+    await showDialog(
+      context: context,
+      builder: (_) => TicketVisitDialog(
+        ticketId: widget.ticketId!,
+      ),
+    );
+
+    await Provider.of<TicketsViewModel>(
+      context,
+      listen: false,
+    ).fetchTicketVisits(widget.ticketId!);
   }
 
   String formatMinutes(int minutes) {

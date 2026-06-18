@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../model/createTicket_model.dart';
 import '../model/createWorkLog_model.dart';
 import '../model/customerProduct.dart';
@@ -13,7 +12,6 @@ import '../model/customers_model.dart';
 import '../model/updateTicket_model.dart';
 import '../model/updateWorkLog_model.dart';
 import '../utils/app_colors.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:call_log/call_log.dart';
 import 'package:intl/intl.dart';
@@ -41,8 +39,7 @@ class RegisterCallScreen extends StatefulWidget {
   State<RegisterCallScreen> createState() => _RegisterCallScreenState();
 }
 
-class _RegisterCallScreenState
-    extends State<RegisterCallScreen>
+class _RegisterCallScreenState extends State<RegisterCallScreen>
     with WidgetsBindingObserver {
   String priority = "Medium";
   final FlutterNativeContactPicker _contactPicker =
@@ -68,6 +65,7 @@ class _RegisterCallScreenState
   TextEditingController whatsappController = TextEditingController();
   int? _activeWorkLogId;
   DateTime? _callStartTime;
+  bool visitRequired = false;
 
   @override
   void initState() {
@@ -100,9 +98,7 @@ class _RegisterCallScreenState
       ]);
 
       /// ✅ EDIT MODE (DO FIRST)
-      if (widget.mode == RegisterCallMode.edit &&
-          widget.ticketId != null) {
-
+      if (widget.mode == RegisterCallMode.edit && widget.ticketId != null) {
         await ticketVm.fetchTicketById(
           ticketId: widget.ticketId!,
           clientId: widget.clientId,
@@ -119,31 +115,25 @@ class _RegisterCallScreenState
         print("productAddOns = ${data.productAddOns}");
         print("expectedMinutes = ${data.expectedMinutes}");
         print("productSerialNumber = ${data.productSerialNumber}");
-        expectedTimeController.text =
-            data.expectedMinutes ?? "";
-        /// ✅ TEXT FIELDS
+        expectedTimeController.text = data.expectedMinutes ?? "";
         phoneController.text = data.contactNo ?? "";
         contactPersonController.text = data.contactPerson ?? "";
-        descriptionController.text =
-            removeHtmlTags(data.description ?? "");
+        descriptionController.text = removeHtmlTags(data.description ?? "");
         reasonController.text = data.reason ?? "";
-
-        /// ✅ DATE FORMAT FIX
         if (data.dueDate != null && data.dueDate!.isNotEmpty) {
           try {
             final parsed = DateTime.parse(data.dueDate!);
-            dateController.text =
-                DateFormat('dd MMM yyyy').format(parsed);
+            dateController.text = DateFormat('dd MMM yyyy').format(parsed);
           } catch (_) {
             dateController.text = data.dueDate!;
           }
         }
+
         /// ✅ START DATE PREFILL
         if (data.startDate != null && data.startDate!.isNotEmpty) {
           try {
             final parsed = DateTime.parse(data.startDate!);
-            startDateController.text =
-                DateFormat('dd MMM yyyy').format(parsed);
+            startDateController.text = DateFormat('dd MMM yyyy').format(parsed);
           } catch (_) {
             startDateController.text = data.startDate!;
           }
@@ -157,33 +147,35 @@ class _RegisterCallScreenState
 
         /// ✅ 🔥 VERY IMPORTANT: SET CLIENT
         if (data.clientId != null) {
-          final clientMatch = queryVm.clientList.where(
+          final clientMatch = queryVm.clientList
+              .where(
                 (c) => c.customerId.toString() == data.clientId.toString(),
-          ).toList();
+              )
+              .toList();
 
           if (clientMatch.isNotEmpty) {
-            final customerVm =
-            Provider.of<CustomersViewModel>(
+            final customerVm = Provider.of<CustomersViewModel>(
               context,
               listen: false,
             );
 
-            final customer =
-            await customerVm.getCustomerById(
+            final customer = await customerVm.getCustomerById(
               clientMatch.first.customerId!,
             );
 
             selectedCustomer = customer;
-            if (customer != null &&
-                data.productId != null) {
+
+            visitRequired = (data.visitRequired ?? "n") == "y";
+            print("API visitRequired = ${data.visitRequired}");
+            print("Checkbox value = $visitRequired");
+            if (customer != null && data.productId != null) {
               try {
-                selectedProduct =
-                    customer.customerProducts?.firstWhere(
-                          (p) =>
+                selectedProduct = customer.customerProducts?.firstWhere(
+                  (p) =>
                       p.serialNumber?.toString() ==
-                          data.productSerialNumber?.toString(),
-                    );
-                // Restore Add-ons
+                      data.productSerialNumber?.toString(),
+                );
+
                 selectedAddOns.clear();
                 if (data.productAddOns != null &&
                     data.productAddOns!.isNotEmpty) {
@@ -195,10 +187,8 @@ class _RegisterCallScreenState
                         addOnString.replaceAll('[', '').replaceAll(']', '');
 
                     if (addOnString.isNotEmpty) {
-                      selectedAddOns = addOnString
-                          .split(',')
-                          .map((e) => e.trim())
-                          .toList();
+                      selectedAddOns =
+                          addOnString.split(',').map((e) => e.trim()).toList();
 
                       selectedAddOn = selectedAddOns.first;
                     }
@@ -234,13 +224,11 @@ class _RegisterCallScreenState
   }
 
   @override
-  void didChangeAppLifecycleState(
-      AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        _activeWorkLogId != null) {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _activeWorkLogId != null) {
       Future.delayed(
         const Duration(milliseconds: 500),
-            () {
+        () {
           _showCallDetailsDialog();
         },
       );
@@ -259,8 +247,8 @@ class _RegisterCallScreenState
         ),
         backgroundColor: primary,
       ),
-     body: Form(
-      key: _formKey,
+      body: Form(
+        key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -272,9 +260,9 @@ class _RegisterCallScreenState
                 builder: (context, ticketVm, _) {
                   final ticketData = ticketVm.ticketDetail?.data;
                   final ticketNo = (ticketData != null && ticketData.isNotEmpty)
-                      ? ticketData.first.ticketNo   // ✅ use correct field name
+                      ? ticketData.first.ticketNo // ✅ use correct field name
                       : null;
-        
+
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -282,11 +270,13 @@ class _RegisterCallScreenState
                         "CLIENT INFORMATION",
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
-        
+
                       /// ✅ SHOW ONLY IN EDIT MODE + WHEN DATA AVAILABLE
-                      if (widget.mode == RegisterCallMode.edit && ticketNo != null)
+                      if (widget.mode == RegisterCallMode.edit &&
+                          ticketNo != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
@@ -305,7 +295,7 @@ class _RegisterCallScreenState
                 },
               ),
               const SizedBox(height: 10),
-        
+
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end, // 👈 important
                 children: [
@@ -356,18 +346,18 @@ class _RegisterCallScreenState
                       onTap: () {
                         final vm =
                             Provider.of<QueryViewModel>(context, listen: false);
-        
+
                         Navigator.pushNamed(
                           context,
                           RouteNames.clientHistoryScreen,
                           arguments: {
                             "clientName": vm.selectedClient?.name ?? "",
                             "phone": phoneController.text,
-                            "clientId": vm.selectedClient?.customerId,   // ✅ correct
-                            "createdDate": vm.selectedClient?.createdDate, // ✅ correct
-                            "mode": widget.mode, // ✅ ADD
-                            "ticketId": widget.ticketId, // ✅ ADD
-
+                            "clientId": vm.selectedClient?.customerId,
+                            "createdDate": vm.selectedClient?.createdDate,
+                            "mode": widget.mode,
+                            "ticketId": widget.ticketId,
+                            "showVisitTab": visitRequired,
                           },
                         );
                       },
@@ -386,8 +376,20 @@ class _RegisterCallScreenState
 
               const SizedBox(height: 12),
 
-              _buildProductDropdown(),
-        
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildProductDropdown(),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 1,
+                    child: _buildVisitRequiredField(),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
 
               Row(
@@ -414,9 +416,7 @@ class _RegisterCallScreenState
                       enabled: widget.mode != RegisterCallMode.edit,
                     ),
                   ),
-
                   const SizedBox(width: 8),
-
                   if (widget.mode == RegisterCallMode.edit)
                     Padding(
                       padding: const EdgeInsets.only(top: 30),
@@ -441,7 +441,7 @@ class _RegisterCallScreenState
                     ),
                 ],
               ),
-        
+
               const SizedBox(height: 12),
 
               _buildTextField(
@@ -456,7 +456,7 @@ class _RegisterCallScreenState
                 },
                 enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
               ),
-        
+
               const SizedBox(height: 12),
 
               /// CALL DETAILS
@@ -465,7 +465,6 @@ class _RegisterCallScreenState
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 10),
-
 
               Consumer<QueryViewModel>(
                 builder: (context, vm, child) {
@@ -478,10 +477,8 @@ class _RegisterCallScreenState
                       Expanded(
                         child: _buildDropdownField(),
                       ),
-
                       if (isCustomization) ...[
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: _buildAddOnsField(),
                         ),
@@ -490,23 +487,21 @@ class _RegisterCallScreenState
                   );
                 },
               ),
-        
+
               const SizedBox(height: 15),
-        
+
               Row(
                 children: [
                   if (widget.mode == RegisterCallMode.edit)
                     Expanded(child: _buildStartDateField()),
-        
                   if (widget.mode == RegisterCallMode.edit)
                     const SizedBox(width: 12),
-        
                   Expanded(child: _buildDateField()),
                 ],
               ),
-        
+
               const SizedBox(height: 15),
-        
+
               /// PRIORITY
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,9 +509,7 @@ class _RegisterCallScreenState
                   Expanded(
                     child: _buildPriorityDropdown(),
                   ),
-
                   const SizedBox(width: 12),
-
                   Expanded(
                     child: _buildExpectedTimeField(),
                   ),
@@ -524,18 +517,17 @@ class _RegisterCallScreenState
               ),
 
               const SizedBox(height: 15),
-        
+
               /// ASSIGN TO
               const Text("Assign To"),
               const SizedBox(height: 8),
-        
+
               Consumer<QueryViewModel>(
                 builder: (context, vm, child) {
-        
                   if (vm.isLoading && vm.adminList.isEmpty) {
                     return const Center(child: CircularProgressIndicator());
                   }
-        
+
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
@@ -545,12 +537,13 @@ class _RegisterCallScreenState
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
-        
+
                         /// ✅ FIX: ensure value exists
-                        value: vm.adminList.any((e) => e.name == vm.selectedAdmin)
-                            ? vm.selectedAdmin
-                            : null,
-        
+                        value:
+                            vm.adminList.any((e) => e.name == vm.selectedAdmin)
+                                ? vm.selectedAdmin
+                                : null,
+
                         hint: const Text("Select User"),
 
                         items: vm.adminList.map((user) {
@@ -571,7 +564,6 @@ class _RegisterCallScreenState
                   );
                 },
               ),
-        
 
               if (widget.mode == RegisterCallMode.edit) ...[
                 const SizedBox(height: 12),
@@ -608,7 +600,6 @@ class _RegisterCallScreenState
           ),
         ),
       ),
-
       bottomNavigationBar: SafeArea(
         child: Consumer<TicketsViewModel>(
           builder: (context, vm, child) {
@@ -632,25 +623,25 @@ class _RegisterCallScreenState
                   ),
                   child: isLoading
                       ? const SizedBox(
-                    height: 22,
-                    width: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white,
-                    ),
-                  )
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
                       : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.call),
-                      const SizedBox(width: 8),
-                      Text(
-                        widget.mode == RegisterCallMode.edit
-                            ? "Update Call"
-                            : "Register Call",
-                      ),
-                    ],
-                  ),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.call),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.mode == RegisterCallMode.edit
+                                  ? "Update Call"
+                                  : "Register Call",
+                            ),
+                          ],
+                        ),
                 ),
               ),
             );
@@ -706,8 +697,7 @@ class _RegisterCallScreenState
       print("PHONE => $phone");
       print("TICKET ID => ${widget.ticketId}");
       print("STARTING CREATE WORK LOG");
-      final response =
-      await vm.createWorkLogAndReturnId(
+      final response = await vm.createWorkLogAndReturnId(
         createModel,
       );
 
@@ -737,7 +727,8 @@ class _RegisterCallScreenState
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    final ticketVm = Provider.of<TicketsViewModel>(context, listen: false); // ✅ ADD
+    final ticketVm =
+        Provider.of<TicketsViewModel>(context, listen: false); // ✅ ADD
     final queryVm = Provider.of<QueryViewModel>(context, listen: false);
     final existing = ticketVm.ticketDetail?.data?.isNotEmpty == true
         ? ticketVm.ticketDetail!.data!.first
@@ -764,15 +755,14 @@ class _RegisterCallScreenState
     /// ✅ FORMAT DATES
     String dueDate = "";
     if (dateController.text.isNotEmpty) {
-      final parsedDate =
-      DateFormat("dd MMM yyyy").parse(dateController.text);
+      final parsedDate = DateFormat("dd MMM yyyy").parse(dateController.text);
       dueDate = DateFormat("yyyy-MM-dd").format(parsedDate);
     }
 
     String startDate = "";
     if (startDateController.text.isNotEmpty) {
       final parsedStart =
-      DateFormat("dd MMM yyyy").parse(startDateController.text);
+          DateFormat("dd MMM yyyy").parse(startDateController.text);
       startDate = DateFormat("yyyy-MM-dd").format(parsedStart);
     }
 
@@ -806,20 +796,17 @@ class _RegisterCallScreenState
         productName: selectedProduct?.productName,
         productSerialNumber: selectedProduct?.serialNumber,
         productAddOns: jsonEncode(selectedAddOns),
-        expectedMinutes: expectedTimeController.text, // 👈 ADD THIS
-
-
+        expectedMinutes: expectedTimeController.text,
+        // 👈 ADD THIS
+        visitRequired: visitRequired ? "y" : "n",
       );
-
 
       /// ✅ PRINT FULL REQUEST
       print("📤 UPDATE REQUEST: ${ticket.toJson()}");
 
-
       final success = await vm.updateTicket(ticket);
 
       if (success) {
-
         // ✅ Refresh Dashboard API
         await Provider.of<DashboardViewModel>(
           context,
@@ -841,10 +828,7 @@ class _RegisterCallScreenState
 
       return; // 👈 IMPORTANT (stop here)
     }
-
-    /// =========================
     /// ✅ CREATE MODE
-    /// =========================
     final ticket = CreateTicket(
       clientId: queryVm.selectedClient?.customerId,
       contactNo: phoneController.text,
@@ -858,21 +842,21 @@ class _RegisterCallScreenState
           : DateFormat("yyyy-MM-dd").format(DateTime.now()),
       dueDate: dueDate,
       status: "active",
-      // whatsappNo: whatsappController.text,
       contactPerson: contactPersonController.text,
       productId: selectedProduct?.productId,
       productName: selectedProduct?.productName,
       productSerialNumber: selectedProduct?.serialNumber,
       productAddOns: jsonEncode(selectedAddOns),
       expectedMinutes: expectedTimeController.text,
+      visitRequired: visitRequired ? "y" : "n",
     );
+
     /// ✅ PRINT FULL REQUEST
     print("📤 CREATE REQUEST: ${ticket.toJson()}");
 
     final success = await vm.createTicket(ticket);
 
     if (success) {
-
       // ✅ Refresh Dashboard API
       await Provider.of<DashboardViewModel>(
         context,
@@ -886,7 +870,6 @@ class _RegisterCallScreenState
       );
 
       Navigator.pop(context);
-
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(vm.createMessage)),
@@ -900,7 +883,7 @@ class _RegisterCallScreenState
     if (loggedInUser == null || vm.adminList.isEmpty) return;
 
     final matchList = vm.adminList.where(
-          (e) => (e.name ?? "").toLowerCase().contains(loggedInUser),
+      (e) => (e.name ?? "").toLowerCase().contains(loggedInUser),
     );
 
     if (matchList.isNotEmpty) {
@@ -987,7 +970,6 @@ class _RegisterCallScreenState
     return htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
   }
 
-
   Widget _buildAddOnsField() {
     final addOns = selectedProduct?.addOns ?? [];
 
@@ -999,7 +981,6 @@ class _RegisterCallScreenState
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 6),
-
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
@@ -1015,13 +996,9 @@ class _RegisterCallScreenState
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
-              value: addOns.contains(selectedAddOn)
-                  ? selectedAddOn
-                  : null,
+              value: addOns.contains(selectedAddOn) ? selectedAddOn : null,
               hint: Text(
-                addOns.isEmpty
-                    ? "No Add-ons Available"
-                    : "Select Add-on",
+                addOns.isEmpty ? "No Add-ons Available" : "Select Add-on",
               ),
               items: addOns.map((addon) {
                 return DropdownMenuItem<String>(
@@ -1032,14 +1009,13 @@ class _RegisterCallScreenState
               onChanged: addOns.isEmpty
                   ? null
                   : (value) {
-                setState(() {
-                  selectedAddOn = value;
+                      setState(() {
+                        selectedAddOn = value;
 
-                  // Keep API format as List<String>
-                  selectedAddOns =
-                  value == null ? [] : [value];
-                });
-              },
+                        // Keep API format as List<String>
+                        selectedAddOns = value == null ? [] : [value];
+                      });
+                    },
             ),
           ),
         ),
@@ -1081,7 +1057,6 @@ class _RegisterCallScreenState
       children: [
         const Text("Products"),
         const SizedBox(height: 6),
-
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
@@ -1102,8 +1077,8 @@ class _RegisterCallScreenState
                 selectedCustomer == null
                     ? "Select Client First"
                     : products.isEmpty
-                    ? "No Products Available"
-                    : "Select Product",
+                        ? "No Products Available"
+                        : "Select Product",
               ),
               items: products.map((product) {
                 return DropdownMenuItem<CustomerProduct>(
@@ -1151,22 +1126,18 @@ class _RegisterCallScreenState
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   isExpanded: true,
-
                   value: vm.statusList.any(
-                        (e) => e.categoryName == vm.selectedStatus,
+                    (e) => e.categoryName == vm.selectedStatus,
                   )
                       ? vm.selectedStatus
                       : null,
-
                   hint: const Text("Select Status"),
-
                   items: vm.statusList.map((item) {
                     return DropdownMenuItem<String>(
                       value: item.categoryName,
                       child: Text(item.categoryName ?? ""),
                     );
                   }).toList(),
-
                   onChanged: (value) {
                     if (value != null) {
                       vm.setSelectedStatus(value);
@@ -1182,25 +1153,27 @@ class _RegisterCallScreenState
   }
 
   Widget _buildTextField(
-      String label,
-      String hint,
-      TextEditingController controller, {
-        int maxLines = 1,
-        TextInputType keyboardType = TextInputType.text,
-        bool enabled = true,
-        String? Function(String?)? validator, // 👈 ADD
-      }) {
+    String label,
+    String hint,
+    TextEditingController controller, {
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    bool enabled = true,
+    String? Function(String?)? validator, // 👈 ADD
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label),
         const SizedBox(height: 6),
-        TextFormField( // ✅ change here
+        TextFormField(
+          // ✅ change here
           controller: controller,
           enabled: enabled,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          validator: validator, // 👈 ADD
+          validator: validator,
+          // 👈 ADD
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
@@ -1214,7 +1187,6 @@ class _RegisterCallScreenState
       ],
     );
   }
-
 
   IconData getCallIcon(CallType? type) {
     switch (type) {
@@ -1401,13 +1373,13 @@ class _RegisterCallScreenState
                                 return ListTile(
                                   title: Text(client.name ?? ""),
                                   subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(client.mobileNo ?? ""),
-
                                       ...(client.customerProducts ?? []).map(
-                                            (p) => Text(
+                                        (p) => Text(
                                           "SN: ${p.serialNumber}",
                                           style: const TextStyle(
                                             fontSize: 12,
@@ -1427,7 +1399,7 @@ class _RegisterCallScreenState
                                     });
 
                                     final customerVm =
-                                    Provider.of<CustomersViewModel>(
+                                        Provider.of<CustomersViewModel>(
                                       context,
                                       listen: false,
                                     );
@@ -1443,10 +1415,12 @@ class _RegisterCallScreenState
                                       selectedCustomer = customer;
                                       isLoadingProducts = false;
                                     });
+
                                     /// ✅ FIX: force UI update
                                     this.setState(() {
                                       nameController.text = client.name ?? "";
-                                      phoneController.text = client.mobileNo ?? "";
+                                      phoneController.text =
+                                          client.mobileNo ?? "";
                                     });
 
                                     Navigator.pop(context);
@@ -1466,7 +1440,6 @@ class _RegisterCallScreenState
   }
 
   void _clearAllFields() {
-    WidgetsBinding.instance.removeObserver(this);
     nameController.clear();
     phoneController.clear();
     dateController.clear();
@@ -1479,9 +1452,46 @@ class _RegisterCallScreenState
     serialNoController.clear();
     startDateController.clear();
     whatsappController.clear();
-    expectedTimeController.dispose();
+    expectedTimeController.clear();
 
-    super.dispose();
+    selectedCustomer = null;
+    selectedProduct = null;
+    selectedAddOns.clear();
+    selectedAddOn = null;
+  }
+
+  Widget _buildVisitRequiredField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Visit Required"),
+        const SizedBox(height: 6),
+        SizedBox(
+          height: 48,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                visitRequired = !visitRequired;
+              });
+            },
+            child: Row(
+              children: [
+                Checkbox(
+                  value: visitRequired,
+                  activeColor: primary,
+                  onChanged: (value) {
+                    setState(() {
+                      visitRequired = value ?? false;
+                    });
+                  },
+                ),
+                const Text("Yes"),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPriorityDropdown() {
@@ -1535,16 +1545,16 @@ class _RegisterCallScreenState
   }
 
   Widget _buildTextFieldWithAction(
-      String label,
-      String hint,
-      IconData icon,
-      TextEditingController controller,
-      IconData actionIcon,
-      VoidCallback onTap, {
-        bool enabled = true, // 👈 ADD
-        String? Function(String?)? validator, // ✅ ADD THIS
-        TextInputType keyboardType = TextInputType.text, // ✅ ADD THIS
-      }) {
+    String label,
+    String hint,
+    IconData icon,
+    TextEditingController controller,
+    IconData actionIcon,
+    VoidCallback onTap, {
+    bool enabled = true, // 👈 ADD
+    String? Function(String?)? validator, // ✅ ADD THIS
+    TextInputType keyboardType = TextInputType.text, // ✅ ADD THIS
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1553,8 +1563,10 @@ class _RegisterCallScreenState
         TextFormField(
           controller: controller,
           enabled: enabled,
-          validator: validator, // 👈 ADD
-          keyboardType: keyboardType, // ✅ ADD
+          validator: validator,
+          // 👈 ADD
+          keyboardType: keyboardType,
+          // ✅ ADD
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
           ],
@@ -1646,17 +1658,18 @@ class _RegisterCallScreenState
         const SizedBox(height: 6),
         TextField(
           controller: startDateController,
-          readOnly: true, // 👈 prevents keyboard
-          onTap: () {},   // 👈 do nothing (no calendar)
+          readOnly: true,
+          onTap: () {},
           style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
             hintText: "Start date",
             isDense: true,
             contentPadding:
-            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             suffixIcon: const Icon(Icons.calendar_today, size: 20),
             filled: true,
-            fillColor: Colors.white, // 👈 normal look (not disabled)
+            fillColor: Colors.white,
+            // 👈 normal look (not disabled)
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -1690,55 +1703,39 @@ class _RegisterCallScreenState
                   onPressed: vm.updateWorkLogLoading
                       ? null
                       : () async {
-                    if (controller.text
-                        .trim()
-                        .isEmpty) {
-                      ScaffoldMessenger.of(
-                          context)
-                          .showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Call details required",
-                          ),
-                        ),
-                      );
-                      return;
-                    }
+                          if (controller.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Call details required",
+                                ),
+                              ),
+                            );
+                            return;
+                          }
 
-                    final minutes =
-                        DateTime.now()
-                            .difference(
-                          _callStartTime!,
-                        )
-                            .inMinutes;
+                          final model = UpdateWorkLogModel(
+                            workLogId: _activeWorkLogId!,
+                            ticketId: widget.ticketId!,
+                            workDetails: controller.text.trim(),
+                            workStatus: "completed",
+                          );
 
-                    final model =
-                    UpdateWorkLogModel(
-                      workLogId:
-                      _activeWorkLogId!,
-                      ticketId:
-                      widget.ticketId!,
-                      workDetails:
-                      controller.text.trim(),
-                      workStatus:
-                      "completed",
-                    );
+                          final success = await vm.updateWorkLog(model);
 
-                    final success = await vm.updateWorkLog(model);
+                          print("SUCCESS => $success");
 
-                    print("SUCCESS => $success");
+                          if (success) {
+                            print("BEFORE POP");
 
-                    if (success) {
-                      print("BEFORE POP");
+                            _activeWorkLogId = null;
 
-                      _activeWorkLogId = null;
-
-                      if (mounted) {
-                        Navigator.of(context).pop();
-                        print("AFTER POP");
-                      }
-                    }
-                  },
+                            if (mounted) {
+                              Navigator.of(context).pop();
+                              print("AFTER POP");
+                            }
+                          }
+                        },
                   child: const Text(
                     "Submit",
                   ),
@@ -1821,30 +1818,24 @@ class _RegisterCallScreenState
         color: Colors.grey.shade500,
         fontSize: 14,
       ),
-
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
-
       filled: true,
       fillColor: Colors.white,
-
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 14,
         vertical: 14,
       ),
-
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
       ),
-
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(
           color: Colors.grey.shade200,
         ),
       ),
-
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(
@@ -1854,6 +1845,4 @@ class _RegisterCallScreenState
       ),
     );
   }
-
-
 }

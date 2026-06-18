@@ -63,6 +63,8 @@ class Routes {
             createdDate: args["createdDate"], // ✅ ADD
             mode: args["mode"] ?? RegisterCallMode.create,
             ticketId: args["ticketId"],
+            showVisitTab: args["showVisitTab"] ?? false,
+
           ),
         );
 

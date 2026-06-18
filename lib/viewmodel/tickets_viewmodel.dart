@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../model/comment_model.dart';
+import '../model/createVisit_model.dart';
 import '../model/createWorkLog_model.dart';
 import '../model/createTicket_model.dart';
 import '../model/ticketHistory_model.dart';
 import '../model/tickets_model.dart';
 import '../model/updateTicket_model.dart';
 import '../model/updateWorkLog_model.dart';
+import '../model/visits_model.dart';
 import '../model/workLogSummary_model.dart';
 import '../model/workLog_model.dart';
 import '../repository/tickets_repository.dart';
@@ -72,6 +74,11 @@ class TicketsViewModel extends ChangeNotifier {
   WorkLogSummary? workLogSummary;
   bool createWorkLogLoading = false;
   bool updateWorkLogLoading = false;
+
+  bool visitsLoading = false;
+  List<VisitData> visitsList = [];
+
+  bool createVisitLoading = false;
 
   void setSearchText(String value) {
     _searchText = value;
@@ -411,6 +418,52 @@ class TicketsViewModel extends ChangeNotifier {
       print("❌ VM CREATE ERROR => $e");
       print(s);
       return null;
+    }
+  }
+
+  Future<void> fetchTicketVisits(int ticketId) async {
+    try {
+      visitsLoading = true;
+      notifyListeners();
+
+      final response =
+      await _repository.fetchTicketVisits(ticketId);
+
+      visitsList = response.data ?? [];
+    } catch (e) {
+      debugPrint("❌ Visits Error: $e");
+      visitsList = [];
+    } finally {
+      visitsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> createVisit(
+      CreateVisitModel model,
+      ) async {
+    try {
+      createVisitLoading = true;
+      notifyListeners();
+
+      final response =
+      await _repository.createVisit(model);
+
+      if (response["success"] == true) {
+
+        // Refresh visits list
+        await fetchTicketVisits(model.ticketId!);
+
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint("❌ Create Visit Error: $e");
+      return false;
+    } finally {
+      createVisitLoading = false;
+      notifyListeners();
     }
   }
 

@@ -89,6 +89,11 @@ class Data {
   String? productAddOns;
   String? expectedMinutes;
   String? activeAmc;
+  String? feedbackToken;
+  String? feedbackSubmitted;
+  String? callDirection;
+  String? amcCall;
+  String? visitRequired;
 
   Data({
     this.ticketId,
@@ -118,7 +123,12 @@ class Data {
     this.productSerialNumber,
     this.productAddOns,
     this.expectedMinutes,
-    this.activeAmc
+    this.activeAmc,
+    this.feedbackToken,
+    this.feedbackSubmitted,
+    this.callDirection,
+    this.amcCall,
+    this.visitRequired,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -152,6 +162,11 @@ class Data {
         json['product_add_ons']?.toString();
     expectedMinutes = json['expected_minutes']?.toString();
     activeAmc = json['active_amc']?.toString();
+    feedbackToken = json['feedback_token']?.toString();
+    feedbackSubmitted = json['feedback_submitted']?.toString();
+    callDirection = json['call_direction']?.toString();
+    amcCall = json['amc_call']?.toString();
+    visitRequired = json['visit_required']?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -186,6 +201,11 @@ class Data {
     dataMap['product_add_ons'] = productAddOns;
     dataMap['expected_minutes'] = expectedMinutes;
     dataMap['active_amc'] = activeAmc;
+    dataMap['feedback_token'] = feedbackToken;
+    dataMap['feedback_submitted'] = feedbackSubmitted;
+    dataMap['call_direction'] = callDirection;
+    dataMap['amc_call'] = amcCall;
+    dataMap['visit_required'] = visitRequired;
     return dataMap;
   }
 }

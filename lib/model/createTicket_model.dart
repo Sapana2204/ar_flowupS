@@ -4,6 +4,7 @@ class CreateTicket {
   String? contactNo;
   String? description;
   String? queryType;
+  String? queryTypeName;
   String? ticketStatus;
   String? ticketPriority;
   String? assignee;
@@ -19,6 +20,7 @@ class CreateTicket {
   String? productSerialNumber;
   String? productAddOns;
   String? expectedMinutes;
+  String? visitRequired;
 
   CreateTicket({
     this.ticketId,
@@ -26,6 +28,7 @@ class CreateTicket {
     this.contactNo,
     this.description,
     this.queryType,
+    this.queryTypeName,
     this.ticketStatus,
     this.ticketPriority,
     this.assignee,
@@ -40,7 +43,8 @@ class CreateTicket {
     this.productName,
     this.productSerialNumber,
     this.productAddOns,
-    this.expectedMinutes
+    this.expectedMinutes,
+    this.visitRequired,
   });
 
   Map<String, dynamic> toJson() {
@@ -50,6 +54,7 @@ class CreateTicket {
       "contact_no": contactNo,
       "description": description,
       "query_type": queryType,
+      "query_type_name": queryTypeName,
       "ticket_status": ticketStatus,
       "ticket_priority": ticketPriority,
       "assignee": assignee,
@@ -65,6 +70,7 @@ class CreateTicket {
       "product_serial_number": productSerialNumber,
       "product_add_ons": productAddOns ?? "[]",
       "expected_minutes": expectedMinutes,
+      "visit_required": visitRequired,
     };
   }
 }

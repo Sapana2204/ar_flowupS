@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../data/network/network_api_services.dart';
 import '../model/comment_model.dart';
+import '../model/createVisit_model.dart';
 import '../model/createWorkLog_model.dart';
 import '../model/createTicket_model.dart';
 import '../model/ticketHistory_model.dart';
@@ -8,6 +9,7 @@ import '../model/tickets_model.dart';
 import '../constants/appUrls.dart';
 import '../model/updateTicket_model.dart';
 import '../model/updateWorkLog_model.dart';
+import '../model/visits_model.dart';
 
 class TicketsRepository {
   final _apiService = NetworkApiServices();
@@ -233,6 +235,46 @@ class TicketsRepository {
       return response;
     } catch (e, s) {
       print("❌ UPDATE WORK LOG ERROR => $e");
+      print(s);
+      rethrow;
+    }
+  }
+
+  Future<VisitsModel> fetchTicketVisits(int ticketId) async {
+    try {
+      final response = await _apiService.getPostApiResponse(
+        AppUrls.ticketVisits,
+        {
+          "ticket_id": ticketId,
+        },
+      );
+
+      return VisitsModel.fromJson(response);
+    } catch (e) {
+      debugPrint("❌ Ticket Visits Error: $e");
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> createVisit(
+      CreateVisitModel model,
+      ) async {
+    try {
+      print("════════ CREATE VISIT API ════════");
+      print("URL => ${AppUrls.createVisit}");
+      print("PAYLOAD => ${model.toJson()}");
+
+      final response = await _apiService.getPutApiResponse(
+        AppUrls.createVisit,
+        model.toJson(),
+      );
+
+      print("RESPONSE => $response");
+      print("══════════════════════════════════");
+
+      return response;
+    } catch (e, s) {
+      print("❌ CREATE VISIT ERROR => $e");
       print(s);
       rethrow;
     }

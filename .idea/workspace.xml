@@ -4,9 +4,21 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="ticket history changes done">
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="customer ticket report UI changes done">
+      <change afterPath="$PROJECT_DIR$/lib/model/createVisit_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/model/visits_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/ticketVisit_dialog.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ar_flowupS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ar_flowupS.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/createTicket_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/createTicket_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/tickets_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/tickets_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/updateTicket_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/updateTicket_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/tickets_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/tickets_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/routes/routes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/routes/routes.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -368,12 +380,19 @@
       <option name="project" value="LOCAL" />
       <updated>1781693581837</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="customer ticket report UI changes done">
+      <option name="closed" value="true" />
+      <created>1781694682285</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1781694682285</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="api integration of login, calllist and register call screen dropdowns done" />
     <MESSAGE value="primary color theme changed according to 0xFF1399EA" />
     <MESSAGE value="api integration and register call complete" />
     <MESSAGE value="changes with leads screen" />
@@ -398,6 +417,7 @@
     <MESSAGE value="customer ticket report with pdf preview and share pdf done" />
     <MESSAGE value="password encryption done" />
     <MESSAGE value="ticket history changes done" />
-    <option name="LAST_COMMIT_MESSAGE" value="ticket history changes done" />
+    <MESSAGE value="customer ticket report UI changes done" />
+    <option name="LAST_COMMIT_MESSAGE" value="customer ticket report UI changes done" />
   </component>
 </project>

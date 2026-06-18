@@ -23,6 +23,7 @@ class UpdateTicketModel {
   String? productSerialNumber;
   String? productAddOns;
   String? expectedMinutes;
+  String? visitRequired;
 
   UpdateTicketModel(
       {this.ticketId,
@@ -48,7 +49,8 @@ class UpdateTicketModel {
         this.productName,
         this.productSerialNumber,
         this.productAddOns,
-        this.expectedMinutes
+        this.expectedMinutes,
+        this.visitRequired,
 
       });
 
@@ -77,6 +79,7 @@ class UpdateTicketModel {
     productSerialNumber = json['product_serial_number'];
     productAddOns = json['product_add_ons'];
     expectedMinutes = json['expected_minutes'];
+    visitRequired = json['visit_required'];
 
   }
 
@@ -106,6 +109,7 @@ class UpdateTicketModel {
     data['product_serial_number'] = productSerialNumber;
     data['product_add_ons'] = productAddOns ?? "[]";
     data['expected_minutes'] = expectedMinutes;
+    data['visit_required'] = visitRequired;
     return data;
   }
 }
