@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:my_new_project/view/amcList_screen.dart';
 import 'package:my_new_project/view/customerList_screen.dart';
 import 'package:my_new_project/view/leadsDashboard_screen.dart';
+import 'package:my_new_project/view/productExpiryReport_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 import 'package:my_new_project/view/workReport_screen.dart';
@@ -312,6 +313,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 /// 🔹 REPORTS
                 _sectionTitle(AppStrings.reportsSection),
+
+                _drawerSimpleNav(Icons.production_quantity_limits, AppStrings.productExpreports, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProductExpiryReportScreen()),
+                  );
+                }),
 
                 _drawerSimpleNav(Icons.add_chart, AppStrings.reports, () {
                   Navigator.pop(context);

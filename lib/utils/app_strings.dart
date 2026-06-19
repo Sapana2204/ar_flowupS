@@ -43,6 +43,7 @@ class AppStrings {
 
   // Menu Items
   static const reports = "Work Report";
+  static const productExpreports = "Product Expiry Report";
   static const performanceReport = "Work Performance";
   static const logout = "Logout";
 

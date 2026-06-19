@@ -4,15 +4,16 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="ticket visit done">
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="responsive person changes done">
+      <change afterPath="$PROJECT_DIR$/lib/model/productExpiryReport_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/repository/productExpiry_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/productExpiryReport_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/viewmodel/productExpiry_viewmodel.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/createCustomer_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/createCustomer_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/customerProduct.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customerProduct.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/customers_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customers_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/updateCustomer_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/updateCustomer_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/createCustomer_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/createCustomer_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/leadsDashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/leadsDashboard_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/app_strings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_strings.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -390,12 +391,19 @@
       <option name="project" value="LOCAL" />
       <updated>1781777423749</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="responsive person changes done">
+      <option name="closed" value="true" />
+      <created>1781856009513</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1781856009513</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="api integration and register call complete" />
     <MESSAGE value="changes with leads screen" />
     <MESSAGE value="create and update ticket completed" />
     <MESSAGE value="location and location" />
@@ -420,6 +428,7 @@
     <MESSAGE value="ticket history changes done" />
     <MESSAGE value="customer ticket report UI changes done" />
     <MESSAGE value="ticket visit done" />
-    <option name="LAST_COMMIT_MESSAGE" value="ticket visit done" />
+    <MESSAGE value="responsive person changes done" />
+    <option name="LAST_COMMIT_MESSAGE" value="responsive person changes done" />
   </component>
 </project>
