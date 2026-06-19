@@ -4,16 +4,10 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="responsive person changes done">
-      <change afterPath="$PROJECT_DIR$/lib/model/productExpiryReport_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/repository/productExpiry_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/productExpiryReport_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/viewmodel/productExpiry_viewmodel.dart" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="product expiry report done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/utils/app_strings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_strings.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/workReport_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/workReport_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/workReport_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/workReport_screen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -399,12 +393,19 @@
       <option name="project" value="LOCAL" />
       <updated>1781856009513</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="product expiry report done">
+      <option name="closed" value="true" />
+      <created>1781864698934</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1781864698934</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="changes with leads screen" />
     <MESSAGE value="create and update ticket completed" />
     <MESSAGE value="location and location" />
     <MESSAGE value="color od call due date and maekasread notification and logo changes" />
@@ -429,6 +430,7 @@
     <MESSAGE value="customer ticket report UI changes done" />
     <MESSAGE value="ticket visit done" />
     <MESSAGE value="responsive person changes done" />
-    <option name="LAST_COMMIT_MESSAGE" value="responsive person changes done" />
+    <MESSAGE value="product expiry report done" />
+    <option name="LAST_COMMIT_MESSAGE" value="product expiry report done" />
   </component>
 </project>

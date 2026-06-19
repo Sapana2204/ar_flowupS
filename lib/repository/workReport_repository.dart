@@ -70,6 +70,18 @@ class WorkReportRepository {
         "order": "DESC"
       },
     );
+    print("========= WORK REPORT REQUEST =========");
+    print({
+      "user_id": userId,
+      "company_id": companyId,
+      "from_date": fromDate,
+      "to_date": toDate,
+      "page": page,
+      "limit": limit,
+      "searchText": searchText,
+      "order_by": "work_start_at",
+      "order": "DESC"
+    });
 
     return WorkReportModel.fromJson(response);
   }

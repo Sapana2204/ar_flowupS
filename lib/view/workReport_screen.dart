@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../model/assignee_model.dart';
 import '../model/company_model.dart';
+import '../model/workReport_model.dart';
+import '../utils/app_colors.dart';
 import '../viewmodel/workReport_viewmodel.dart';
 
 class WorkReportScreen extends StatefulWidget {
@@ -59,6 +61,7 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: const Color(0xFFF4F7FC),
         appBar: AppBar(
           title: const Text("Work Report"),
           actions: [
@@ -91,59 +94,76 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
               /// SUMMARY SECTION (STICKY)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _summaryCard(
-                        title: "Total Logs",
-                        value: "29",
-                        icon: Icons.description_outlined,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(.05),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _summaryCard(
-                        title: "Total Time",
-                        value: "7h 24m",
-                        icon: Icons.access_time,
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _summaryItem(
+                              title: "Logs",
+                              value: "${dropdownVm.summary?.totalLogs ?? 0}",
+                              icon: Icons.description_outlined,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: _summaryItem(
+                              title: "Time",
+                              value: formatMinutes(
+                                dropdownVm.summary?.totalMinutes,
+                              ),
+                              icon: Icons.access_time,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 8),
+                      const SizedBox(height: 24),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _summaryCard(
-                        title: "Employees",
-                        value: "4",
-                        icon: Icons.people_outline,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _summaryItem(
+                              title: "Employees",
+                              value: "${dropdownVm.summary?.employeeCount ?? 0}",
+                              icon: Icons.people_outline,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: _summaryItem(
+                              title: "Tickets",
+                              value: "${dropdownVm.summary?.ticketCount ?? 0}",
+                              icon: Icons.confirmation_num_outlined,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _summaryCard(
-                        title: "Tickets",
-                        value: "7",
-                        icon: Icons.confirmation_num_outlined,
-                      ),
-                    ),
-                  ],
+                    ],
+                  )
                 ),
               ),
 
               const SizedBox(height: 12),
 
               /// COMPANY SUMMARY TITLE
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(Icons.business),
                     SizedBox(width: 8),
                     Text(
@@ -162,26 +182,24 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
               /// COMPANY CARDS (STICKY)
               SizedBox(
                 height: 110,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  children: [
-                    _companyCard(
-                      company: "ABC Inc",
-                      time: "5h 47m",
-                      logs: "19 logs",
-                    ),
-                    _companyCard(
-                      company: "AR Infotech",
-                      time: "1h 18m",
-                      logs: "8 logs",
-                    ),
-                    _companyCard(
-                      company: "Others",
-                      time: "19m",
-                      logs: "2 logs",
-                    ),
-                  ],
+                child:SizedBox(
+                  height: 110,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: dropdownVm.companySummary.length,
+                    itemBuilder: (context, index) {
+                      final company = dropdownVm.companySummary[index];
+
+                      return _companyCard(
+                        company: company.companyName ?? "-",
+                        time: formatMinutes(
+                          company.totalMinutes,
+                        ),
+                        logs: "${company.totalLogs ?? 0} logs",
+                      );
+                    },
+                  ),
                 ),
               ),
 
@@ -191,9 +209,9 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.only(bottom: 20),
-                  itemCount: filteredTickets.length,
+                  itemCount: dropdownVm.workLogs.length,
                   itemBuilder: (context, index) {
-                    return _reportCard(filteredTickets[index]);
+                    return _reportCard(dropdownVm.workLogs[index]);
                   },
                 ),
               ),
@@ -202,36 +220,115 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
         }));
   }
 
+  Widget _summaryItem({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: primary.withOpacity(.10),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: primary,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  color: primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String formatMinutes(String? minutesStr) {
+    final minutes = int.tryParse(minutesStr ?? "0") ?? 0;
+
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+
+    if (hours > 0) {
+      return "${hours}hr ${mins}m";
+    }
+
+    return "${mins}m";
+  }
+
   Widget _summaryCard({
     required String title,
     required String value,
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        gradient: LinearGradient(
+          colors: [
+            primary,
+            primary.withOpacity(.85),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: primary.withOpacity(.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon),
-          const SizedBox(height: 8),
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.white24,
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             title,
             style: const TextStyle(
+              color: Colors.white70,
               fontSize: 12,
-              color: Colors.grey,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 20,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
+              fontSize: 22,
             ),
           ),
         ],
@@ -281,7 +378,7 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
     );
   }
 
-  Widget _reportCard(Map<String, dynamic> ticket) {
+  Widget _reportCard(Data log) {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: 12,
@@ -290,33 +387,67 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey.shade300,
-        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: primary.withOpacity(.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  log.ticketNo ?? "-",
+                  style: TextStyle(
+                    color: primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Icon(
+                Icons.schedule,
+                size: 16,
+                color: primary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                "${log.spentMinutes ?? 0} min",
+                style: TextStyle(
+                  color: primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           /// Row 1
           Row(
             children: [
               Expanded(
                 child: _infoItem(
                   "Date",
-                  "09-06-2026",
-                ),
-              ),
-              Expanded(
-                child: _infoItem(
-                  "Time",
-                  "05:14 PM",
+                  log.workDate ?? "-",
                 ),
               ),
               Expanded(
                 child: _infoItem(
                   "Employee",
-                  "Sapana",
+                  log.employeeName ?? "-",
                 ),
               ),
             ],
@@ -330,14 +461,15 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
               Expanded(
                 child: _infoItem(
                   "Ticket",
-                  "TKT-34",
+                  log.ticketNo ?? "-",
                 ),
               ),
               Expanded(
                 child: _infoItem(
                   "Client",
-                  "Sapana",
+                  log.clientName ?? "-",
                 ),
+
               ),
             ],
           ),
@@ -350,13 +482,13 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
               Expanded(
                 child: _infoItem(
                   "Company",
-                  "AR Infotech",
+                  log.companyName ?? "-",
                 ),
               ),
               Expanded(
                 child: _infoItem(
-                  "Spent",
-                  "2m",
+                  "Time",
+                  log.workTime ?? "-",
                 ),
               ),
             ],
@@ -364,25 +496,22 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
 
           const SizedBox(height: 8),
 
-          Text(
-            "Work Details",
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
 
-          const SizedBox(height: 2),
 
-          Text(
-            ticket["client"] ?? "",
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 13,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: primary.withOpacity(.05),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ),
+            child: Text(
+              log.workDetails ?? "",
+              style: const TextStyle(
+                fontSize: 13,
+              ),
+            ),
+          )
         ],
       ),
     );
