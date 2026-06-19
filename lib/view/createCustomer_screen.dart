@@ -1,18 +1,17 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import '../model/createCustomer_model.dart';
-import '../model/customerProduct_model.dart';
 import '../model/updateCustomer_model.dart';
 import '../utils/app_colors.dart';
 import '../viewmodel/customers_viewmodel.dart';
+import '../model/adminData_model.dart';
+import '../viewmodel/query_viewmodel.dart';
 
 class CreateCustomerScreen extends StatefulWidget {
   final int? customerId; // 👈 ADD
-  final bool isEdit;     // 👈 ADD
+  final bool isEdit; // 👈 ADD
 
   const CreateCustomerScreen({
     super.key,
@@ -37,6 +36,8 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   final addressController = TextEditingController();
   List<TextEditingController> addOnInputControllers = [];
   List<List<String>> productAddOns = [];
+  List<TextEditingController> expiryDateControllers = [];
+  List<DateTime?> expiryDates = [];
 
   bool isAmc = false;
 
@@ -47,21 +48,41 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
 
   List<int?> selectedProducts = [];
   List<TextEditingController> serialControllers = [];
+  final expectedCallCountController = TextEditingController();
+
+  List<AdminData> adminList = [];
+  String? selectedResponsiblePerson;
+  String? selectedResponsiblePersonId;
 
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      Provider.of<CustomersViewModel>(
+    Future.microtask(() async {
+      final customerVm = Provider.of<CustomersViewModel>(
         context,
         listen: false,
-      ).fetchProducts();
-    });
+      );
 
-    if (widget.isEdit && widget.customerId != null) {
-      _loadCustomer();
-    }
+      final queryVm = Provider.of<QueryViewModel>(
+        context,
+        listen: false,
+      );
+
+      await customerVm.fetchProducts();
+
+      await queryVm.fetchAdmins();
+
+      adminList = queryVm.adminList;
+
+      if (widget.isEdit && widget.customerId != null) {
+        await _loadCustomer();
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   Future<void> _loadCustomer() async {
@@ -77,37 +98,51 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     if (customer == null) return;
 
     nameController.text = customer.name ?? "";
-    contactPersonController.text =
-        customer.contactPerson ?? "";
+    contactPersonController.text = customer.contactPerson ?? "";
     mobileController.text = customer.mobileNo ?? "";
     whatsappController.text = customer.waNo ?? "";
     emailController.text = customer.email ?? "";
     panController.text = customer.panNumber ?? "";
     gstController.text = customer.gstNumber ?? "";
     addressController.text = customer.address ?? "";
+    selectedResponsiblePersonId =
+        customer.responsiblePerson?.toString();
+
+    expectedCallCountController.text =
+        customer.expCallCount?.toString() ?? "";
 
     isAmc = customer.isAmc == "yes";
 
-    selectedAmcPeriod = switch (
-    customer.amcTermPeriod) {
+    selectedAmcPeriod = switch (customer.amcTermPeriod) {
       "3_month" => "3 Months",
       "6_month" => "6 Months",
       "1_year" => "1 Year",
       _ => null,
     };
 
-    if (customer.amcStartDate != null &&
-        customer.amcStartDate!.isNotEmpty) {
+    if (customer.amcStartDate != null && customer.amcStartDate!.isNotEmpty) {
       amcStartDate = DateTime.tryParse(
         customer.amcStartDate!,
       );
     }
 
-    if (customer.amcEndDate != null &&
-        customer.amcEndDate!.isNotEmpty) {
+    if (customer.amcEndDate != null && customer.amcEndDate!.isNotEmpty) {
       amcEndDate = DateTime.tryParse(
         customer.amcEndDate!,
       );
+    }
+
+    if (selectedResponsiblePersonId != null) {
+      final matchingAdmins = adminList.where(
+            (e) =>
+        e.adminID.toString() ==
+            selectedResponsiblePersonId,
+      );
+
+      if (matchingAdmins.isNotEmpty) {
+        selectedResponsiblePerson =
+            matchingAdmins.first.name;
+      }
     }
 
     /// Clear old data
@@ -117,8 +152,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     productAddOns.clear();
 
     /// Load products
-    for (final product
-    in customer.customerProducts ?? []) {
+    for (final product in customer.customerProducts ?? []) {
       selectedProducts.add(
         int.tryParse(product.productId ?? ""),
       );
@@ -127,6 +161,18 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         TextEditingController(
           text: product.serialNumber ?? "",
         ),
+      );
+
+      expiryDateControllers.add(
+        TextEditingController(
+          text: product.expiryDate ?? "",
+        ),
+      );
+
+      expiryDates.add(
+        product.expiryDate != null
+            ? DateTime.tryParse(product.expiryDate!)
+            : null,
       );
 
       /// Empty controller used for entering new addon
@@ -155,7 +201,6 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         backgroundColor: primary,
       ),
       backgroundColor: const Color(0xFFF5F6FA),
-
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -163,7 +208,6 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               /// 🔹 BASIC INFO
               const Text("BASIC INFORMATION",
                   style: TextStyle(fontSize: 12, color: Colors.grey)),
@@ -172,7 +216,8 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
 
               _card([
                 _labelField("Customer Name", nameController, required: true),
-                _labelField("Contact Person", contactPersonController, required: true),
+                _labelField("Contact Person", contactPersonController,
+                    required: true),
               ]),
 
               const SizedBox(height: 16),
@@ -190,10 +235,8 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                   keyboard: TextInputType.phone,
                   required: true,
                 ),
-
                 _labelField("WhatsApp Number", whatsappController,
                     keyboard: TextInputType.phone),
-
                 _labelField("Email Address", emailController,
                     keyboard: TextInputType.emailAddress),
               ]),
@@ -243,7 +286,6 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                     ),
                   ],
                 ),
-
                 if (isAmc) ...[
                   DropdownButtonFormField<String>(
                     isDense: true,
@@ -282,9 +324,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                       _calculateAmcEndDate();
                     },
                   ),
-
                   const SizedBox(height: 12),
-
                   Row(
                     children: [
                       Expanded(
@@ -304,9 +344,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                           },
                         ),
                       ),
-
                       const SizedBox(width: 12),
-
                       Expanded(
                         child: _readOnlyDateField(
                           label: "End Date",
@@ -314,6 +352,80 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                         ),
                       ),
                     ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  DropdownButtonFormField<String>(
+                    value: selectedResponsiblePerson,
+                    decoration: InputDecoration(
+                      labelText: "Responsible Person *",
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF5F6FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    items: adminList.map((admin) {
+                      return DropdownMenuItem<String>(
+                        value: admin.name,
+                        child: Text(admin.name ?? ""),
+                      );
+                    }).toList(),
+                    validator: (value) {
+                      if (isAmc && (value == null || value.isEmpty)) {
+                        return "Select Responsible Person";
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        selectedResponsiblePerson = value;
+
+                        final admin = adminList.firstWhere(
+                              (e) => e.name == value,
+                        );
+
+                        selectedResponsiblePersonId =
+                            admin.adminID?.toString();
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextFormField(
+                    controller: expectedCallCountController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    validator: (value) {
+                      if (isAmc && (value == null || value.isEmpty)) {
+                        return "Enter Expected Call Count";
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Expected Call Count (Per Month) *",
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF5F6FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                 ]
               ]),
@@ -353,7 +465,6 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                         ],
                       ),
                     ),
-
                     SizedBox(
                       height: 34,
                       child: ElevatedButton.icon(
@@ -364,6 +475,12 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                             serialControllers.add(
                               TextEditingController(),
                             );
+
+                            expiryDateControllers.add(
+                              TextEditingController(),
+                            );
+
+                            expiryDates.add(null);
 
                             addOnInputControllers.add(
                               TextEditingController(),
@@ -394,15 +511,13 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                     )
                   ],
                 ),
-
                 const SizedBox(height: 15),
                 ...List.generate(
                   selectedProducts.length,
-                      (index) => Container(
+                  (index) => Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: Column(
                       children: [
-
                         /// Product Dropdown
                         DropdownButtonFormField<int>(
                           value: selectedProducts[index],
@@ -421,32 +536,32 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                               borderSide: BorderSide.none,
                             ),
                           ),
-                          items: vm.products
-                              .where((product) {
-                            return !selectedProducts.contains(product.productId) ||
+                          items: vm.products.where((product) {
+                            return !selectedProducts
+                                    .contains(product.productId) ||
                                 product.productId == selectedProducts[index];
-                          })
-                              .map((product) {
+                          }).map((product) {
                             return DropdownMenuItem<int>(
                               value: product.productId,
                               child: Text(product.productName ?? ""),
                             );
-                          })
-                              .toList(),
+                          }).toList(),
                           onChanged: (value) {
                             if (value == null) return;
 
                             // Check duplicate product
-                            final alreadySelected = selectedProducts.asMap().entries.any(
-                                  (entry) =>
-                              entry.key != index &&
-                                  entry.value == value,
-                            );
+                            final alreadySelected =
+                                selectedProducts.asMap().entries.any(
+                                      (entry) =>
+                                          entry.key != index &&
+                                          entry.value == value,
+                                    );
 
                             if (alreadySelected) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("This product is already added."),
+                                  content:
+                                      Text("This product is already added."),
                                 ),
                               );
                               return;
@@ -461,22 +576,80 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                         const SizedBox(height: 10),
 
                         /// Serial No
-                        TextFormField(
-                          controller: serialControllers[index],
-                          decoration: InputDecoration(
-                            labelText: "Serial Number",
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: serialControllers[index],
+                                decoration: InputDecoration(
+                                  labelText: "Serial Number",
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF5F6FA),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
                             ),
-                            filled: true,
-                            fillColor: const Color(0xFFF5F6FA),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate:
+                                    expiryDates[index] ?? DateTime.now(),
+                                    firstDate: DateTime(2020),
+                                    lastDate: DateTime(2100),
+                                  );
+
+                                  if (picked != null) {
+                                    setState(() {
+                                      expiryDates[index] = picked;
+
+                                      expiryDateControllers[index].text =
+                                          picked.toIso8601String()
+                                              .split('T')
+                                              .first;
+                                    });
+                                  }
+                                },
+                                child: IgnorePointer(
+                                  child: TextFormField(
+                                    controller:
+                                    expiryDateControllers[index],
+                                    decoration: InputDecoration(
+                                      labelText: "Expiry Date",
+                                      suffixIcon: const Icon(
+                                        Icons.calendar_month,
+                                      ),
+                                      isDense: true,
+                                      contentPadding:
+                                      const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 12,
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0xFFF5F6FA),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(10),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
 
                         const SizedBox(height: 10),
@@ -502,14 +675,13 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                                 ),
                               ),
                             ),
-
                             const SizedBox(width: 8),
-
                             IconButton(
-                              icon: const Icon(Icons.add_circle, color: Colors.green),
+                              icon: const Icon(Icons.add_circle,
+                                  color: Colors.green),
                               onPressed: () {
                                 final addon =
-                                addOnInputControllers[index].text.trim();
+                                    addOnInputControllers[index].text.trim();
 
                                 if (addon.isEmpty) return;
 
@@ -530,15 +702,15 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                           children: productAddOns[index]
                               .map(
                                 (addon) => Chip(
-                              label: Text(addon),
-                              deleteIcon: const Icon(Icons.close, size: 18),
-                              onDeleted: () {
-                                setState(() {
-                                  productAddOns[index].remove(addon);
-                                });
-                              },
-                            ),
-                          )
+                                  label: Text(addon),
+                                  deleteIcon: const Icon(Icons.close, size: 18),
+                                  onDeleted: () {
+                                    setState(() {
+                                      productAddOns[index].remove(addon);
+                                    });
+                                  },
+                                ),
+                              )
                               .toList(),
                         ),
 
@@ -553,10 +725,12 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                               setState(() {
                                 serialControllers[index].dispose();
                                 addOnInputControllers[index].dispose();
+                                expiryDateControllers[index].dispose();
 
                                 serialControllers.removeAt(index);
                                 addOnInputControllers.removeAt(index);
-
+                                expiryDateControllers.removeAt(index);
+                                expiryDates.removeAt(index);
                                 productAddOns.removeAt(index);
                                 selectedProducts.removeAt(index);
                               });
@@ -567,10 +741,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                     ),
                   ),
                 ),
-
               ]),
-
-
             ],
           ),
         ),
@@ -589,7 +760,8 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
                   icon: const Icon(Icons.save),
                   label: vm.isLoading
                       ? const Text("Saving...")
-                      : Text(widget.isEdit ? "Update Customer" : "Save Customer"),
+                      : Text(
+                          widget.isEdit ? "Update Customer" : "Save Customer"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     shape: RoundedRectangleBorder(
@@ -604,8 +776,6 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       ),
     );
   }
-
-
 
   Widget _readOnlyDateField({
     required String label,
@@ -635,8 +805,8 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         selectedDate == null
             ? "Auto"
             : "${selectedDate.day.toString().padLeft(2, '0')}/"
-            "${selectedDate.month.toString().padLeft(2, '0')}/"
-            "${selectedDate.year}",
+                "${selectedDate.month.toString().padLeft(2, '0')}/"
+                "${selectedDate.year}",
         style: const TextStyle(fontSize: 14),
       ),
     );
@@ -731,14 +901,13 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
           selectedDate == null
               ? "Select"
               : "${selectedDate.day.toString().padLeft(2, '0')}/"
-              "${selectedDate.month.toString().padLeft(2, '0')}/"
-              "${selectedDate.year}",
+                  "${selectedDate.month.toString().padLeft(2, '0')}/"
+                  "${selectedDate.year}",
           style: const TextStyle(fontSize: 14),
         ),
       ),
     );
   }
-
 
   Widget _card(List<Widget> children) {
     return Container(
@@ -755,12 +924,12 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   }
 
   Widget _labelField(
-      String label,
-      TextEditingController controller, {
-        bool required = false,
-        int maxLines = 1,
-        TextInputType keyboard = TextInputType.text,
-      }) {
+    String label,
+    TextEditingController controller, {
+    bool required = false,
+    int maxLines = 1,
+    TextInputType keyboard = TextInputType.text,
+  }) {
     final isPhoneField = label.toLowerCase().contains("mobile") ||
         label.toLowerCase().contains("whatsapp");
 
@@ -785,9 +954,9 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
             /// ✅ Apply formatter ONLY for phone
             inputFormatters: isPhoneField
                 ? [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(10),
-            ]
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ]
                 : null,
 
             validator: (v) {
@@ -796,8 +965,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
               }
 
               /// 📱 Mobile validation
-              final isMobileField =
-              label.toLowerCase().contains("mobile");
+              final isMobileField = label.toLowerCase().contains("mobile");
 
               if (isMobileField) {
                 if (v == null || v.isEmpty) {
@@ -830,7 +998,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
               hintText: "Enter $label",
               isDense: true,
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               filled: true,
               fillColor: const Color(0xFFF5F6FA),
               border: OutlineInputBorder(
@@ -844,10 +1012,8 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     );
   }
 
-
   /// SUBMIT
   Future<void> _submit() async {
-
     print("===== SUBMIT CLICKED =====");
     print("selectedProducts : $selectedProducts");
     print("productAddOns : $productAddOns");
@@ -875,20 +1041,28 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
 
     /// ✏️ EDIT MODE
     if (widget.isEdit) {
-
       final customerProducts = <Map<String, dynamic>>[];
       final productIds = <String>[];
 
       for (int i = 0; i < selectedProducts.length; i++) {
-
         final product = vm.products.firstWhere(
-              (e) => e.productId == selectedProducts[i],
+          (e) => e.productId == selectedProducts[i],
         );
+        final addons = List<String>.from(productAddOns[i]);
+
+        final pendingAddon =
+        addOnInputControllers[i].text.trim();
+
+        if (pendingAddon.isNotEmpty) {
+          addons.add(pendingAddon);
+        }
+
         customerProducts.add({
           "product_id": product.productId.toString(),
           "product_name": product.productName,
           "serial_number": serialControllers[i].text,
-          "add_ons": productAddOns[i],
+          "expiry_date": expiryDateControllers[i].text,
+          "add_ons": addons,
         });
 
         productIds.add(product.productId.toString());
@@ -904,23 +1078,21 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         panNumber: panController.text,
         gstNumber: gstController.text,
         address: addressController.text,
-
         isAmc: isAmc ? "yes" : "no",
         amcTermPeriod: getAmcApiValue(),
-
-        amcStartDate: amcStartDate == null
-            ? null
-            : amcStartDate!.toIso8601String().split('T').first,
-
+        amcStartDate: amcStartDate?.toIso8601String().split('T').first,
         amcEndDate: amcEndDate == null
             ? null
             : amcEndDate!.toIso8601String().split('T').first,
-
         status: "active",
-
         customerProducts: customerProducts,
         productIds: productIds,
         products: customerProducts,
+        responsiblePerson:
+        int.tryParse(selectedResponsiblePersonId ?? ""),
+
+        expCallCount:
+        expectedCallCountController.text,
       );
 
       print("========== UPDATE CUSTOMER REQUEST ==========");
@@ -952,16 +1124,26 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       print("STEP 2 : ${selectedProducts[i]}");
 
       final product = vm.products.firstWhere(
-            (e) => e.productId == selectedProducts[i],
+        (e) => e.productId == selectedProducts[i],
       );
 
       print("STEP 3 : ${product.productName}");
+
+      final addons = List<String>.from(productAddOns[i]);
+
+      final pendingAddon =
+      addOnInputControllers[i].text.trim();
+
+      if (pendingAddon.isNotEmpty) {
+        addons.add(pendingAddon);
+      }
 
       productList.add({
         "product_id": product.productId.toString(),
         "product_name": product.productName,
         "serial_number": serialControllers[i].text,
-        "add_ons": productAddOns[i],
+        "expiry_date": expiryDateControllers[i].text,
+        "add_ons": addons,
       });
     }
 
@@ -977,24 +1159,24 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       panNumber: panController.text,
       gstNo: gstController.text,
       address: addressController.text,
-
       isAmc: isAmc ? "yes" : "no",
       amcTermPeriod: getAmcApiValue(),
-
       amcStartDate: amcStartDate == null
           ? null
           : amcStartDate!.toIso8601String().split('T').first,
-
       amcEndDate: amcEndDate == null
           ? null
           : amcEndDate!.toIso8601String().split('T').first,
-
       customerProducts: productList,
+      responsiblePerson:
+      int.tryParse(selectedResponsiblePersonId ?? ""),
+
+      expCallCount:
+      expectedCallCountController.text,
     );
     print("REQUEST JSON");
     print(
-      const JsonEncoder.withIndent('  ')
-          .convert(model.toJson()),
+      const JsonEncoder.withIndent('  ').convert(model.toJson()),
     );
 
     print("STEP 5");
@@ -1026,5 +1208,13 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       default:
         return null;
     }
+  }
+
+
+
+  @override
+  void dispose() {
+    expectedCallCountController.dispose();
+    super.dispose();
   }
 }

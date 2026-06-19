@@ -828,6 +828,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
 
       return; // 👈 IMPORTANT (stop here)
     }
+
     /// ✅ CREATE MODE
     final ticket = CreateTicket(
       clientId: queryVm.selectedClient?.customerId,

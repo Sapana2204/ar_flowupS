@@ -14,7 +14,6 @@ class LeadsDashboard extends StatelessWidget {
         title: const Text("Leads"),
         backgroundColor: primary,
       ),
-
       body: Column(
         children: [
           _buildSearchBar(),
@@ -61,7 +60,6 @@ class LeadsDashboard extends StatelessWidget {
               ),
             ),
           ),
-
         ],
       ),
     );

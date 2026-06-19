@@ -2,12 +2,14 @@ class CustomerProduct {
   String? productId;
   String? productName;
   String? serialNumber;
+  String? expiryDate;
   List<String>? addOns;
 
   CustomerProduct({
     this.productId,
     this.productName,
     this.serialNumber,
+    this.expiryDate,
     this.addOns,
   });
 
@@ -15,6 +17,7 @@ class CustomerProduct {
     productId = json['product_id']?.toString();
     productName = json['product_name']?.toString();
     serialNumber = json['serial_number']?.toString();
+    expiryDate = json['expiry_date']?.toString();
 
     addOns = json['add_ons'] == null
         ? []

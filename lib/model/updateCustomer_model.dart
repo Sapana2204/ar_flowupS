@@ -15,6 +15,9 @@ class UpdateCustomer {
   String? amcEndDate;
   String? status;
 
+  int? responsiblePerson;
+  String? expCallCount;
+
   List<Map<String, dynamic>>? customerProducts;
   List<String>? productIds;
   List<Map<String, dynamic>>? products;
@@ -34,6 +37,8 @@ class UpdateCustomer {
     this.amcStartDate,
     this.amcEndDate,
     this.status,
+    this.responsiblePerson,
+    this.expCallCount,
     this.customerProducts,
     this.productIds,
     this.products,
@@ -55,6 +60,9 @@ class UpdateCustomer {
       "amc_term_period": amcTermPeriod,
       "amc_start_date": amcStartDate,
       "amc_end_date": amcEndDate,
+
+      "responsible_person": responsiblePerson,
+      "exp_call_count": expCallCount,
 
       "status": status,
 

@@ -13,6 +13,9 @@ class CreateCustomer {
   String? amcStartDate;
   String? amcEndDate;
 
+  int? responsiblePerson;
+  String? expCallCount;
+
   List<Map<String, dynamic>>? customerProducts;
 
   CreateCustomer({
@@ -28,6 +31,8 @@ class CreateCustomer {
     this.amcTermPeriod,
     this.amcStartDate,
     this.amcEndDate,
+    this.responsiblePerson,
+    this.expCallCount,
     this.customerProducts,
   });
 
@@ -39,7 +44,7 @@ class CreateCustomer {
       "mobile_no": mobileNo,
       "wa_no": waNo,
       "pan_number": panNumber,
-      "gst_no": gstNo,
+      "gst_number": gstNo,
       "address": address,
       "contact_person": contactPerson,
 
@@ -47,6 +52,9 @@ class CreateCustomer {
       "amc_term_period": amcTermPeriod,
       "amc_start_date": amcStartDate,
       "amc_end_date": amcEndDate,
+
+      "responsible_person": responsiblePerson,
+      "exp_call_count": expCallCount,
 
       "customer_products": customerProducts ?? [],
     };

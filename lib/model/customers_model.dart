@@ -43,6 +43,8 @@ class CustomerData {
   String? amcTermPeriod;
   String? amcStartDate;
   String? amcEndDate;
+  String? responsiblePerson;
+  int? expCallCount;
 
   /// Products
   List<CustomerProduct>? customerProducts;
@@ -66,6 +68,8 @@ class CustomerData {
     this.amcStartDate,
     this.amcEndDate,
     this.customerProducts,
+    this.responsiblePerson,
+    this.expCallCount
   });
 
   CustomerData.fromJson(Map<String, dynamic> json) {
@@ -88,6 +92,13 @@ class CustomerData {
     amcTermPeriod = json['amc_term_period']?.toString();
     amcStartDate = json['amc_start_date']?.toString();
     amcEndDate = json['amc_end_date']?.toString();
+    responsiblePerson =
+        json['responsible_person']?.toString();
+
+    expCallCount =
+        int.tryParse(
+          json['exp_call_count']?.toString() ?? '',
+        );
 
     /// Products
     if (json['customer_products'] != null) {
