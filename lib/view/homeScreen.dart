@@ -4,6 +4,7 @@ import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:my_new_project/view/amcList_screen.dart';
 import 'package:my_new_project/view/customerList_screen.dart';
@@ -51,7 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<ServiceStatus>? _locationStatusSub;
   bool isSignedIn = false;
   bool _statusDialogShown = false;
-
+  static final MethodChannel _telephonyChannel =
+  MethodChannel('com.example.my_new_project/telephony');
 
   final List<Widget> _pages = const [
     DashboardScreen(),
@@ -800,10 +802,13 @@ class _HomeScreenState extends State<HomeScreen> {
         print("❌ Connectivity error: $e");
       }
 
-      /// ---------------- PLACEHOLDER VALUES ----------------
-      String mobileGeneration = "unknown";
-      String carrier = "unknown";
-      String signalStrength = "unknown";
+      /// ---------------- REAL TELEPHONY DATA ----------------
+      final telephonyData = await _getTelephonyData();
+
+      final String mobileGeneration =
+          telephonyData["mobile_network_generation"] ?? "unknown";
+      final String carrier = telephonyData["carrier"] ?? "unknown";
+      final String signalStrength = telephonyData["signal_strength"] ?? "unknown";
 
       return {
         "battery_percent": batteryPercent,
@@ -825,6 +830,27 @@ class _HomeScreenState extends State<HomeScreen> {
         "carrier": "unknown",
         "signal_strength": "unknown",
         "timestamp": DateTime.now().toIso8601String(),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> _getTelephonyData() async {
+    try {
+      final result =
+      await _telephonyChannel.invokeMethod('getTelephonyData');
+
+      return {
+        "carrier": result["carrier"] ?? "unknown",
+        "mobile_network_generation":
+        result["mobile_network_generation"] ?? "unknown",
+        "signal_strength": result["signal_strength"] ?? "unknown",
+      };
+    } catch (e) {
+      print("❌ Telephony method channel error: $e");
+      return {
+        "carrier": "unknown",
+        "mobile_network_generation": "unknown",
+        "signal_strength": "unknown",
       };
     }
   }

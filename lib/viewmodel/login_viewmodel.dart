@@ -1,29 +1,28 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:ringer_mode/ringer_mode.dart';
+
 import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
 import '../model/login_model.dart';
 import '../repository/login_repository.dart';
 import '../utils/routes/routes_names.dart';
 import '../utils/utils.dart';
-import 'dart:io';
-import 'package:battery_plus/battery_plus.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:ringer_mode/ringer_mode.dart';
-import 'package:telephony_info_plus/telephony_info_plus.dart';
 
 class LoginViewModel with ChangeNotifier {
   final _loginRepository = LoginRepository();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  static final MethodChannel _telephonyChannel =
+  MethodChannel('com.example.my_new_project/telephony');
 
   LoginModel? _userData;
   LoginModel? get userData => _userData;
@@ -293,10 +292,13 @@ class LoginViewModel with ChangeNotifier {
         print("❌ Connectivity error: $e");
       }
 
-      /// ---------------- PLACEHOLDER VALUES ----------------
-      String mobileGeneration = "unknown";
-      String carrier = "unknown";
-      String signalStrength = "unknown";
+      /// ---------------- REAL TELEPHONY DATA ----------------
+      final telephonyData = await _getTelephonyData();
+
+      final String mobileGeneration =
+          telephonyData["mobile_network_generation"] ?? "unknown";
+      final String carrier = telephonyData["carrier"] ?? "unknown";
+      final String signalStrength = telephonyData["signal_strength"] ?? "unknown";
 
       return {
         "battery_percent": batteryPercent,
@@ -375,6 +377,27 @@ class LoginViewModel with ChangeNotifier {
       Utils.showToast(e.toString());
     } finally {
       setForgotLoading(false);
+    }
+  }
+
+  Future<Map<String, dynamic>> _getTelephonyData() async {
+    try {
+      final result =
+      await _telephonyChannel.invokeMethod('getTelephonyData');
+
+      return {
+        "carrier": result["carrier"] ?? "unknown",
+        "mobile_network_generation":
+        result["mobile_network_generation"] ?? "unknown",
+        "signal_strength": result["signal_strength"] ?? "unknown",
+      };
+    } catch (e) {
+      print("❌ Telephony method channel error: $e");
+      return {
+        "carrier": "unknown",
+        "mobile_network_generation": "unknown",
+        "signal_strength": "unknown",
+      };
     }
   }
 }
