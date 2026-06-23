@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
@@ -660,6 +659,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     print("TICKET ID: ${widget.ticketId}");
 
     if (phone.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Phone number is missing"),
+          ),
+        );
+      }
       return;
     }
 
@@ -668,6 +674,13 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     print("PERMISSION: $status");
 
     if (!status.isGranted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Phone permission denied"),
+          ),
+        );
+      }
       return;
     }
 
@@ -697,26 +710,48 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       print("PHONE => $phone");
       print("TICKET ID => ${widget.ticketId}");
       print("STARTING CREATE WORK LOG");
-      final response = await vm.createWorkLogAndReturnId(
-        createModel,
-      );
+
+      final response = await vm.createWorkLogAndReturnId(createModel);
 
       print("WORK LOG RESPONSE: $response");
 
-      if (response != null) {
-        _activeWorkLogId = response;
+      // ❌ If work log not created, show error and DO NOT open call
+      if (response == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                vm.workLogErrorMessage.isNotEmpty
+                    ? vm.workLogErrorMessage
+                    : "Unable to start work log",
+              ),
+            ),
+          );
+        }
+        return;
       }
+
+      // ✅ Work log created successfully
+      _activeWorkLogId = response;
 
       print("CALLING NUMBER");
 
-      await FlutterPhoneDirectCaller.callNumber(
-        phone,
-      );
+      await FlutterPhoneDirectCaller.callNumber(phone);
 
       print("CALL OPENED");
     } catch (e, stackTrace) {
       print("ERROR: $e");
       print(stackTrace);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceFirst("Exception: ", ""),
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -766,9 +801,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       startDate = DateFormat("yyyy-MM-dd").format(parsedStart);
     }
 
-    /// =========================
     /// ✅ EDIT MODE → UPDATE API
-    /// =========================
     if (widget.mode == RegisterCallMode.edit) {
       final ticket = UpdateTicketModel(
         ticketId: widget.ticketId,
@@ -784,8 +817,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         status: "active",
         contactPerson: contactPersonController.text,
         reason: reasonController.text.isEmpty ? null : reasonController.text,
-        // whatsappNo: whatsappController.text,
-        /// ✅ SAFE VALUES
         createdBy: existing?.createdBy != null
             ? int.tryParse(existing!.createdBy!)
             : null,
@@ -797,11 +828,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         productSerialNumber: selectedProduct?.serialNumber,
         productAddOns: jsonEncode(selectedAddOns),
         expectedMinutes: expectedTimeController.text,
-        // 👈 ADD THIS
         visitRequired: visitRequired ? "y" : "n",
       );
 
-      /// ✅ PRINT FULL REQUEST
       print("📤 UPDATE REQUEST: ${ticket.toJson()}");
 
       final success = await vm.updateTicket(ticket);
@@ -1168,13 +1197,11 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         Text(label),
         const SizedBox(height: 6),
         TextFormField(
-          // ✅ change here
           controller: controller,
           enabled: enabled,
           maxLines: maxLines,
           keyboardType: keyboardType,
           validator: validator,
-          // 👈 ADD
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
@@ -1239,10 +1266,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       final contact = await _contactPicker.selectContact();
 
       if (contact != null) {
-        /// ✅ Set name first
         nameController.text = contact.fullName ?? "";
 
-        /// ✅ MULTIPLE NUMBERS → SHOW SELECTION UI
         if (contact.phoneNumbers != null && contact.phoneNumbers!.length > 1) {
           showModalBottomSheet(
             context: context,
@@ -1565,9 +1590,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
           controller: controller,
           enabled: enabled,
           validator: validator,
-          // 👈 ADD
           keyboardType: keyboardType,
-          // ✅ ADD
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
           ],
@@ -1594,7 +1617,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     );
   }
 
-  /// Date Field
   Widget _buildDateField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1670,7 +1692,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
             suffixIcon: const Icon(Icons.calendar_today, size: 20),
             filled: true,
             fillColor: Colors.white,
-            // 👈 normal look (not disabled)
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,

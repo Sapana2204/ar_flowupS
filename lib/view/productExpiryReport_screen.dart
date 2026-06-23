@@ -24,19 +24,6 @@ class _ProductExpiryReportScreenState
   DateTime? fromDate;
   DateTime? toDate;
 
-  final List<Map<String, dynamic>> products = [
-    {
-      "expiryDate": "30 Jun 2026",
-      "daysLeft": "11 Days",
-      "status": "Expiring Soon",
-      "customer": "Sapana Padmane",
-      "product": "Customization Module",
-      "serialNo": "342",
-      "company": "AR Infotech",
-      "contact": "9689662853",
-    }
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -156,168 +143,27 @@ class _ProductExpiryReportScreenState
     }
   }
 
-  Widget buildProductCard(Map<String, dynamic> item) {
-    final statusColor = getStatusColor(item["status"]);
-
-    return Card(
-      elevation: 1,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item["customer"],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    item["status"],
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const Divider(height: 18),
-
-            /// 2 COLUMN DATA
-            Row(
-              children: [
-                Expanded(
-                  child: _compactInfo(
-                    "Expiry",
-                    item["expiryDate"],
-                  ),
-                ),
-                Expanded(
-                  child: _compactInfo(
-                    "Days",
-                    item["daysLeft"],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 6),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _compactInfo(
-                    "Product",
-                    item["product"],
-                  ),
-                ),
-                Expanded(
-                  child: _compactInfo(
-                    "Serial",
-                    item["serialNo"],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 6),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _compactInfo(
-                    "Company",
-                    item["company"],
-                  ),
-                ),
-                Expanded(
-                  child: _compactInfo(
-                    "Contact",
-                    item["contact"],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                height: 28,
-                child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.notifications_outlined,
-                    size: 14,
-                  ),
-                  label: const Text(
-                    "Alert",
-                    style: TextStyle(fontSize: 11),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff0F766E),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                    ),
-                    tapTargetSize:
-                    MaterialTapTargetSize.shrinkWrap,
-                    visualDensity: VisualDensity.compact,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _compactInfo(String title, String value) {
+  Widget _coloredField(String title, String value, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 10,
             color: Colors.grey.shade500,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 2),
         Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+          style: TextStyle(
+            fontSize: 12,
+            color: color,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -450,199 +296,211 @@ class _ProductExpiryReportScreenState
         : Colors.orange;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(.08),
-            blurRadius: 10,
+            blurRadius: 8,
             offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          children: [
-            /// HEADER
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.blue.shade50,
-                  child: const Icon(
-                    Icons.person_outline,
-                    size: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Top row -> Customer + Days Left
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.customerName ?? "-",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 10),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.customerName ?? "-",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        item.companyName ?? "",
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  "${item.daysLeft ?? 0} Days",
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+              ),
+            ],
+          ),
 
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+          const SizedBox(height: 6),
+
+          /// Product Name
+          Text(
+            item.productName ?? "-",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          /// Serial + Expiry
+          Row(
+            children: [
+              Expanded(
+                child: _coloredField(
+                  "Serial No",
+                  item.serialNumber ?? "-",
+                  Colors.blue,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _coloredField(
+                  "Expiry Date",
+                  item.expiryDate ?? "-",
+                  statusColor,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          /// Call + Alert Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              SizedBox(
+                height: 30,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await makeCall(item.mobileNo ?? "");
+                  },
+                  icon: const Icon(
+                    Icons.call,
+                    size: 14,
+                    color: primary,
                   ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Text(
-                    status.replaceAll("_", " ").toUpperCase(),
+                  label: const Text(
+                    "Call",
                     style: TextStyle(
-                      color: statusColor,
                       fontSize: 11,
+                      color: primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 14),
-
-            /// DETAILS
-            Row(
-              children: [
-                Expanded(
-                  child: _compactInfo(
-                    "Expiry Date",
-                    item.expiryDate ?? "-",
-                  ),
-                ),
-                Expanded(
-                  child: _compactInfo(
-                    "Days Left",
-                    "${item.daysLeft ?? 0} Days",
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _compactInfo(
-                    "Product",
-                    item.productName ?? "-",
-                  ),
-                ),
-                Expanded(
-                  child: _compactInfo(
-                    "Serial No",
-                    item.serialNumber ?? "-",
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _compactInfo(
-                    "Contact",
-                    item.mobileNo ?? "-",
-                  ),
-                ),
-                Expanded(
-                  child: _compactInfo(
-                    "Email",
-                    item.email ?? "-",
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                SizedBox(
-                  height: 30,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      await makeCall(item.mobileNo ?? "");
-                    },
-                    icon: const Icon(
-                      Icons.call,
-                      size: 14,
-                      color: primary,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primary,
+                    side: const BorderSide(color: primary, width: 1),
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    label: const Text(
-                      "Call",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: primary,
-                        fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Consumer<ProductExpiryViewModel>(
+                builder: (context, vm, child) {
+                  return SizedBox(
+                    height: 30,
+                    child: ElevatedButton.icon(
+                      onPressed: vm.alertLoading
+                          ? null
+                          : () async {
+                        try {
+                          final success = await context
+                              .read<ProductExpiryViewModel>()
+                              .sendProductExpiryAlert(
+                            product: item,
+                            customerId:
+                            item.customerId?.toString() ?? "",
+                          );
+
+                          if (!mounted) return;
+
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Product expiry reminder sent successfully.",
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                e.toString().replaceAll(
+                                  "Exception: ",
+                                  "",
+                                ),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      icon: vm.alertLoading
+                          ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                          : const Icon(
+                        Icons.notifications_outlined,
+                        size: 14,
+                      ),
+                      label: Text(
+                        vm.alertLoading ? "Sending..." : "Alert",
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xff0F766E),
+                        foregroundColor: Colors.white,
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: primary,
-                      side: const BorderSide(
-                        color: primary,
-                        width: 1,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                SizedBox(
-                  height: 30,
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.notifications_outlined,
-                      size: 14,
-                    ),
-                    label: const Text(
-                      "Alert",
-                      style: TextStyle(fontSize: 11),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff0F766E),
-                      foregroundColor: Colors.white,
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

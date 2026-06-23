@@ -78,6 +78,10 @@ dependencies:
   path_provider: ^2.1.5
   file_saver: ^0.2.14
   cryptography: ^2.7.0
+  battery_plus: ^6.0.2
+  connectivity_plus: ^6.0.3
+  ringer_mode: ^1.0.2
+  telephony_info_plus: ^0.0.2
 
 
 

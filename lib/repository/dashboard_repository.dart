@@ -9,8 +9,9 @@ class DashboardRepository {
       print("========== DASHBOARD API ==========");
       print("URL : ${AppUrls.dashboardApi}");
 
-      final response = await _apiServices.getGetApiResponse(
+      final response = await _apiServices.getPostApiResponse(
         AppUrls.dashboardApi,
+        {}, // empty body if backend doesn't require params
       );
 
       print("========== DASHBOARD RESPONSE ==========");

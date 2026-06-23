@@ -120,17 +120,19 @@ class LoginRepository {
   Future<void> updateUserLocation({
     required double latitude,
     required double longitude,
+    required Map<String, dynamic> aliveData,
   }) async {
     final api = NetworkApiServices();
 
     final data = {
       "latitude": latitude,
       "longitude": longitude,
+      "alive_data": aliveData,
     };
 
     try {
       final response = await api.getPostApiResponse(
-        "/users/update-location",   // ✅ no full URL needed
+        "/users/update-location",
         data,
       );
 

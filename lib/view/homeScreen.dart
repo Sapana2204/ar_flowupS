@@ -1,5 +1,7 @@
 import 'dart:async';
-
+import 'dart:io';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -26,6 +28,10 @@ import '../viewmodel/userStatus_viewmodel.dart';
 import 'dashboard_screen.dart';
 import 'loginScreen.dart';
 import '../utils/utils.dart';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:ringer_mode/ringer_mode.dart';
+import 'package:telephony_info_plus/telephony_info_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -699,24 +705,49 @@ class _HomeScreenState extends State<HomeScreen> {
         accuracy: LocationAccuracy.high,
         distanceFilter: 50,
       ),
-    ).listen((Position position) {
+    ).listen((Position position) async {
+      try {
+        final aliveData = await _getAliveData();
 
-      print("📡 LIVE LOCATION UPDATE:");
-      print("Latitude: ${position.latitude}");
-      print("Longitude: ${position.longitude}");
+        print("📡 LIVE LOCATION UPDATE:");
+        print("Latitude: ${position.latitude}");
+        print("Longitude: ${position.longitude}");
+        print("📱 Alive Data: $aliveData");
 
-      NetworkApiServices().getPostApiResponse(
+        await NetworkApiServices().getPostApiResponse(
+          "/users/update-location",
+          {
+            "latitude": position.latitude,
+            "longitude": position.longitude,
+            "alive_data": aliveData,
+          },
+        );
+      } catch (e) {
+        print("❌ Live location update error: $e");
+      }
+    });
+
+    /// Optional: get current position once immediately
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    try {
+      final aliveData = await _getAliveData();
+
+      await NetworkApiServices().getPostApiResponse(
         "/users/update-location",
         {
           "latitude": position.latitude,
           "longitude": position.longitude,
+          "alive_data": aliveData,
         },
       );
-    });
 
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+      print("✅ Initial location sent with alive_data");
+    } catch (e) {
+      print("❌ Initial location send error: $e");
+    }
 
     if (!_statusDialogShown && !isSignedIn) {
       _statusDialogShown = true;
@@ -725,6 +756,76 @@ class _HomeScreenState extends State<HomeScreen> {
         const Duration(milliseconds: 500),
             () => _showAttendanceDialog(),
       );
+    }
+  }
+
+  Future<Map<String, dynamic>> _getAliveData() async {
+    try {
+      final battery = Battery();
+      final int batteryPercent = await battery.batteryLevel;
+
+      /// ---------------- RINGER MODE ----------------
+      String ringerMode = "unknown";
+      try {
+        final mode = await RingerModeService.getRingerMode();
+
+        switch (mode) {
+          case RingerMode.normal:
+            ringerMode = "normal";
+            break;
+          case RingerMode.silent:
+            ringerMode = "silent";
+            break;
+          case RingerMode.vibrate:
+            ringerMode = "vibrate";
+            break;
+        }
+      } catch (e) {
+        print("❌ Ringer mode error: $e");
+      }
+
+      /// ---------------- CONNECTIVITY ----------------
+      String networkType = "offline";
+      try {
+        final connectivityResults = await Connectivity().checkConnectivity();
+
+        if (connectivityResults.contains(ConnectivityResult.wifi)) {
+          networkType = "wifi";
+        } else if (connectivityResults.contains(ConnectivityResult.mobile)) {
+          networkType = "mobile";
+        } else {
+          networkType = "offline";
+        }
+      } catch (e) {
+        print("❌ Connectivity error: $e");
+      }
+
+      /// ---------------- PLACEHOLDER VALUES ----------------
+      String mobileGeneration = "unknown";
+      String carrier = "unknown";
+      String signalStrength = "unknown";
+
+      return {
+        "battery_percent": batteryPercent,
+        "ringer_mode": ringerMode,
+        "network_type": networkType,
+        "mobile_network_generation": mobileGeneration,
+        "carrier": carrier,
+        "signal_strength": signalStrength,
+        "timestamp": DateTime.now().toIso8601String(),
+      };
+    } catch (e) {
+      print("❌ Alive data error: $e");
+
+      return {
+        "battery_percent": 0,
+        "ringer_mode": "unknown",
+        "network_type": "unknown",
+        "mobile_network_generation": "unknown",
+        "carrier": "unknown",
+        "signal_strength": "unknown",
+        "timestamp": DateTime.now().toIso8601String(),
+      };
     }
   }
 
@@ -780,9 +881,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             content: const Text(
-              "Sign In is required to access FlowupS CallDesk.\n\n"
-                  "Your attendance and live location sharing must be started before using the application.\n\n"
-                  "Without Sign In, you will not be able to access any features of the app.",
+                "Welcome to FlowupS CallDesk.\n\n"
+                    "To continue, please Sign In and start your attendance.\n\n"
+                    "Once completed, you’ll be able to access all features of the application."
             ),
             actions: [
               TextButton(
@@ -815,7 +916,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     });
 
                     Utils.showToast(
-                      "You are signed in successfully. Your live location will be shared until you sign out.",
+                      "You are signed in successfully. You are signed in until you sign out yourself.",
                     );
                   }
               ),

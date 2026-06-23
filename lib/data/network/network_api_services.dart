@@ -199,6 +199,9 @@ class NetworkApiServices extends BaseApiServices {
       case 404:
         throw Exception(message);
 
+      case 409:
+        throw Exception(message); // 👈 ADD THIS
+
       default:
         throw Exception(message);
     }

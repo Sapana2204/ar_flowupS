@@ -4,13 +4,20 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:io';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
 import '../model/login_model.dart';
 import '../repository/login_repository.dart';
 import '../utils/routes/routes_names.dart';
 import '../utils/utils.dart';
+import 'dart:io';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:ringer_mode/ringer_mode.dart';
+import 'package:telephony_info_plus/telephony_info_plus.dart';
 
 class LoginViewModel with ChangeNotifier {
   final _loginRepository = LoginRepository();
@@ -226,22 +233,92 @@ class LoginViewModel with ChangeNotifier {
 
       Position position = await api.getUserLocation();
 
-      /// ✅ PRINT LOCATION
+      final aliveData = await _getAliveData();
+
       print("📍 LOGIN LOCATION:");
       print("Latitude: ${position.latitude}");
       print("Longitude: ${position.longitude}");
+      print("📱 Alive Data: $aliveData");
 
-      await api.getPostApiResponse(
-        "/users/update-location",
-        {
-          "latitude": position.latitude,
-          "longitude": position.longitude,
-        },
+      await _loginRepository.updateUserLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        aliveData: aliveData,
       );
 
-      print("✅ Location sent after login");
+      print("✅ Location + alive_data sent after login");
     } catch (e) {
       print("❌ Location error: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>> _getAliveData() async {
+    try {
+      final battery = Battery();
+      final int batteryPercent = await battery.batteryLevel;
+
+      /// ---------------- RINGER MODE ----------------
+      String ringerMode = "unknown";
+      try {
+        final mode = await RingerModeService.getRingerMode();
+
+        switch (mode) {
+          case RingerMode.normal:
+            ringerMode = "normal";
+            break;
+          case RingerMode.silent:
+            ringerMode = "silent";
+            break;
+          case RingerMode.vibrate:
+            ringerMode = "vibrate";
+            break;
+        }
+      } catch (e) {
+        print("❌ Ringer mode error: $e");
+      }
+
+      /// ---------------- CONNECTIVITY ----------------
+      String networkType = "offline";
+      try {
+        final connectivityResults = await Connectivity().checkConnectivity();
+
+        if (connectivityResults.contains(ConnectivityResult.wifi)) {
+          networkType = "wifi";
+        } else if (connectivityResults.contains(ConnectivityResult.mobile)) {
+          networkType = "mobile";
+        } else {
+          networkType = "offline";
+        }
+      } catch (e) {
+        print("❌ Connectivity error: $e");
+      }
+
+      /// ---------------- PLACEHOLDER VALUES ----------------
+      String mobileGeneration = "unknown";
+      String carrier = "unknown";
+      String signalStrength = "unknown";
+
+      return {
+        "battery_percent": batteryPercent,
+        "ringer_mode": ringerMode,
+        "network_type": networkType,
+        "mobile_network_generation": mobileGeneration,
+        "carrier": carrier,
+        "signal_strength": signalStrength,
+        "timestamp": DateTime.now().toIso8601String(),
+      };
+    } catch (e) {
+      print("❌ Alive data error: $e");
+
+      return {
+        "battery_percent": 0,
+        "ringer_mode": "unknown",
+        "network_type": "unknown",
+        "mobile_network_generation": "unknown",
+        "carrier": "unknown",
+        "signal_strength": "unknown",
+        "timestamp": DateTime.now().toIso8601String(),
+      };
     }
   }
 

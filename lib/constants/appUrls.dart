@@ -48,6 +48,8 @@ class AppUrls {
       "$baseUrl/reports/user-performance";
   static const String productExpiryReport =
       "$baseUrl/reports/product-expiry";
+  static const String sendProductExpiryAlert =
+      "$baseUrl/reports/product-expiry/sendAlert";
 
   static const amcReminders = "$baseUrl/amc-reminders";
   static const String sendAMCReminder =

@@ -40,4 +40,28 @@ class ProductExpiryRepository {
 
     return ProductExpiryReportModel.fromJson(response);
   }
+
+  /// SEND PRODUCT EXPIRY ALERT
+  Future<Map<String, dynamic>> sendProductExpiryAlert({
+    required ProductExpData product,
+    required String customerId,
+  }) async {
+    final response = await _apiServices.getPostApiResponse(
+      AppUrls.sendProductExpiryAlert,
+      {
+        "product": {
+          "product_id": product.productId?.toString() ?? "",
+          "product_name": product.productName ?? "",
+          "serial_number": product.serialNumber ?? "",
+          "expiry_date": product.expiryDate ?? "",
+          "days_left": product.daysLeft ?? 0,
+          "expiry_status": product.expiryStatus ?? "",
+          "add_ons": product.addOns ?? [],
+        },
+        "customer_id": int.tryParse(customerId) ?? 0,
+      },
+    );
+
+    return response;
+  }
 }

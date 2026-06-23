@@ -12,11 +12,18 @@ class ProductExpiryViewModel extends ChangeNotifier {
 
   ProductExpiryReportModel? reportModel;
   List<ProductExpData> products = [];
-
   Summary? summary;
+
+  bool _alertLoading = false;
+  bool get alertLoading => _alertLoading;
 
   setLoading(bool value) {
     _loading = value;
+    notifyListeners();
+  }
+
+  setAlertLoading(bool value) {
+    _alertLoading = value;
     notifyListeners();
   }
 
@@ -59,6 +66,33 @@ class ProductExpiryViewModel extends ChangeNotifier {
       rethrow;
     } finally {
       setLoading(false);
+    }
+  }
+
+
+  /// SEND ALERT API
+  Future<bool> sendProductExpiryAlert({
+    required ProductExpData product,
+    required String customerId,
+  }) async {
+    try {
+      setAlertLoading(true);
+
+      final response = await _repository.sendProductExpiryAlert(
+        product: product,
+        customerId: customerId,
+      );
+
+      if (response["success"] == true) {
+        return true;
+      } else {
+        throw response["message"] ?? "Failed to send alert";
+      }
+    } catch (e) {
+      debugPrint("Send Product Expiry Alert Error : $e");
+      rethrow;
+    } finally {
+      setAlertLoading(false);
     }
   }
 }

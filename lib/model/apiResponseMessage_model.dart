@@ -6,8 +6,12 @@ class ApiResponseMessage {
       return "Something went wrong";
     }
 
-    return AppMessages.getMessage(
-      response['code'],
-    );
+    // 👇 Prefer backend message first
+    if (response["message"] != null &&
+        response["message"].toString().trim().isNotEmpty) {
+      return response["message"].toString();
+    }
+
+    return AppMessages.getMessage(response['code']);
   }
 }

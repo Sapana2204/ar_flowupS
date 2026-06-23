@@ -80,6 +80,9 @@ class TicketsViewModel extends ChangeNotifier {
 
   bool createVisitLoading = false;
 
+  String _workLogErrorMessage = "";
+  String get workLogErrorMessage => _workLogErrorMessage;
+
   void setSearchText(String value) {
     _searchText = value;
   }
@@ -398,14 +401,12 @@ class TicketsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<int?> createWorkLogAndReturnId(
-      CreateWorkLogModel model,
-      ) async {
+  Future<int?> createWorkLogAndReturnId(CreateWorkLogModel model) async {
     try {
+      _workLogErrorMessage = "";
       print("VM CREATE WORK LOG START");
 
-      final response =
-      await _repository.createWorkLog(model);
+      final response = await _repository.createWorkLog(model);
 
       print("VM RESPONSE => $response");
 
@@ -413,10 +414,15 @@ class TicketsViewModel extends ChangeNotifier {
         return response["insertId"];
       }
 
+      _workLogErrorMessage =
+          response["message"]?.toString() ?? "Failed to create work log";
+
       return null;
     } catch (e, s) {
       print("❌ VM CREATE ERROR => $e");
       print(s);
+
+      _workLogErrorMessage = e.toString().replaceFirst("Exception: ", "");
       return null;
     }
   }
