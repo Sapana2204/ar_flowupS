@@ -434,7 +434,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (isSignedIn) {
                         // SIGN OUT
                         await statusVm.updateStatus("inactive");
-                        await _updateAttendance("signout");
 
                         await prefs.remove("attendance_signed_in");
 
@@ -444,7 +443,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else {
                         // SIGN IN
                         await statusVm.updateStatus("active");
-                        await _updateAttendance("signin");
 
                         await prefs.setBool(
                           "attendance_signed_in",
@@ -932,7 +930,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.read<UserStatusViewModel>();
 
                     await statusVm.updateStatus("active");
-                    await _updateAttendance("signin");
 
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.setBool("attendance_signed_in", true);
@@ -962,21 +959,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isSignedIn = signedIn;
     });
-  }
-
-  Future<void> _updateAttendance(String status) async {
-    try {
-      await NetworkApiServices().getPostApiResponse(
-        "/users/attendance",
-        {
-          "status": status, // signin / signout
-        },
-      );
-
-      print("Attendance Updated: $status");
-    } catch (e) {
-      print(e);
-    }
   }
 
   void _handleLogout() async {

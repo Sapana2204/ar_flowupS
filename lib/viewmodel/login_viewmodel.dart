@@ -122,7 +122,9 @@ class LoginViewModel with ChangeNotifier {
     } catch (e) {
       print("error is: $e");
 
-      Utils.showToast(e.toString());
+      Utils.showToast(
+        e.toString().replaceFirst("Exception: ", "").trim(),
+      );
     } finally {
       setLoading(false);
     }
@@ -343,7 +345,9 @@ class LoginViewModel with ChangeNotifier {
       );
 
     } catch (e) {
-      Utils.showToast(e.toString());
+      Utils.showToast(
+        e.toString().replaceFirst("Exception: ", "").trim(),
+      );
     } finally {
       setForgotLoading(false);
     }
@@ -374,7 +378,9 @@ class LoginViewModel with ChangeNotifier {
       );
 
     } catch (e) {
-      Utils.showToast(e.toString());
+      Utils.showToast(
+        e.toString().replaceFirst("Exception: ", "").trim(),
+      );
     } finally {
       setForgotLoading(false);
     }

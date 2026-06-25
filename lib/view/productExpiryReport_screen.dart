@@ -667,23 +667,23 @@ class _ProductExpiryReportScreenState
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
-                          await context
-                              .read<ProductExpiryViewModel>()
-                              .fetchProductExpiryReport(
-                            expiryStatus:
-                            selectedStatus.toLowerCase().replaceAll(" ", "_"),
+                          await context.read<ProductExpiryViewModel>().fetchProductExpiryReport(
+                            expiryStatus: selectedStatus == "All"
+                                ? ""
+                                : selectedStatus.toLowerCase().replaceAll(" ", "_"),
                             fromDate: fromDate == null
                                 ? ""
                                 : fromDate!.toIso8601String().split('T')[0],
                             toDate: toDate == null
                                 ? ""
                                 : toDate!.toIso8601String().split('T')[0],
-                            expiringDays:
-                            int.tryParse(expiringDaysController.text) ?? 30,
-                            searchText: searchController.text,
+                            expiringDays: int.tryParse(expiringDaysController.text) ?? 30,
+                            searchText: searchController.text.trim(),
                           );
 
-                          Navigator.pop(context);
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
                         },
                         child: const Text("Apply"),
                       ),
@@ -693,17 +693,27 @@ class _ProductExpiryReportScreenState
 
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           searchController.clear();
                           expiringDaysController.text = "30";
 
-                          setState(() {
-                            selectedStatus = "All";
+                          sheetSetState(() {
+                            selectedStatus = "all";
                             fromDate = null;
                             toDate = null;
                           });
 
-                          Navigator.pop(context);
+                          await context.read<ProductExpiryViewModel>().fetchProductExpiryReport(
+                            expiryStatus: "",
+                            fromDate: "",
+                            toDate: "",
+                            expiringDays: 30,
+                            searchText: "",
+                          );
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
                         },
                         child: const Text("Reset"),
                       ),

@@ -165,19 +165,36 @@ class PdfService {
                 "Status",
                 "Priority",
                 "Product",
+                "Resolver",
                 "Start Date",
                 "Due Date",
               ],
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 9,
+              ),
+              cellStyle: const pw.TextStyle(
+                fontSize: 8,
+              ),
+              cellAlignment: pw.Alignment.centerLeft,
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.grey300,
+              ),
               data: tickets.map((ticket) {
+                final description =
+                (ticket.description ?? "").replaceAll(RegExp(r'<[^>]*>'), '').trim();
+
                 return [
                   ticket.ticketNo ?? "-",
-                  (ticket.description ?? "")
-                      .replaceAll(RegExp(r'<[^>]*>'), ''),
-                  ticket.status ?? "-",
-                  // ticket.priority ?? "-",
-                  // ticket.productName ?? "-",
-                  "-",
-                      "-",
+                  description.isEmpty ? "-" : description,
+                  ticket.ticketStatus ?? "-",
+                  ticket.ticketPriority ?? "-",
+                  (ticket.productName == null || ticket.productName!.trim().isEmpty)
+                      ? "-"
+                      : ticket.productName!,
+                  (ticket.resolverName == null || ticket.resolverName!.trim().isEmpty)
+                      ? "-"
+                      : ticket.resolverName!,
                   ticket.startDate ?? "-",
                   ticket.dueDate ?? "-",
                 ];

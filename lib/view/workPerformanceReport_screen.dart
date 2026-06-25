@@ -1,9 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+
 import '../model/assignee_model.dart';
 import '../model/company_model.dart';
+import '../res/widgets/performancePdf_service.dart';
+import '../res/widgets/performancePreviewPdf_screen.dart';
 import '../viewmodel/workPerformance_viewmodel.dart';
 import '../viewmodel/workReport_viewmodel.dart';
 
@@ -42,7 +47,7 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Work Performance"),
+          title: const Text("Performance Report"),
           actions: [
             TweenAnimationBuilder<double>(
               tween: Tween(
@@ -80,15 +85,17 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
                 ),
               ),
             ),
-            PopupMenuButton(
-              itemBuilder: (_) => [
-                const PopupMenuItem(
-                    value: "excel", child: Text("Export Excel")),
-                const PopupMenuItem(value: "pdf", child: Text("Export PDF")),
+            PopupMenuButton<String>(
+              itemBuilder: (_) => const [
+                PopupMenuItem<String>(
+                  value: "pdf",
+                  child: Text("Export PDF"),
+                ),
               ],
-              onSelected: (val) {
-                if (val == "excel") _exportExcel();
-                if (val == "pdf") _exportPDF();
+              onSelected: (val) async {
+                if (val == "pdf") {
+                  await _exportPDF();
+                }
               },
             )
           ],
@@ -142,33 +149,7 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
         }
 
         if (vm.report == null) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.filter_alt_outlined,
-                  size: 70,
-                  color: Colors.grey,
-                ),
-                SizedBox(height: 12),
-                Text(
-                  "Select Employee and Date Range",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "Apply filters to view performance report",
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          );
+          return _emptyState("No data available");
         }
 
         return SingleChildScrollView(
@@ -358,10 +339,12 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
           );
         }
 
-        if (vm.report == null) {
-          return const Center(
-            child: Text("Apply filters to view analytics"),
-          );
+        if (vm.report == null ||
+            (vm.monthlyProductivity.isEmpty &&
+                vm.ticketStatusDistribution.isEmpty &&
+                vm.dailyClosureTrend.isEmpty &&
+                vm.pendingVsClosed == null)) {
+          return _emptyState("No data available");
         }
 
         return Column(
@@ -775,19 +758,11 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
           );
         }
 
-        if (vm.report == null) {
-          return const Center(
-            child: Text(
-              "Apply filters to view tickets",
-            ),
-          );
+        if (vm.report == null || vm.tickets.isEmpty) {
+          return _emptyState("No data available");
         }
 
-        if (vm.tickets.isEmpty) {
-          return const Center(
-            child: Text("No tickets found"),
-          );
-        }
+
 
         return ListView.builder(
           padding: const EdgeInsets.all(12),
@@ -1036,18 +1011,8 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
           );
         }
 
-        if (vm.report == null) {
-          return const Center(
-            child: Text(
-              "Apply filters to view activities",
-            ),
-          );
-        }
-
-        if (vm.activities.isEmpty) {
-          return const Center(
-            child: Text("No activities found"),
-          );
+        if (vm.report == null || vm.activities.isEmpty) {
+          return _emptyState("No data available");
         }
 
         return ListView.builder(
@@ -1071,6 +1036,32 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
       },
     );
   }
+
+  Widget _emptyState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.inbox_outlined,
+            size: 70,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   Widget _activityCard({
     required String date,
     required String description,
@@ -1315,16 +1306,14 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () {
-
-                              setModalState(() {
+                              setState(() {
                                 selectedEmployee = null;
                                 selectedCompany = null;
                                 selectedDateRange = null;
+                                isFilterApplied = false;
                               });
 
-                              context
-                                  .read<WorkPerformanceViewModel>()
-                                  .clearData();
+                              context.read<WorkPerformanceViewModel>().clearData();
 
                               Navigator.pop(context);
                             },
@@ -1428,21 +1417,44 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
     );
   }
 
+  Future<void> _exportPDF() async {
+    final vm = context.read<WorkPerformanceViewModel>();
 
+    if (vm.report == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No report data available to export")),
+      );
+      return;
+    }
 
+    try {
+      final Uint8List pdfBytes =
+      await PerformancePdfService.generatePerformanceReportPdf(vm: vm);
 
+      if (!mounted) return;
 
-  /// 🔹 EXPORT (BASIC PLACEHOLDER)
-  void _exportExcel() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Excel export coming soon")),
-    );
-  }
+      final employeeName = (selectedEmployee?.name ?? vm.user?.name ?? "employee")
+          .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
 
-  void _exportPDF() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("PDF export coming soon")),
-    );
+      final fileName = "performance_report_$employeeName.pdf";
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PerformancePdfPreviewScreen(
+            pdfBytes: pdfBytes,
+            fileName: fileName,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint("PDF Export Error: $e");
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to generate PDF: $e")),
+      );
+    }
   }
 
   @override

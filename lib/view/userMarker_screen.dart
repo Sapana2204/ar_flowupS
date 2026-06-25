@@ -51,6 +51,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
 
     if (!mounted) return;
 
+    final alive = user.aliveData;
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -60,31 +62,55 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("🆔 Admin ID: ${user.adminID}"),
+              Text("🆔 ID: ${user.adminID}"),
               const SizedBox(height: 6),
               Text("📌 Status: ${user.status ?? 'N/A'}"),
               const SizedBox(height: 6),
-              Text("📍 Latitude: ${user.latitude}"),
-              Text("📍 Longitude: ${user.longitude}"),
+              Text("📍 Latitude: ${user.latitude ?? 'N/A'}"),
+              Text("📍 Longitude: ${user.longitude ?? 'N/A'}"),
               const SizedBox(height: 10),
+
               const Text(
                 "Address:",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(address),
-              const SizedBox(height: 10),
+
+              const SizedBox(height: 12),
+
               const Text(
-                "Last Signal:",
+                "Live Device Details:",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              Text(user.aliveData?.toString() ?? "N/A"),
+              const SizedBox(height: 8),
+
+              if (alive != null) ...[
+                Text("🔋 Battery: ${alive.batteryPercent ?? 'N/A'}%"),
+                const SizedBox(height: 4),
+                Text("📶 Carrier: ${alive.carrier ?? 'N/A'}"),
+                const SizedBox(height: 4),
+                Text("📡 Network Type: ${alive.networkType ?? 'N/A'}"),
+                const SizedBox(height: 4),
+                Text("📲 Mobile Network: ${alive.mobileNetworkGeneration ?? 'N/A'}"),
+                const SizedBox(height: 4),
+                Text("📳 Ringer Mode: ${alive.ringerMode ?? 'N/A'}"),
+                const SizedBox(height: 4),
+                Text("📈 Signal Strength: ${alive.signalStrength ?? 'N/A'}"),
+                const SizedBox(height: 4),
+                Text("⏰ Last Updated: ${alive.timestamp ?? 'N/A'}"),
+              ] else ...[
+                const Text("No live device details available"),
+              ],
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Close", style: TextStyle(color: primary),),
+            child: const Text(
+              "Close",
+              style: TextStyle(color: primary),
+            ),
           ),
         ],
       ),

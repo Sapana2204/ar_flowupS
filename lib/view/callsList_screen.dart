@@ -27,7 +27,11 @@ class _CallsListScreenState extends State<CallsListScreen> {
     super.initState();
 
     final ticketVm = Provider.of<TicketsViewModel>(context, listen: false);
-    ticketVm.fetchTickets();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchController.clear();
+      ticketVm.searchTickets("");
+    });
 
     /// 🔥 PRELOAD ALL DROPDOWN DATA HERE
     final queryVm = Provider.of<QueryViewModel>(context, listen: false);
@@ -109,20 +113,19 @@ class _CallsListScreenState extends State<CallsListScreen> {
                       onChanged: (value) {
                         if (_debounce?.isActive ?? false) _debounce!.cancel();
 
-                        _debounce = Timer(const Duration(milliseconds: 300), () {
+                        _debounce = Timer(const Duration(milliseconds: 500), () {
                           final vm = Provider.of<TicketsViewModel>(context, listen: false);
-                          vm.filterTickets(value);   // ✅ LOCAL SEARCH
+                          vm.searchTickets(value); // ✅ API SEARCH
                         });
                       },
 
-                      /// 🔎 SEARCH BUTTON
                       onSubmitted: (value) {
                         final vm = Provider.of<TicketsViewModel>(context, listen: false);
-                        vm.filterTickets(value);
+                        vm.searchTickets(value); // ✅ API SEARCH
                       },
 
                       decoration: InputDecoration(
-                        hintText: "Search calls, names, or IDs...",
+                        hintText: "Type names, IDs or status...",
                         border: InputBorder.none,
                         icon: const Icon(Icons.search),
 
@@ -132,7 +135,7 @@ class _CallsListScreenState extends State<CallsListScreen> {
                             _searchController.clear();
 
                             final vm = Provider.of<TicketsViewModel>(context, listen: false);
-                            vm.filterTickets("");
+                            vm.searchTickets(""); // reload all tickets from API
                           },
                         ),
                       ),
@@ -183,8 +186,7 @@ class _CallsListScreenState extends State<CallsListScreen> {
                         if (index == vm.ticketsList.length) {
                           return const Padding(
                             padding: EdgeInsets.all(16),
-                            child: Center(
-                                child: CircularProgressIndicator()),
+
                           );
                         }
 

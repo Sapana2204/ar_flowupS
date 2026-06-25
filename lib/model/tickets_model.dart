@@ -228,24 +228,22 @@ class Pagination {
   });
 
   Pagination.fromJson(Map<String, dynamic> json) {
-    total = json['total'];
-    page = json['page'];
-    limit = json['limit'];
-    totalPages = json['totalPages'];
-    start = json['start'];
-    end = json['end'];
+    total = int.tryParse(json['total']?.toString() ?? '');
+    page = int.tryParse(json['page']?.toString() ?? '');
+    limit = int.tryParse(json['limit']?.toString() ?? ''); // ✅ FIXED
+    totalPages = int.tryParse(json['totalPages']?.toString() ?? '');
+    start = int.tryParse(json['start']?.toString() ?? '');
+    end = int.tryParse(json['end']?.toString() ?? '');
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> dataMap = {};
-
-    dataMap['total'] = total;
-    dataMap['page'] = page;
-    dataMap['limit'] = limit;
-    dataMap['totalPages'] = totalPages;
-    dataMap['start'] = start;
-    dataMap['end'] = end;
-
-    return dataMap;
+    return {
+      'total': total,
+      'page': page,
+      'limit': limit,
+      'totalPages': totalPages,
+      'start': start,
+      'end': end,
+    };
   }
 }

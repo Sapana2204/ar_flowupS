@@ -13,13 +13,11 @@ class LoginRepository {
       String username,
       String password,
       ) async {
-
     try {
       print("🚀 LOGIN API START");
       print("👤 Username: $username");
 
       print("🔑 Starting password encryption...");
-
       final encryptedPassword =
       await LoginEncryption.encryptPassword(password);
 
@@ -51,15 +49,15 @@ class LoginRepository {
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200) {
-        if (data['success'] == true) {
-          return data;
-        } else {
-          throw Exception(data['message']);
-        }
+      /// ✅ SUCCESS
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data;
       }
 
-      throw Exception("Server error: ${response.statusCode}");
+      /// ❌ API MESSAGE SHOW
+      throw Exception(
+        data['message']?.toString() ?? "Login failed",
+      );
     } catch (e, stackTrace) {
       print("❌ LOGIN REPOSITORY ERROR");
       print("❌ Error: $e");

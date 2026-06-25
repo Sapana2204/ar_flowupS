@@ -65,6 +65,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   int? _activeWorkLogId;
   DateTime? _callStartTime;
   bool visitRequired = false;
+  bool showReasonField = false;
+  String _initialDueDate = "";
 
   @override
   void initState() {
@@ -122,9 +124,16 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         if (data.dueDate != null && data.dueDate!.isNotEmpty) {
           try {
             final parsed = DateTime.parse(data.dueDate!);
-            dateController.text = DateFormat('dd MMM yyyy').format(parsed);
+            final formattedDate = DateFormat('dd MMM yyyy').format(parsed);
+            dateController.text = formattedDate;
+
+            // ✅ store original due date for comparison
+            _initialDueDate = formattedDate;
+            showReasonField = false;
           } catch (_) {
             dateController.text = data.dueDate!;
+            _initialDueDate = data.dueDate!;
+            showReasonField = false;
           }
         }
 
@@ -499,6 +508,21 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                 ],
               ),
 
+              if (widget.mode == RegisterCallMode.edit && showReasonField) ...[
+                const SizedBox(height: 12),
+                _buildTextField(
+                  "Reason",
+                  "Enter reason for due date change",
+                  reasonController,
+                  validator: (value) {
+                    if (showReasonField && (value == null || value.trim().isEmpty)) {
+                      return "Reason is required";
+                    }
+                    return null;
+                  },
+                ),
+              ],
+
               const SizedBox(height: 15),
 
               /// PRIORITY
@@ -827,7 +851,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         productName: selectedProduct?.productName,
         productSerialNumber: selectedProduct?.serialNumber,
         productAddOns: jsonEncode(selectedAddOns),
-        expectedMinutes: expectedTimeController.text,
+        expectedMinutes: expectedTimeController.text.trim().isEmpty
+            ? "0"
+            : expectedTimeController.text.trim(),
         visitRequired: visitRequired ? "y" : "n",
       );
 
@@ -836,11 +862,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       final success = await vm.updateTicket(ticket);
 
       if (success) {
-        // ✅ Refresh Dashboard API
-        await Provider.of<DashboardViewModel>(
-          context,
-          listen: false,
-        ).getDashboardData();
+        if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -848,7 +870,15 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
           ),
         );
 
-        Navigator.pop(context);
+        Navigator.pop(context, true); // ✅ pop first
+
+        // refresh dashboard after pop
+        Future.microtask(() {
+          Provider.of<DashboardViewModel>(
+            context,
+            listen: false,
+          ).getDashboardData();
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(vm.updateMessage)),
@@ -877,7 +907,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       productName: selectedProduct?.productName,
       productSerialNumber: selectedProduct?.serialNumber,
       productAddOns: jsonEncode(selectedAddOns),
-      expectedMinutes: expectedTimeController.text,
+      expectedMinutes: expectedTimeController.text.trim().isEmpty
+          ? "0"
+          : expectedTimeController.text.trim(),
       visitRequired: visitRequired ? "y" : "n",
     );
 
@@ -1628,20 +1660,28 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
           readOnly: true,
           style: const TextStyle(fontSize: 14),
           onTap: () async {
+            DateTime initialDate = DateTime.now();
+
+            if (dateController.text.isNotEmpty) {
+              try {
+                initialDate =
+                    DateFormat('dd MMM yyyy').parse(dateController.text);
+              } catch (_) {}
+            }
+
             DateTime? pickedDate = await showDatePicker(
               context: context,
-              initialDate: DateTime.now(),
+              initialDate: initialDate,
               firstDate: DateTime(2020),
               lastDate: DateTime(2100),
               builder: (context, child) {
                 return Theme(
                   data: Theme.of(context).copyWith(
-                    useMaterial3:
-                        false, // ✅ VERY IMPORTANT (removes purple default)
+                    useMaterial3: false,
                     colorScheme: const ColorScheme.light(
-                      primary: primary, // header + selected date
-                      onPrimary: Colors.white, // text on header
-                      onSurface: Colors.black, // normal text
+                      primary: primary,
+                      onPrimary: Colors.white,
+                      onSurface: Colors.black,
                     ),
                     dialogBackgroundColor: Colors.white,
                   ),
@@ -1651,15 +1691,29 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
             );
 
             if (pickedDate != null) {
-              dateController.text =
-                  DateFormat('dd MMM yyyy').format(pickedDate);
+              final selectedDate =
+              DateFormat('dd MMM yyyy').format(pickedDate);
+
+              setState(() {
+                dateController.text = selectedDate;
+
+                // ✅ Only in edit mode, show reason if due date changed
+                if (widget.mode == RegisterCallMode.edit) {
+                  showReasonField = selectedDate != _initialDueDate;
+
+                  // optional: clear reason if user changes back to original date
+                  if (!showReasonField) {
+                    reasonController.clear();
+                  }
+                }
+              });
             }
           },
           decoration: InputDecoration(
             hintText: "Select date",
             isDense: true,
             contentPadding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             suffixIcon: const Icon(Icons.calendar_today, size: 20),
             filled: true,
             fillColor: Colors.white,

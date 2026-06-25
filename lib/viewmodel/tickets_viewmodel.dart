@@ -90,37 +90,35 @@ class TicketsViewModel extends ChangeNotifier {
   /// 🔹 Initial Load
   Future<void> fetchTickets({bool isRefresh = false}) async {
     try {
+      if (_isLoading) return;
+
       if (isRefresh) {
         _page = 1;
         _ticketsList.clear();
         _allTickets.clear();
+        _hasMore = true;
       }
 
       _isLoading = true;
+      _error = "";
       notifyListeners();
 
       final response = await _repository.fetchTickets(
         page: _page,
-        searchText: _searchText,
+        searchText: _searchText, // ✅ API search text
       );
 
-      print("PAGE: $_page");
-      print("TOTAL: ${response.pagination?.totalPages}");
-      print("DATA: ${response.data?.length}");
+      final newData = response.data ?? [];
 
-      if (response.data != null) {
-        if (_page == 1) {
-          _allTickets = List.from(response.data!);
-          _ticketsList = List.from(response.data!);
-        } else {
-          _allTickets.addAll(response.data!);
-          _ticketsList.addAll(response.data!);
-        }
-
-        _hasMore = _page < (response.pagination?.totalPages ?? 0);
+      if (_page == 1) {
+        _ticketsList = List.from(newData);
+        _allTickets = List.from(newData);
+      } else {
+        _ticketsList.addAll(newData);
+        _allTickets.addAll(newData);
       }
 
-      _error = "";
+      _hasMore = _page < (response.pagination?.totalPages ?? 0);
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -129,22 +127,60 @@ class TicketsViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> searchTickets(String query) async {
+    _searchText = query.trim();
+    _page = 1;
+    _hasMore = true;
+    _ticketsList.clear();
+    _allTickets.clear();
+
+    await fetchTickets(isRefresh: true);
+  }
+
   void filterTickets(String query) {
     _searchText = query;
+    final search = query.trim().toLowerCase();
 
-    if (query.isEmpty) {
+    if (search.isEmpty) {
       _ticketsList = List.from(_allTickets);
     } else {
       _ticketsList = _allTickets.where((ticket) {
-        final name = ticket.clientId?.toLowerCase() ?? "";
-        final phone = ticket.contactNo ?? "";
-        final ticketNo = ticket.ticketNo?.toLowerCase() ?? "";
-        final queryType = ticket.queryType?.toLowerCase() ?? "";
-        final description = ticket.description?.toLowerCase() ?? "";
+        final clientName =
+        (ticket.clientId ?? ticket.clientId ?? "").toString().toLowerCase();
 
-        return name.contains(query.toLowerCase()) ||
-            phone.contains(query) ||queryType.contains(query)||description.contains(query)||
-            ticketNo.contains(query.toLowerCase());
+        final contactPerson =
+        (ticket.contactPerson ?? "").toString().toLowerCase();
+
+        final phone =
+        (ticket.contactNo ?? "").toString().toLowerCase();
+
+        final ticketNo =
+        (ticket.ticketNo ?? "").toString().toLowerCase();
+
+        final queryType =
+        (ticket.queryType ?? "").toString().toLowerCase();
+
+        final description =
+        (ticket.description ?? "").toString().toLowerCase();
+
+        final ticketStatus =
+        (ticket.ticketStatus ?? "").toString().toLowerCase();
+
+        final assignee =
+        (ticket.assignee ?? "").toString().toLowerCase();
+
+        final productName =
+        (ticket.productName ?? "").toString().toLowerCase();
+
+        return clientName.contains(search) ||
+            contactPerson.contains(search) ||
+            phone.contains(search) ||
+            ticketNo.contains(search) ||
+            queryType.contains(search) ||
+            description.contains(search) ||
+            ticketStatus.contains(search) ||
+            assignee.contains(search) ||
+            productName.contains(search);
       }).toList();
     }
 
@@ -154,9 +190,18 @@ class TicketsViewModel extends ChangeNotifier {
   /// 🔹 Pagination
   Future<void> loadMore() async {
     if (!_hasMore || _isLoading) return;
-
     _page++;
-    await fetchTickets(); // ✅ no parameter needed
+    await fetchTickets();
+  }
+
+  void resetTicketsState() {
+    _searchText = "";
+    _page = 1;
+    _hasMore = true;
+    _error = "";
+    _ticketsList.clear();
+    _allTickets.clear();
+    notifyListeners();
   }
 
   /// 🔹 Refresh

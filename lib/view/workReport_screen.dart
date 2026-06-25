@@ -22,28 +22,8 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
   String? selectedStatus;
   String? selectedResolvedBy;
   DateTimeRange? selectedDateRange;
-
   String searchQuery = "";
-
-  /// 🔹 DUMMY DATA
-  List<Map<String, dynamic>> allTickets = [
-    {
-      "client": "ABC Corp",
-      "status": "Open",
-      "assignedBy": "Admin",
-      "resolvedBy": "",
-      "date": DateTime.now().subtract(const Duration(days: 1))
-    },
-    {
-      "client": "XYZ Ltd",
-      "status": "Resolved",
-      "assignedBy": "Manager",
-      "resolvedBy": "Rahul",
-      "date": DateTime.now().subtract(const Duration(days: 5))
-    },
-  ];
-
-  List<Map<String, dynamic>> filteredTickets = [];
+  List<Data> filteredWorkLogs = [];
 
   @override
   void initState() {
@@ -52,9 +32,12 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
     Future.microtask(() async {
       final vm = context.read<WorkReportViewModel>();
 
-      await vm.loadWorkReportData(); // Employee + Company dropdowns
+      await vm.loadWorkReportData();
+      await vm.getWorkReport();
 
-      await vm.getWorkReport(); // Work report data
+      setState(() {
+        filteredWorkLogs = List.from(vm.workLogs);
+      });
     });
   }
 
@@ -207,11 +190,35 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
 
               /// ONLY REPORTS SCROLL
               Expanded(
-                child: ListView.builder(
+                child: dropdownVm.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : filteredWorkLogs.isEmpty
+                    ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 60,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        "No data found",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : ListView.builder(
                   padding: const EdgeInsets.only(bottom: 20),
-                  itemCount: dropdownVm.workLogs.length,
+                  itemCount: filteredWorkLogs.length,
                   itemBuilder: (context, index) {
-                    return _reportCard(dropdownVm.workLogs[index]);
+                    return _reportCard(filteredWorkLogs[index]);
                   },
                 ),
               ),
@@ -722,15 +729,31 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               setState(() {
                                 selectedEmployee = null;
-                                selectedCompany = null;                                selectedStatus = null;
+                                selectedCompany = null;
+                                selectedStatus = null;
                                 selectedResolvedBy = null;
                                 selectedDateRange = null;
                                 searchQuery = "";
-                                filteredTickets = allTickets;
                               });
+
+                              await workReportvm.getWorkReport(
+                                userId: "",
+                                companyId: "",
+                                fromDate: "",
+                                toDate: "",
+                                searchText: "",
+                                page: 1,
+                              );
+
+                              if (!mounted) return;
+
+                              setState(() {
+                                filteredWorkLogs = List.from(workReportvm.workLogs);
+                              });
+
                               Navigator.pop(context);
                             },
                             child: const Text("Reset"),
@@ -739,9 +762,9 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () {
-                              _applyFilters();
-                              Navigator.pop(context);
+                            onPressed: () async {
+                              await _applyFilters();
+                              if (mounted) Navigator.pop(context);
                             },
                             child: const Text("Apply"),
                           ),
@@ -815,51 +838,39 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
     );
   }
 
-  Widget _modernDropdown(String hint, List<String> items, String? value,
-      Function(String?) onChanged) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      hint: Text(hint),
-      items:
-          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
+
 
   /// 🔹 APPLY FILTERS
-  void _applyFilters() {
-    filteredTickets = allTickets.where((ticket) {
-      final matchesSearch =
-          ticket["client"].toLowerCase().contains(searchQuery.toLowerCase());
+  Future<void> _applyFilters() async {
+    final vm = context.read<WorkReportViewModel>();
 
-      final matchesEmployee =
-          selectedEmployee == null ||
-              ticket["employeeId"] == selectedEmployee!.adminId;
+    final userId = selectedEmployee?.adminId?.toString() ?? "";
+    final companyId = selectedCompany?.companyId?.toString() ?? "";
 
-      final matchesCompany =
-          selectedCompany == null ||
-              ticket["companyId"] == selectedCompany!.companyId;
+    final fromDate = selectedDateRange != null
+        ? DateFormat('yyyy-MM-dd').format(selectedDateRange!.start)
+        : "";
 
-      final matchesDate = selectedDateRange == null ||
-          (ticket["date"].isAfter(selectedDateRange!.start) &&
-              ticket["date"].isBefore(selectedDateRange!.end));
+    final toDate = selectedDateRange != null
+        ? DateFormat('yyyy-MM-dd').format(selectedDateRange!.end)
+        : "";
 
-      return matchesSearch &&
-          matchesEmployee &&
-          matchesCompany &&
-          matchesDate;    }).toList();
+    final searchText = searchQuery.trim();
 
-    setState(() {});
+    await vm.getWorkReport(
+      userId: userId,
+      companyId: companyId,
+      fromDate: fromDate,
+      toDate: toDate,
+      searchText: searchText,
+      page: 1,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      filteredWorkLogs = List.from(vm.workLogs); // if empty, "No data found" will show
+    });
   }
 
   /// 🔹 EXPORT (BASIC PLACEHOLDER)

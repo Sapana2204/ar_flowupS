@@ -100,10 +100,11 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title: const Text("Client History"),
+        title: const Text("History"),
         backgroundColor: primary,
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           indicator: const BoxDecoration(
             border: Border(
               bottom: BorderSide(color: Colors.white, width: 3),
@@ -112,20 +113,64 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           tabs: [
-            const Tab(text: "Client History"),
+            const Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.history, size: 16),
+                  SizedBox(width: 6),
+                  Text("Client"),
+                ],
+              ),
+            ),
 
             if (widget.mode == RegisterCallMode.edit)
-              const Tab(text: "Comments"),
+              const Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.comment_outlined, size: 16),
+                    SizedBox(width: 6),
+                    Text("Comments"),
+                  ],
+                ),
+              ),
 
             if (widget.mode == RegisterCallMode.edit)
-              const Tab(text: "Work Log"),
+              const Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.work_history_outlined, size: 16),
+                    SizedBox(width: 6),
+                    Text("Work Log"),
+                  ],
+                ),
+              ),
 
             if (widget.mode == RegisterCallMode.edit)
-              const Tab(text: "Ticket History"),
+              const Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.receipt_long_outlined, size: 16),
+                    SizedBox(width: 6),
+                    Text("History"),
+                  ],
+                ),
+              ),
 
-            if (widget.mode == RegisterCallMode.edit &&
-                widget.showVisitTab)
-              const Tab(text: "Visits"),
+            if (widget.mode == RegisterCallMode.edit && widget.showVisitTab)
+              const Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.location_on_outlined, size: 16),
+                    SizedBox(width: 6),
+                    Text("Visits"),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

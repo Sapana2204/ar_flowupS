@@ -187,9 +187,16 @@ class Ticket {
   String? dueDate;
   String? contactPerson;
   String? contactNo;
-  String? status;
-  String? priority;
+
+  String? productSerialNumber;
   String? productName;
+
+  String? ticketStatus;
+  String? ticketPriority;
+  String? queryType;
+  String? assigneeName;
+  String? resolverName;
+  String? resolutionTime;
 
   Ticket({
     this.ticketId,
@@ -200,9 +207,14 @@ class Ticket {
     this.dueDate,
     this.contactPerson,
     this.contactNo,
-    this.status,
-    this.priority,
-    this.productName
+    this.productSerialNumber,
+    this.productName,
+    this.ticketStatus,
+    this.ticketPriority,
+    this.queryType,
+    this.assigneeName,
+    this.resolverName,
+    this.resolutionTime,
   });
 
   Ticket.fromJson(Map<String, dynamic> json) {
@@ -214,9 +226,16 @@ class Ticket {
     dueDate = json['due_date'];
     contactPerson = json['contact_person'];
     contactNo = json['contact_no'];
-    status = json['status'];
-    priority = json['priority'];
+
+    productSerialNumber = json['product_serial_number'];
     productName = json['product_name'];
+
+    ticketStatus = json['ticket_status'];
+    ticketPriority = json['ticket_priority'];
+    queryType = json['query_type'];
+    assigneeName = json['assignee_name'];
+    resolverName = json['resolver_name'];
+    resolutionTime = json['resolution_time'];
   }
 
   Map<String, dynamic> toJson() {
@@ -229,9 +248,14 @@ class Ticket {
       'due_date': dueDate,
       'contact_person': contactPerson,
       'contact_no': contactNo,
-      'status': status,
-      'priority': priority,
-      'product_name': productName
+      'product_serial_number': productSerialNumber,
+      'product_name': productName,
+      'ticket_status': ticketStatus,
+      'ticket_priority': ticketPriority,
+      'query_type': queryType,
+      'assignee_name': assigneeName,
+      'resolver_name': resolverName,
+      'resolution_time': resolutionTime,
     };
   }
 }
