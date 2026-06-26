@@ -27,7 +27,7 @@ class AppStrings {
   static const leads = "Leads";
   static const amcmanagement = "AMC Reminders";
   static const payroll = "Payroll";
-  static const registerCall = "Register Call";
+  static const registerTicket = "Register Ticket";
   static const userMarkers = "User Markers";
   static const customers = "Customers";
   static const appName = "flowupS";
@@ -62,8 +62,8 @@ class AppStrings {
       "Progress begins with visibility. Here is your current status.";
 
   // Actions
-  static const manageCall = "Manage Calls";
-  static const updateCall = "Update Call";
+  static const manageTicket = "Manage Tickets";
+  static const updateTicket = "Update Ticket";
 
   // Filters
   static const yesterday = "Yesterday";
@@ -77,11 +77,11 @@ class AppStrings {
   static const closed = "Closed";
 
   // Graph
-  static const assignedCalls = "Assigned Calls Distribution";
+  static const assignedTickets = "Assigned Ticket Distribution";
 
   // Search Dialog
-  static const searchCallId = "Search by Call ID";
-  static const enterCallId = "Enter Call ID";
+  static const searchTicketId = "Search by Ticket ID";
+  static const enterTicketId = "Enter Ticket ID";
   static const search = "Search";
 
 

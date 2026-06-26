@@ -5,7 +5,7 @@ class WorkLog {
   final int? companyId;
   final String? workStartAt;
   final String? workEndAt;
-  final int? spentMinutes;
+  final double? spentMinutes;
   final String? workDetails;
   final String? workStatus;
   final int? createdBy;
@@ -45,7 +45,9 @@ class WorkLog {
       companyId: json["company_id"],
       workStartAt: json["work_start_at"],
       workEndAt: json["work_end_at"],
-      spentMinutes: json["spent_minutes"],
+      spentMinutes: json["spent_minutes"] == null
+          ? null
+          : double.tryParse(json["spent_minutes"].toString()),
       workDetails: json["work_details"],
       workStatus: json["work_status"],
       createdBy: json["created_by"],

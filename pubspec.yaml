@@ -82,6 +82,7 @@ dependencies:
   connectivity_plus: ^6.0.3
   ringer_mode: ^1.0.2
   telephony_info_plus: ^0.0.2
+  phone_state: ^1.0.3
 
 
 

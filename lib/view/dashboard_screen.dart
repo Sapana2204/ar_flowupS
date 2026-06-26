@@ -140,7 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 _actionButton(
                   Icons.call,
-                  AppStrings.manageCall,
+                  AppStrings.manageTicket,
                       () {
                     Navigator.pushNamed(
                       context,
@@ -150,58 +150,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
-
-            // const SizedBox(height: 20),
-
-            /// FILTER
-            // Row(
-            //   children: [
-            //     _chip(AppStrings.yesterday, false),
-            //     const SizedBox(width: 8),
-            //     _chip(AppStrings.today, true),
-            //     const SizedBox(width: 8),
-            //     _chip(AppStrings.tomorrow, false),
-            //   ],
-            // ),
-            //
-            // const SizedBox(height: 20),
-            //
-            // /// STATUS CARD
-            // Container(
-            //   padding: const EdgeInsets.all(16),
-            //   decoration: _cardDecoration(),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       const Text(
-            //         AppStrings.filteredStatus,
-            //         style: TextStyle(
-            //           fontWeight: FontWeight.bold,
-            //         ),
-            //       ),
-            //
-            //       const SizedBox(height: 15),
-            //
-            //       Row(
-            //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //         children: [
-            //           _statusBox(
-            //             openCount.toString(),
-            //             AppStrings.open,
-            //           ),
-            //           _statusBox(
-            //             activeCount.toString(),
-            //             AppStrings.active,
-            //           ),
-            //           _statusBox(
-            //             closedCount.toString(),
-            //             AppStrings.closed,
-            //           ),
-            //         ],
-            //       ),
-            //     ],
-            //   ),
-            // ),
 
             const SizedBox(height: 20),
 
@@ -213,7 +161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    AppStrings.assignedCalls,
+                    AppStrings.assignedTickets,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                     ),

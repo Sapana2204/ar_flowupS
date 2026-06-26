@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:phone_state/phone_state.dart';
 import 'package:provider/provider.dart';
 import '../model/createTicket_model.dart';
 import '../model/createWorkLog_model.dart';
@@ -21,6 +23,8 @@ import '../viewModel/login_viewmodel.dart';
 import '../viewmodel/customers_viewmodel.dart';
 import '../viewmodel/query_viewmodel.dart';
 import '../viewmodel/tickets_viewmodel.dart';
+import 'callDetails_screen.dart';
+
 
 class RegisterCallScreen extends StatefulWidget {
   final RegisterCallMode mode;
@@ -67,6 +71,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   bool visitRequired = false;
   bool showReasonField = false;
   String _initialDueDate = "";
+  bool _callDetailsOpened = false;
+
 
   @override
   void initState() {
@@ -231,17 +237,40 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     });
   }
 
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _activeWorkLogId != null) {
-      Future.delayed(
-        const Duration(milliseconds: 500),
-        () {
-          _showCallDetailsDialog();
-        },
-      );
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed &&
+        _activeWorkLogId != null &&
+        !_callDetailsOpened &&
+        mounted) {
+
+      _callDetailsOpened = true;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CallDetailsScreen(
+            workLogId: _activeWorkLogId!,
+            ticketId: widget.ticketId!,
+          ),
+        ),
+      ).then((_) {
+        // Reset after returning from CallDetailsScreen
+        _activeWorkLogId = null;
+        _callDetailsOpened = false;
+      });
     }
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -675,12 +704,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   }
 
   Future<void> _makePhoneCall() async {
-    print("STEP 1");
-
     final phone = phoneController.text.trim();
-
-    print("PHONE: $phone");
-    print("TICKET ID: ${widget.ticketId}");
 
     if (phone.isEmpty) {
       if (mounted) {
@@ -693,11 +717,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       return;
     }
 
-    final status = await Permission.phone.request();
+    final permission = await Permission.phone.request();
 
-    print("PERMISSION: $status");
-
-    if (!status.isGranted) {
+    if (!permission.isGranted) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -709,16 +731,12 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     }
 
     try {
-      print("STEP 2");
-
       final vm = Provider.of<TicketsViewModel>(
         context,
         listen: false,
       );
 
       _callStartTime = DateTime.now();
-
-      print("STEP 3");
 
       final createModel = CreateWorkLogModel(
         ticketId: widget.ticketId!,
@@ -730,17 +748,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         workStatus: "working",
       );
 
-      print("PAYLOAD: ${createModel.toJson()}");
-      print("PHONE => $phone");
-      print("TICKET ID => ${widget.ticketId}");
-      print("STARTING CREATE WORK LOG");
+      final workLogId = await vm.createWorkLogAndReturnId(createModel);
 
-      final response = await vm.createWorkLogAndReturnId(createModel);
-
-      print("WORK LOG RESPONSE: $response");
-
-      // ❌ If work log not created, show error and DO NOT open call
-      if (response == null) {
+      if (workLogId == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -755,18 +765,15 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         return;
       }
 
-      // ✅ Work log created successfully
-      _activeWorkLogId = response;
+      // Save work log id
+      _activeWorkLogId = workLogId;
 
-      print("CALLING NUMBER");
+      // Reset flag before every call
+      _callDetailsOpened = false;
 
+      // Open phone dialer
       await FlutterPhoneDirectCaller.callNumber(phone);
-
-      print("CALL OPENED");
-    } catch (e, stackTrace) {
-      print("ERROR: $e");
-      print(stackTrace);
-
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1498,6 +1505,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   }
 
   void _clearAllFields() {
+
     nameController.clear();
     phoneController.clear();
     dateController.clear();
