@@ -431,9 +431,6 @@ class CustomerCard extends StatelessWidget {
                         : "Generate Report",
                   ),
 
-
-
-
                   onPressed: isGenerating
                       ? null
                       : () async {

@@ -71,6 +71,7 @@ class CustomersRepository {
         {
           "text": "",
           "system": "new",
+          "isCompanyWise":true,
           "tableName": "products",
           "wherec": "product_name",
           "status": false,

@@ -165,6 +165,7 @@ class PdfService {
                 "Status",
                 "Priority",
                 "Product",
+                "Serial No",
                 "Resolver",
                 "Start Date",
                 "Due Date",
@@ -189,12 +190,9 @@ class PdfService {
                   description.isEmpty ? "-" : description,
                   ticket.ticketStatus ?? "-",
                   ticket.ticketPriority ?? "-",
-                  (ticket.productName == null || ticket.productName!.trim().isEmpty)
-                      ? "-"
-                      : ticket.productName!,
-                  (ticket.resolverName == null || ticket.resolverName!.trim().isEmpty)
-                      ? "-"
-                      : ticket.resolverName!,
+                  ticket.productName ?? "-",
+                  ticket.productSerialNumber ?? "-",
+                  ticket.resolverName ?? "-",
                   ticket.startDate ?? "-",
                   ticket.dueDate ?? "-",
                 ];

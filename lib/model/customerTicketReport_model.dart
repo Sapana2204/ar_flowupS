@@ -152,12 +152,14 @@ class Product {
   String? productId;
   String? productName;
   String? serialNumber;
+  String? expiryDate;
   List<String>? addOns;
 
   Product({
     this.productId,
     this.productName,
     this.serialNumber,
+    this.expiryDate,
     this.addOns,
   });
 
@@ -165,7 +167,10 @@ class Product {
     productId = json['product_id']?.toString();
     productName = json['product_name'];
     serialNumber = json['serial_number'];
-    addOns = json['add_ons'] != null ? List<String>.from(json['add_ons']) : [];
+    expiryDate = json['expiry_date'];
+    addOns = json['add_ons'] != null
+        ? List<String>.from(json['add_ons'])
+        : [];
   }
 
   Map<String, dynamic> toJson() {
@@ -173,6 +178,7 @@ class Product {
       'product_id': productId,
       'product_name': productName,
       'serial_number': serialNumber,
+      'expiry_date': expiryDate,
       'add_ons': addOns,
     };
   }
@@ -190,6 +196,8 @@ class Ticket {
 
   String? productSerialNumber;
   String? productName;
+
+  int? modifiedBy;
 
   String? ticketStatus;
   String? ticketPriority;
@@ -209,6 +217,7 @@ class Ticket {
     this.contactNo,
     this.productSerialNumber,
     this.productName,
+    this.modifiedBy,
     this.ticketStatus,
     this.ticketPriority,
     this.queryType,
@@ -230,12 +239,14 @@ class Ticket {
     productSerialNumber = json['product_serial_number'];
     productName = json['product_name'];
 
+    modifiedBy = json['modified_by'];
+
     ticketStatus = json['ticket_status'];
     ticketPriority = json['ticket_priority'];
     queryType = json['query_type'];
     assigneeName = json['assignee_name'];
     resolverName = json['resolver_name'];
-    resolutionTime = json['resolution_time'];
+    resolutionTime = json['resolution_time']?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -250,6 +261,7 @@ class Ticket {
       'contact_no': contactNo,
       'product_serial_number': productSerialNumber,
       'product_name': productName,
+      'modified_by': modifiedBy,
       'ticket_status': ticketStatus,
       'ticket_priority': ticketPriority,
       'query_type': queryType,

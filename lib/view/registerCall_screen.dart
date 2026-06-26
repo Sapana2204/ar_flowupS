@@ -630,7 +630,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
               const SizedBox(height: 15),
 
               /// DESCRIPTION
-              const Text("Description"),
+              const Text("Issue Description"),
               const SizedBox(height: 8),
 
               TextFormField(
