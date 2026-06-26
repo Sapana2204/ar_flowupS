@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/saveAccount.dart';
+import '../model/savedAccount.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
 import '../viewModel/login_viewmodel.dart';
@@ -21,23 +25,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool rememberMe = false;
   bool isPasswordVisible = false;
+  List<SavedAccount> savedAccounts = [];
+  SavedAccount? selectedAccount;
+
 
   @override
   void initState() {
     super.initState();
-    _loadSavedUsername();
+    loadAccounts();
+
   }
 
-  Future<void> _loadSavedUsername() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedUsername = prefs.getString('saved_username');
 
-    if (savedUsername != null) {
-      emailController.text = savedUsername;
-      setState(() {
-        rememberMe = true;
-      });
+
+  Future<void> loadAccounts() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final data = prefs.getStringList("saved_accounts") ?? [];
+
+    savedAccounts = data
+        .map((e) => SavedAccount.fromJson(jsonDecode(e)))
+        .toList();
+
+    if (savedAccounts.isNotEmpty) {
+      selectedAccount = savedAccounts.first;
+      emailController.text = selectedAccount!.username;
+      passwordController.text = selectedAccount!.password;
+      rememberMe = true;
     }
+
+    setState(() {});
   }
 
   @override
@@ -102,11 +119,50 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 25),
 
                 /// EMAIL
-                _inputField(
+                Text(
+                  AppStrings.workEmail,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                TextField(
                   controller: emailController,
-                  label: AppStrings.workEmail,
-                  hint: AppStrings.emailHint,
-                  icon: Icons.email_outlined,
+                  decoration: InputDecoration(
+                    hintText: AppStrings.emailHint,
+                    prefixIcon: const Icon(Icons.email_outlined),
+
+                    suffixIcon: savedAccounts.isNotEmpty
+                        ? PopupMenuButton<SavedAccount>(
+                      icon: const Icon(Icons.arrow_drop_down),
+                      onSelected: (account) {
+                        setState(() {
+                          selectedAccount = account;
+                          emailController.text = account.username;
+                          passwordController.text = account.password;
+                        });
+                      },
+                      itemBuilder: (context) {
+                        return savedAccounts.map((account) {
+                          return PopupMenuItem<SavedAccount>(
+                            value: account,
+                            child: Text(account.username),
+                          );
+                        }).toList();
+                      },
+                    )
+                        : null,
+
+                    filled: true,
+                    fillColor: backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -192,17 +248,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     /// 💾 Save / Remove username
                     final prefs = await SharedPreferences.getInstance();
                     if (rememberMe) {
-                      await prefs.setString(
-                          'saved_username', emailController.text.trim());
-                    } else {
-                      await prefs.remove('saved_username');
+                      await saveAccount(
+                        emailController.text.trim(),
+                        passwordController.text,
+                      );
                     }
 
-                    loginVM.loginApi(
+                    final success = await loginVM.loginApi(
                       emailController.text.trim(),
                       passwordController.text.trim(),
                       context,
                     );
+
+                    if (success && rememberMe) {
+                      await saveAccount(
+                        emailController.text.trim(),
+                        passwordController.text.trim(),
+                      );
+
+                      // Reload the account list
+                      await loadAccounts();
+                    } else if (!rememberMe) {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.remove("saved_accounts");
+                    }
                   },
                   child: Container(
                     width: double.infinity,

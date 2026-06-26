@@ -60,12 +60,11 @@ class LoginViewModel with ChangeNotifier {
   }
 
   /// ✅ LOGIN API
-  Future<void> loginApi(
+  Future<bool> loginApi(
       String username,
       String password,
       BuildContext context,
       ) async {
-
     setLoading(true);
 
     try {
@@ -77,26 +76,13 @@ class LoginViewModel with ChangeNotifier {
       final loginModel = LoginModel.fromJson(response);
 
       if (loginModel.token != null && loginModel.token!.isNotEmpty) {
-
         setUserData(loginModel);
         await saveUserData(loginModel);
 
-        /// ✅ CONNECT SOCKET HERE
         SocketService().connect(loginModel.adminId.toString());
 
-        /// 🔐 Decode Token
-        final decoded = JwtDecoder.decode(loginModel.token!);
-        print("🔐 Decoded Token: $decoded");
-
-        print("👤 AdminID: ${loginModel.adminId}");
-        print("👤 Username: ${loginModel.username}");
-        print("🎭 RoleID: ${loginModel.roleId}");
-
-        /// ⏳ Auto Logout on Expiry
         final expiry = JwtDecoder.getExpirationDate(loginModel.token!);
         final duration = expiry.difference(DateTime.now());
-
-        print("⌛ Token valid for: $duration");
 
         Future.delayed(duration, () {
           logout(context);
@@ -105,7 +91,6 @@ class LoginViewModel with ChangeNotifier {
 
         Utils.showToast("Login Successful!");
 
-        /// ✅ SEND LOCATION (fire & forget)
         _sendLocationToServer();
 
         Navigator.pushNamedAndRemoveUntil(
@@ -114,22 +99,23 @@ class LoginViewModel with ChangeNotifier {
               (route) => false,
         );
 
-
+        return true; // ✅ Login successful
       } else {
         Utils.showToast("Invalid login response");
+        return false;
       }
-
     } catch (e) {
       print("error is: $e");
 
       Utils.showToast(
         e.toString().replaceFirst("Exception: ", "").trim(),
       );
+
+      return false; // ❌ Login failed
     } finally {
       setLoading(false);
     }
   }
-
   /// ✅ Logout
   Future<void> logout(BuildContext context) async {
     try {
