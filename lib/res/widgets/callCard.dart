@@ -103,6 +103,17 @@ class CallCard extends StatelessWidget {
                 ticket.queryType ?? "",
                 hexToColor(ticket.typeColor),
               ),
+
+              const Spacer(),
+
+              Text(
+                "${ticket.ticketNo ?? "-"}",
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
 

@@ -609,13 +609,7 @@ class _ClientHistoryScreenState extends State<ClientHistoryScreen>
                         ),
                       ),
 
-                      const SizedBox(width: 10),
 
-                      Expanded(
-                        child: _infoBox(
-                          "Overtime",
-                            formatMinutes(vm.workLogSummary?.overtimeMinutes ?? 0)                      ),
-                      ),
                     ],
                   ),
 

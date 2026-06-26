@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
-import 'package:phone_state/phone_state.dart';
 import 'package:provider/provider.dart';
 import '../model/createTicket_model.dart';
 import '../model/createWorkLog_model.dart';
@@ -72,6 +71,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   bool showReasonField = false;
   String _initialDueDate = "";
   bool _callDetailsOpened = false;
+  String? _initialAssignee;
+  String? _initialStatus;
 
 
   @override
@@ -158,6 +159,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         queryVm.setSelectedPriorityById(data.ticketPriority);
         queryVm.setSelectedAdminById(data.assignee);
         queryVm.setSelectedStatusById(data.ticketStatus);
+        _initialAssignee = queryVm.selectedAdmin;
+        _initialStatus = queryVm.selectedStatus;
 
         /// ✅ 🔥 VERY IMPORTANT: SET CLIENT
         if (data.clientId != null) {
@@ -541,10 +544,11 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                 const SizedBox(height: 12),
                 _buildTextField(
                   "Reason",
-                  "Enter reason for due date change",
+                  "Enter reason",
                   reasonController,
                   validator: (value) {
-                    if (showReasonField && (value == null || value.trim().isEmpty)) {
+                    if (showReasonField &&
+                        (value == null || value.trim().isEmpty)) {
                       return "Reason is required";
                     }
                     return null;
@@ -609,6 +613,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                         onChanged: (value) {
                           if (value != null) {
                             vm.setSelectedAdmin(value);
+                            _updateReasonVisibility(vm);
                           }
                         },
                       ),
@@ -901,7 +906,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       contactNo: phoneController.text,
       description: "<p>${descriptionController.text}</p>",
       queryType: queryVm.getSelectedQueryId(),
-      ticketStatus: "206",
+      ticketStatus: "205",
       ticketPriority: queryVm.getSelectedPriorityId(),
       assignee: queryVm.getSelectedAdminId(),
       startDate: startDate.isNotEmpty
@@ -1210,6 +1215,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                   onChanged: (value) {
                     if (value != null) {
                       vm.setSelectedStatus(value);
+                      _updateReasonVisibility(vm);
                     }
                   },
                 ),
@@ -1707,12 +1713,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
 
                 // ✅ Only in edit mode, show reason if due date changed
                 if (widget.mode == RegisterCallMode.edit) {
-                  showReasonField = selectedDate != _initialDueDate;
-
-                  // optional: clear reason if user changes back to original date
-                  if (!showReasonField) {
-                    reasonController.clear();
-                  }
+                  dateController.text = selectedDate;
+                  _updateReasonVisibility(
+                      Provider.of<QueryViewModel>(context, listen: false));
                 }
               });
             }
@@ -1830,6 +1833,21 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         );
       },
     );
+  }
+
+  void _updateReasonVisibility(QueryViewModel vm) {
+    final dueDateChanged = dateController.text != _initialDueDate;
+    final assigneeChanged = vm.selectedAdmin != _initialAssignee;
+    final statusChanged = vm.selectedStatus != _initialStatus;
+
+    setState(() {
+      showReasonField =
+          dueDateChanged || assigneeChanged || statusChanged;
+
+      if (!showReasonField) {
+        reasonController.clear();
+      }
+    });
   }
 
   Widget _buildDropdownField() {

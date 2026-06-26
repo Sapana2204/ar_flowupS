@@ -4,14 +4,14 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="1. calllist search by api &#10;2. reason field issue&#10;3. customer ticket report issue &#10;4. Performance report export pdf">
-      <change afterPath="$PROJECT_DIR$/lib/view/callDetails_screen.dart" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="work log dialogue issue">
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/workLog_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/workLog_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/res/widgets/callCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/callCard.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/utils/app_strings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_strings.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/clientHistory_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
@@ -439,12 +439,19 @@
       <option name="project" value="LOCAL" />
       <updated>1782388226210</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="work log dialogue issue">
+      <option name="closed" value="true" />
+      <created>1782459757776</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1782459757776</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="token and unread count after login" />
     <MESSAGE value="map changes" />
     <MESSAGE value="changes" />
     <MESSAGE value="added query search and show query in ticket history" />
@@ -469,6 +476,7 @@
     <MESSAGE value="work report done" />
     <MESSAGE value="alive_data sending done" />
     <MESSAGE value="1. calllist search by api &#10;2. reason field issue&#10;3. customer ticket report issue &#10;4. Performance report export pdf" />
-    <option name="LAST_COMMIT_MESSAGE" value="1. calllist search by api &#10;2. reason field issue&#10;3. customer ticket report issue &#10;4. Performance report export pdf" />
+    <MESSAGE value="work log dialogue issue" />
+    <option name="LAST_COMMIT_MESSAGE" value="work log dialogue issue" />
   </component>
 </project>

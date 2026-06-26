@@ -322,14 +322,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 /// 🔹 REPORTS
                 _sectionTitle(AppStrings.reportsSection),
 
-                _drawerSimpleNav(Icons.production_quantity_limits, AppStrings.productExpreports, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProductExpiryReportScreen()),
-                  );
-                }),
-
                 _drawerSimpleNav(Icons.add_chart, AppStrings.reports, () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -343,6 +335,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const PerformanceReportScreen()),
+                  );
+                }),
+
+                _drawerSimpleNav(Icons.production_quantity_limits, AppStrings.productExpreports, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProductExpiryReportScreen()),
                   );
                 }),
 
