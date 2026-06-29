@@ -266,16 +266,108 @@ class CustomerCard extends StatelessWidget {
       BuildContext context,
       int? customerId,
       ) {
-    DateTime selectedDate = DateTime.now();
-    final rootContext = context;
+    DateTime toDate = DateTime.now();
 
-    bool isGenerating = false; // <-- ADD HERE
+    // Default From Date = First day of current month
+    DateTime fromDate = DateTime(
+      toDate.year,
+      toDate.month,
+      1,
+    );
+
+    final rootContext = context;
+    bool isGenerating = false;
 
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            Future<DateTime?> pickDate({
+              required DateTime initialDate,
+              required DateTime firstDate,
+              required DateTime lastDate,
+            }) {
+              return showDatePicker(
+                context: context,
+                initialDate: initialDate,
+                firstDate: firstDate,
+                lastDate: lastDate,
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: ColorScheme.light(
+                        primary: AppColors.primary,
+                        onPrimary: Colors.white,
+                        surface: Colors.white,
+                        onSurface: Colors.black,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+            }
+
+            Widget dateField({
+              required String title,
+              required DateTime date,
+              required VoidCallback onTap,
+            }) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: onTap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.primary.withOpacity(0.05),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_month,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              DateFormat('dd-MM-yyyy').format(date),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.edit_calendar,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
 
             return AlertDialog(
               shape: RoundedRectangleBorder(
@@ -287,9 +379,9 @@ class CustomerCard extends StatelessWidget {
                   horizontal: 20,
                   vertical: 16,
                 ),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.primary,
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
@@ -314,86 +406,43 @@ class CustomerCard extends StatelessWidget {
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 8),
-
-                  Text(
-                    "Report From Date",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                  dateField(
+                    title: "From Date",
+                    date: fromDate,
                     onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
+                      final picked = await pickDate(
+                        initialDate: fromDate,
                         firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-
-                        builder: (context, child) {
-                          return Theme(
-                            data: Theme.of(context).copyWith(
-                              colorScheme: ColorScheme.light(
-                                primary: AppColors.primary,
-                                onPrimary: Colors.white,
-                                surface: Colors.white,
-                                onSurface: Colors.black,
-                              ),
-                            ),
-                            child: child!,
-                          );
-                        },
+                        lastDate: toDate,
                       );
 
                       if (picked != null) {
                         setState(() {
-                          selectedDate = picked;
+                          fromDate = picked;
                         });
                       }
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.primary.withOpacity(0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        color: AppColors.primary.withOpacity(0.05),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_month,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              DateFormat('dd-MM-yyyy').format(selectedDate),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            Icons.edit_calendar,
-                            color: AppColors.primary,
-                          ),
-                        ],
-                      ),
-                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  dateField(
+                    title: "To Date",
+                    date: toDate,
+                    onTap: () async {
+                      final picked = await pickDate(
+                        initialDate: toDate,
+                        firstDate: fromDate,
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (picked != null) {
+                        setState(() {
+                          toDate = picked;
+                        });
+                      }
+                    },
                   ),
                 ],
               ),
@@ -401,7 +450,10 @@ class CustomerCard extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel", style: TextStyle(color: primary),),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: primary),
+                  ),
                 ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -430,7 +482,6 @@ class CustomerCard extends StatelessWidget {
                         ? "Generating..."
                         : "Generate Report",
                   ),
-
                   onPressed: isGenerating
                       ? null
                       : () async {
@@ -438,7 +489,8 @@ class CustomerCard extends StatelessWidget {
                       isGenerating = true;
                     });
 
-                    final vm = Provider.of<CustomerReportViewModel>(
+                    final vm =
+                    Provider.of<CustomerReportViewModel>(
                       rootContext,
                       listen: false,
                     );
@@ -447,23 +499,26 @@ class CustomerCard extends StatelessWidget {
                       await vm.getCustomerReport(
                         customerId: customerId!,
                         fromDate: DateFormat('yyyy-MM-dd')
-                            .format(selectedDate),
+                            .format(fromDate),
+                        toDate: DateFormat('yyyy-MM-dd')
+                            .format(toDate),
                       );
 
                       if (vm.reportModel != null) {
-                        final fromDate = DateFormat('dd-MM-yyyy')
-                            .format(selectedDate);
-
                         final pdfBytes =
                         await PdfService.generateCustomerReportPdf(
                           vm.reportModel!,
-                          fromDate,
+                          DateFormat('dd-MM-yyyy')
+                              .format(fromDate),
+                          DateFormat('dd-MM-yyyy')
+                              .format(toDate),
                         );
 
                         Navigator.pop(context);
 
                         if (rootContext.mounted) {
-                          Navigator.of(rootContext).push(
+                          Navigator.push(
+                            rootContext,
                             MaterialPageRoute(
                               builder: (_) => PdfPreviewScreen(
                                 pdfBytes: pdfBytes,
@@ -482,8 +537,6 @@ class CustomerCard extends StatelessWidget {
                       }
                     }
                   },
-
-
                 ),
               ],
             );

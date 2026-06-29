@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../model/customerTicketReport_model.dart';
 import '../repository/customerReport_repository.dart';
 
 class CustomerReportViewModel extends ChangeNotifier {
-  final CustomerRepository _repository =
-  CustomerRepository();
+  final CustomerRepository _repository = CustomerRepository();
 
   bool isLoading = false;
 
@@ -14,17 +13,15 @@ class CustomerReportViewModel extends ChangeNotifier {
   Future<void> getCustomerReport({
     required int customerId,
     required String fromDate,
+    required String toDate,
   }) async {
-    print("📤 Calling Report API");
-    print("Customer ID: $customerId");
-    print("From Date: $fromDate");
 
     reportModel = await _repository.getCustomerTicketReport(
       customerId: customerId,
       fromDate: fromDate,
+      toDate: toDate,
     );
 
-    print("📥 Report API Success");
     notifyListeners();
   }
 }

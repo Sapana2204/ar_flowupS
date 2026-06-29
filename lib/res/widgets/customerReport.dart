@@ -14,6 +14,7 @@ class PdfService {
   static Future<Uint8List> generateCustomerReportPdf(
       CustomerTicketReportModel report,
       String fromDate,
+      String toDate,
       ) async {
     final pdf = pw.Document();
 
@@ -51,7 +52,7 @@ class PdfService {
 
           pw.Center(
             child: pw.Text(
-              "Report From Date: $fromDate",
+              "Report Period: $fromDate to $toDate",
               style: const pw.TextStyle(
                 fontSize: 12,
               ),

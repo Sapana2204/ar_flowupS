@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="multiple logins handle">
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="customer ticket report">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/customerTicketReport_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customerTicketReport_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repository/customers_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/customers_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/customerReport_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/customerReport_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/customerReport_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/customerReport_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -460,12 +459,19 @@
       <option name="project" value="LOCAL" />
       <updated>1782468179570</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="customer ticket report">
+      <option name="closed" value="true" />
+      <created>1782470031859</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1782470031859</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="added query search and show query in ticket history" />
     <MESSAGE value="changed baseurl" />
     <MESSAGE value="passed isMobile parameter and changed and integrated dashboard UI and API integration" />
     <MESSAGE value="Piechart changes" />
@@ -490,6 +496,7 @@
     <MESSAGE value="work log dialogue issue" />
     <MESSAGE value="work log dialogue issue, call searching issue, work log issue, reason field issue, ticket status issue" />
     <MESSAGE value="multiple logins handle" />
-    <option name="LAST_COMMIT_MESSAGE" value="multiple logins handle" />
+    <MESSAGE value="customer ticket report" />
+    <option name="LAST_COMMIT_MESSAGE" value="customer ticket report" />
   </component>
 </project>

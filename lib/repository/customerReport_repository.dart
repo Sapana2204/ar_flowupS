@@ -8,22 +8,21 @@ class CustomerRepository {
   Future<CustomerTicketReportModel> getCustomerTicketReport({
     required int customerId,
     required String fromDate,
+    required String toDate,
   }) async {
 
-    print({
+    final payload = {
       "customer_id": customerId.toString(),
       "from_date": fromDate,
-    });
+      "to_date": toDate,
+    };
+
+    print("📤 Report Payload: $payload");
 
     final response = await _api.getPostApiResponse(
       AppUrls.customerTicketReport,
-      {
-        "customer_id": customerId.toString(),
-        "from_date": fromDate,
-      },
+      payload,
     );
-
-    print(response);
 
     return CustomerTicketReportModel.fromJson(response);
   }
