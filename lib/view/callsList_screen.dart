@@ -152,14 +152,17 @@ class _CallsListScreenState extends State<CallsListScreen> {
 
                   /// 🔄 LOADING
                   if (vm.isLoading && vm.ticketsList.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16),
+                    return Padding(
+                      padding: const EdgeInsets.all(16),
                       child: Center(
-                        child: CircularProgressIndicator(
-                          color: primary,   // 🔵 set your primary color
+                        child: Image.asset(
+                          "assets/images/loading.gif",
+                          width: 100,
+                          height: 100,
                         ),
                       ),
-                    );                }
+                    );
+                  }
 
                   /// ❌ ERROR
                   if (vm.error.isNotEmpty) {

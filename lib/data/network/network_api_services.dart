@@ -42,23 +42,35 @@ class NetworkApiServices extends BaseApiServices {
   }
 
   @override
-  Future<dynamic> getPostApiResponse(String url, dynamic data, {String? token}) async {
+  Future<dynamic> getPostApiResponse(
+      String url,
+      dynamic data, {
+        String? token,
+      }) async {
     try {
       token = await _getValidToken(token);
 
-      String completeUrl = url.startsWith("http") ? url : AppUrls.baseUrl + url;
+      String completeUrl =
+      url.startsWith("http") ? url : AppUrls.baseUrl + url;
 
       final headers = ApiHeaders.headers(token: token);
+
+      print("══════════════════════════════════════");
+      print("📤 POST API: $completeUrl");
+      print("📤 Headers: $headers");
+      print("📤 Request Body:");
+      print(jsonEncode(data));
+      print("══════════════════════════════════════");
+
       final response = await http.post(
         Uri.parse(completeUrl),
         headers: headers,
         body: jsonEncode(data),
       );
 
-      print("📤 POST API: $completeUrl");
       print("📥 Response status: ${response.statusCode}");
       print("📥 Response body: ${response.body}");
-      print("Header: ${response.headers}");
+      print("📥 Response headers: ${response.headers}");
 
       return handleResponse(response);
     } on SocketException {

@@ -71,7 +71,7 @@ class Data {
   int? employeeId;
   int? companyId;
   String? workStartAt;
-  int? spentMinutes;
+  String? spentMinutes;
   String? workDetails;
   String? workStatus;
   String? createdDate;

@@ -5,11 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="customer ticket report">
+      <change afterPath="$PROJECT_DIR$/assets/images/loading.gif" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repository/customerReport_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/customerReport_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerReport.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/customerReport_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/customerReport_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/gif/loader.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/gif/nodata2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/data/network/network_api_services.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/tickets_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/tickets_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/workReport_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/workReport_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/userStatus_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/userStatus_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/res/widgets/callCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/callCard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/customerList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/customerList_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/profile_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/profile_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/userMarker_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/userMarker_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/workReport_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/workReport_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/userStatus_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/userStatus_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,44 +72,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Flutter.main.dart.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;ScreenshotViewer.SavePath&quot;: &quot;C:/Users/USER/Desktop&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/flutter workspace/ar_flowupS/lib/view&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;AndroidSdkUpdater&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Flutter.main.dart.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "ScreenshotViewer.SavePath": "C:/Users/USER/Desktop",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "com.google.services.firebase.aqiPopupShown": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "io.flutter.reload.alreadyRun": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/flutter workspace/ar_flowupS/assets",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "AndroidSdkUpdater",
+    "show.migrate.to.gradle.popup": "false"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\flutter workspace\ar_flowupS\assets" />
       <recent name="C:\flutter workspace\ar_flowupS\lib\view" />
       <recent name="C:\flutter workspace\ar_flowupS\lib\res\widgets" />
       <recent name="C:\flutter workspace\ar_flowupS\lib\model" />
       <recent name="C:\flutter workspace\ar_flowupS\assets\sounds" />
-      <recent name="C:\flutter workspace\ar_flowupS\assets" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\flutter workspace\ar_flowupS\assets\images" />
       <recent name="C:\flutter workspace\ar_flowupS\lib\model" />
       <recent name="C:\flutter workspace\ar_flowupS\lib\utils" />
     </key>
@@ -467,7 +482,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782470031859</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="customer ticket report">
+      <option name="closed" value="true" />
+      <created>1782718458771</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1782718458771</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">

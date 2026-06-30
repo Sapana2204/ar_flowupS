@@ -94,6 +94,11 @@ class Data {
   String? callDirection;
   String? amcCall;
   String? visitRequired;
+  String? clientName;
+  String? delegationFlag;
+  String? isDelegated;
+  String? isReassigned;
+  String? visibilityReason;
 
   Data({
     this.ticketId,
@@ -129,6 +134,11 @@ class Data {
     this.callDirection,
     this.amcCall,
     this.visitRequired,
+    this.clientName,
+    this.delegationFlag,
+    this.isDelegated,
+    this.isReassigned,
+    this.visibilityReason,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -167,6 +177,11 @@ class Data {
     callDirection = json['call_direction']?.toString();
     amcCall = json['amc_call']?.toString();
     visitRequired = json['visit_required']?.toString();
+    clientName = json['client_name']?.toString();
+    delegationFlag = json['delegation_flag']?.toString();
+    isDelegated = json['is_delegated']?.toString();
+    isReassigned = json['is_reassigned']?.toString();
+    visibilityReason = json['visibility_reason']?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -206,6 +221,11 @@ class Data {
     dataMap['call_direction'] = callDirection;
     dataMap['amc_call'] = amcCall;
     dataMap['visit_required'] = visitRequired;
+    dataMap['client_name'] = clientName;
+    dataMap['delegation_flag'] = delegationFlag;
+    dataMap['is_delegated'] = isDelegated;
+    dataMap['is_reassigned'] = isReassigned;
+    dataMap['visibility_reason'] = visibilityReason;
     return dataMap;
   }
 }

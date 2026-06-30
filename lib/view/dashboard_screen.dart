@@ -42,7 +42,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (dashboardVM.loading) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child: Image(
+          image: AssetImage("assets/images/loading.gif"),
+          width: 100,
+          height: 100,
+        ),
       );
     }
 

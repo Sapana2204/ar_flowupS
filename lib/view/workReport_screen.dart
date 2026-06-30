@@ -191,7 +191,13 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
               /// ONLY REPORTS SCROLL
               Expanded(
                 child: dropdownVm.isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(
+                  child: Image.asset(
+                    "assets/images/loading.gif",
+                    width: 80,
+                    height: 80,
+                  ),
+                )
                     : filteredWorkLogs.isEmpty
                     ? const Center(
                   child: Column(

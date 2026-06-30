@@ -27,8 +27,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Consumer<ProfileViewModel>(
       builder: (context, vm, child) {
         if (vm.loading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            body: Center(
+              child: Image.asset(
+                "assets/images/loading.gif",
+                width: 100,
+                height: 100,
+              ),
+            ),
           );
         }
 

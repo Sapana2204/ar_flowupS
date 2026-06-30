@@ -130,8 +130,15 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
         title: const Text("User Markers"),
         backgroundColor: primary,
       ),
-      body: vm.isLoading
-          ? const Center(child: CircularProgressIndicator())
+        body: vm.isLoading
+            ? Center(
+          child: Image.asset(
+            "assets/images/loading.gif",
+            width: 100,
+            height: 100,
+          ),
+        )
+            // Your actual body
           : Stack(
         children: [
           RefreshIndicator(

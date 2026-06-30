@@ -106,8 +106,13 @@ class CallCard extends StatelessWidget {
 
               const Spacer(),
 
+              if ((ticket.visibilityReason ?? "").isNotEmpty)
+                _visibilityTag(ticket.visibilityReason!),
+
+              const SizedBox(width: 8),
+
               Text(
-                "${ticket.ticketNo ?? "-"}",
+                ticket.ticketNo ?? "-",
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
@@ -181,6 +186,28 @@ class CallCard extends StatelessWidget {
       ),
     ),
     );  }
+
+  Widget _visibilityTag(String reason) {
+    final isCreated = reason.toLowerCase() == "created";
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: isCreated
+            ? Colors.green.withOpacity(0.12)
+            : Colors.orange.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        reason.toUpperCase(),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: isCreated ? Colors.green : Colors.orange,
+        ),
+      ),
+    );
+  }
 
   Color getDueDateColor(String? date) {
     if (date == null || date.isEmpty) return Colors.green;

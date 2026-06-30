@@ -124,26 +124,39 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: _currentIndex == 0
             ? [
           /// Attendance Status Icon
-          IconButton(
-            onPressed: _changeAttendanceStatus,
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSignedIn
-                    ? Colors.green.shade50
-                    : Colors.orange.shade50,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isSignedIn
-                    ? Icons.work_history_rounded
-                    : Icons.fingerprint_rounded,
-                color: isSignedIn
-                    ? Colors.green
-                    : Colors.orange,
-                size: 22,
-              ),
-            ),
+          Consumer<UserStatusViewModel>(
+            builder: (context, vm, child) {
+              return IconButton(
+                onPressed: vm.isLoading ? null : _changeAttendanceStatus,
+                icon: vm.isLoading
+                    ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.orange,
+                  ),
+                )
+                    : Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isSignedIn
+                        ? Colors.green.shade50
+                        : Colors.orange.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isSignedIn
+                        ? Icons.work_history_rounded
+                        : Icons.fingerprint_rounded,
+                    color: isSignedIn
+                        ? Colors.green
+                        : Colors.orange,
+                    size: 22,
+                  ),
+                ),
+              );
+            },
           ),
 
           /// Notifications
@@ -299,13 +312,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
 
-                // _drawerSimpleNav(Icons.co_present_sharp, AppStrings.payroll, () {
-                //   Navigator.pop(context);
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(builder: (_) => const PayrollScreen()),
-                //   );
-                // }),
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
                   Navigator.pop(context);
@@ -422,49 +428,71 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
+                  child: Consumer<UserStatusViewModel>(
+                    builder: (context, vm, child) {
+                      return ElevatedButton(
+                        onPressed: vm.isLoading
+                            ? null
+                            : () async {
+                          bool success;
 
-                      final statusVm =
-                      context.read<UserStatusViewModel>();
+                          if (isSignedIn) {
+                            success = await vm.signOut();
 
-                      final prefs = await SharedPreferences.getInstance();
+                            if (success) {
+                              final prefs = await SharedPreferences.getInstance();
 
-                      if (isSignedIn) {
-                        // SIGN OUT
-                        await statusVm.updateStatus("inactive");
+                              await prefs.remove("attendance_signed_in");
 
-                        await prefs.remove("attendance_signed_in");
+                              if (!mounted) return;
 
-                        setState(() {
-                          isSignedIn = false;
-                        });
-                      } else {
-                        // SIGN IN
-                        await statusVm.updateStatus("active");
+                              setState(() {
+                                isSignedIn = false;
+                              });
 
-                        await prefs.setBool(
-                          "attendance_signed_in",
-                          true,
-                        );
+                              Navigator.pop(context);
 
-                        setState(() {
-                          isSignedIn = true;
-                        });
-                      }
+                              Utils.showToast("Signed out successfully.");
+                            }
+                          } else {
+                            success = await vm.signIn();
+
+                            if (success) {
+                              final prefs = await SharedPreferences.getInstance();
+
+                              await prefs.setBool(
+                                "attendance_signed_in",
+                                true,
+                              );
+
+                              if (!mounted) return;
+
+                              setState(() {
+                                isSignedIn = true;
+                              });
+
+                              Navigator.pop(context);
+
+                              Utils.showToast(
+                                "You are signed in successfully.",
+                              );
+                            }
+                          }
+                        },
+                        child: vm.isLoading
+                            ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                            : Text(
+                          isSignedIn ? "Sign Out" : "Sign In",
+                        ),
+                      );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isSignedIn
-                          ? Colors.red
-                          : Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: Text(
-                      isSignedIn
-                          ? "Sign Out"
-                          : "Sign In",
-                    ),
                   ),
                 ),
               ],
@@ -920,28 +948,44 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: const Text("Exit",style: TextStyle(color: primary),),
               ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.login),
-                label: const Text("Sign In"),
-                  onPressed: () async {
-                    Navigator.pop(context);
+              Consumer<UserStatusViewModel>(
+                builder: (context, vm, child) {
+                  return ElevatedButton.icon(
+                    icon: vm.isLoading
+                        ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : const Icon(Icons.login),
+                    label: Text(vm.isLoading ? "Signing In..." : "Sign In"),
+                    onPressed: vm.isLoading
+                        ? null
+                        : () async {
+                      final success = await vm.signIn();
 
-                    final statusVm =
-                    context.read<UserStatusViewModel>();
+                      if (!success) return;
 
-                    await statusVm.updateStatus("active");
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool("attendance_signed_in", true);
 
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setBool("attendance_signed_in", true);
+                      if (!mounted) return;
 
-                    setState(() {
-                      isSignedIn = true;
-                    });
+                      setState(() {
+                        isSignedIn = true;
+                      });
 
-                    Utils.showToast(
-                      "You are signed in successfully. You are signed in until you sign out yourself.",
-                    );
-                  }
+                      Navigator.pop(context);
+
+                      Utils.showToast(
+                        "You are signed in successfully.",
+                      );
+                    },
+                  );
+                },
               ),
             ],
           ),
@@ -986,11 +1030,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirm == true) {
-      try {
-        await context
-            .read<UserStatusViewModel>()
-            .updateStatus("inactive");
-      } catch (_) {}
+      final success = await context.read<UserStatusViewModel>().signOut();
+
+      if (!success) {
+        return;
+      }
 
       await context.read<LoginViewModel>().logout(context);
 

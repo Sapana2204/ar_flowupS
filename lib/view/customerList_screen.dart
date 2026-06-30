@@ -119,8 +119,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
                   /// 🔄 LOADING
                   if (vm.isLoading && vm.customers.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: primary),
+                    return Center(
+                      child: Image.asset(
+                        "assets/images/loading.gif",
+                        width: 100,
+                        height: 100,
+                      ),
                     );
                   }
 
