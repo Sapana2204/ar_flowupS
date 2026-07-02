@@ -11,7 +11,10 @@ import '../viewmodel/tickets_viewmodel.dart';
 import 'registerCall_screen.dart';
 
 class CallsListScreen extends StatefulWidget {
-  const CallsListScreen({super.key});
+  final String? status;
+
+  const CallsListScreen({super.key,    this.status,
+  });
 
   @override
   State<CallsListScreen> createState() => _CallsListScreenState();
@@ -30,7 +33,15 @@ class _CallsListScreenState extends State<CallsListScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchController.clear();
-      ticketVm.searchTickets("");
+
+      if (widget.status != null && widget.status!.isNotEmpty) {
+        ticketVm.searchTickets(
+          "",
+          status: widget.status,
+        );
+      } else {
+        ticketVm.searchTickets("");
+      }
     });
 
     /// 🔥 PRELOAD ALL DROPDOWN DATA HERE

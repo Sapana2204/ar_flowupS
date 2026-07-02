@@ -172,14 +172,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             profile?.companyName ?? "",
                           ),
                           _profileTile(
-                            Icons.location_on_outlined,
-                            "Google Location",
-                            profile?.googleLocation ?? "",
-                          ),
-                          _profileTile(
                             Icons.home_outlined,
                             "Address",
-                            profile?.address ?? "",
+                            removeHtmlTags(profile?.address),
                           ),
                         ],
                       ),
@@ -189,11 +184,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _sectionCard(
                         title: "Personal Details",
                         children: [
-                          _profileTile(
-                            Icons.access_time_outlined,
-                            "Timezone",
-                            profile?.timeZone ?? "",
-                          ),
                           _profileTile(
                             Icons.calendar_month_outlined,
                             "DOB",
@@ -234,6 +224,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+  }
+
+  String removeHtmlTags(String? html) {
+    if (html == null || html.isEmpty) return "";
+
+    return html
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .trim();
   }
 
   Widget _summaryCard(dynamic profile) {

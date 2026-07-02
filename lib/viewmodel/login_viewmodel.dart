@@ -31,6 +31,9 @@ class LoginViewModel with ChangeNotifier {
   bool _isForgotLoading = false;
   bool get isForgotLoading => _isForgotLoading;
 
+  bool _readAllLoading = false;
+  bool get readAllLoading => _readAllLoading;
+
   void setForgotLoading(bool value) {
     _isForgotLoading = value;
     notifyListeners();
@@ -390,6 +393,18 @@ class LoginViewModel with ChangeNotifier {
         "mobile_network_generation": "unknown",
         "signal_strength": "unknown",
       };
+    }
+  }
+
+  Future<bool> readAllNotifications() async {
+    try {
+      _readAllLoading = true;
+      notifyListeners();
+
+      return await _loginRepository.readAllNotifications();
+    } finally {
+      _readAllLoading = false;
+      notifyListeners();
     }
   }
 }

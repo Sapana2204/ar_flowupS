@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/amc_model.dart';
 import '../res/widgets/amcCard.dart';
+import '../res/widgets/appLoader.dart';
 import '../utils/app_colors.dart';
 import '../viewmodel/amc_viewmodel.dart';
 
@@ -67,9 +68,7 @@ class _AMCListScreenState extends State<AMCListScreen> {
             child: Consumer<AMCViewModel>(
               builder: (_, vm, __) {
                 if (vm.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const AppLoader();
                 }
 
                 if (vm.amcList.isEmpty) {

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../model/assignee_model.dart';
 import '../model/company_model.dart';
 import '../model/workReport_model.dart';
+import '../res/widgets/workReportPdfService.dart';
 import '../utils/app_colors.dart';
 import '../viewmodel/workReport_viewmodel.dart';
 
@@ -54,12 +55,10 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
             ),
             PopupMenuButton(
               itemBuilder: (_) => [
-                const PopupMenuItem(
-                    value: "excel", child: Text("Export Excel")),
+
                 const PopupMenuItem(value: "pdf", child: Text("Export PDF")),
               ],
               onSelected: (val) {
-                if (val == "excel") _exportExcel();
                 if (val == "pdf") _exportPDF();
               },
             )
@@ -736,7 +735,7 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              setState(() {
+                              setModalState(() {
                                 selectedEmployee = null;
                                 selectedCompany = null;
                                 selectedStatus = null;
@@ -878,17 +877,36 @@ class _WorkReportScreenState extends State<WorkReportScreen> {
       filteredWorkLogs = List.from(vm.workLogs); // if empty, "No data found" will show
     });
   }
+  Future<void> _exportPDF() async {
+    final vm = context.read<WorkReportViewModel>();
 
-  /// 🔹 EXPORT (BASIC PLACEHOLDER)
-  void _exportExcel() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Excel export coming soon")),
+    if (vm.workReportModel == null ||
+        (vm.workReportModel!.data?.isEmpty ?? true)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No data available to export"),
+        ),
+      );
+      return;
+    }
+
+    final fromDate = selectedDateRange == null
+        ? "-"
+        : DateFormat("dd-MM-yyyy").format(selectedDateRange!.start);
+
+    final toDate = selectedDateRange == null
+        ? "-"
+        : DateFormat("dd-MM-yyyy").format(selectedDateRange!.end);
+
+    final pdfBytes = await WorkReportPdfService.generateWorkReportPdf(
+      vm.workReportModel!,
+      fromDate,
+      toDate,
     );
-  }
 
-  void _exportPDF() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("PDF export coming soon")),
+    await WorkReportPdfService.downloadPdf(
+      pdfBytes: pdfBytes,
+      fileName: "Work_Report.pdf",
     );
   }
 }

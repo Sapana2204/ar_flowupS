@@ -8,6 +8,8 @@ import '../viewModel/dashboard_viewmodel.dart';
 import '../viewModel/login_viewmodel.dart';
 import 'package:pie_chart/pie_chart.dart';
 
+import 'callsList_screen.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -146,10 +148,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Icons.call,
                   AppStrings.manageTicket,
                       () {
-                    Navigator.pushNamed(
-                      context,
-                      RouteNames.callListScreen,
-                    );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CallsListScreen(
+                              status: "open",
+                            ),
+                          ),
+                        );
                   },
                 ),
               ],

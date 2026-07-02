@@ -190,5 +190,20 @@ class LoginRepository {
     }
   }
 
+  Future<bool> readAllNotifications() async {
+    try {
+      final response = await _api.getGetApiResponse(
+        "${AppUrls.baseUrl}/notifications/read-all",
+      );
+
+      print("✅ Read All Response: $response");
+
+      return response["success"] == true;
+    } catch (e) {
+      print("❌ Read All Notifications Error: $e");
+      return false;
+    }
+  }
+
 
 }

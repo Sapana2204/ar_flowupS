@@ -131,23 +131,76 @@ class CustomerCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          /// 🔹 COMPANY + CUSTOMER ID
+          /// 🔹 TICKET COUNT + PRODUCT SERIAL NUMBERS
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                customer.companyName ?? "-",
-                style: const TextStyle(fontSize: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.confirmation_number,
+                      size: 14,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(width: 4),
+                    // Text(
+                    //   "${customer.ticketCount ?? 0} Tickets",
+                    //   style: const TextStyle(
+                    //     color: Colors.orange,
+                    //     fontWeight: FontWeight.w600,
+                    //     fontSize: 11,
+                    //   ),
+                    // ),
+                  ],
+                ),
               ),
-              Text(
-                "ID: ${customer.customerId ?? "-"}",
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey,
+
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      "Product Serial No.",
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Text(
+                      (customer.customerProducts != null &&
+                          customer.customerProducts!.isNotEmpty)
+                          ? customer.customerProducts!
+                          .map((e) => e.serialNumber ?? "-")
+                          .where((e) => e.isNotEmpty && e != "-")
+                          .join(", ")
+                          : "-",
+                      textAlign: TextAlign.right,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
+
+          const SizedBox(height: 10),
 
           const SizedBox(height: 10),
           if (hasAmc) ...[

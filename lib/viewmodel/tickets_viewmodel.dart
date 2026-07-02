@@ -83,6 +83,9 @@ class TicketsViewModel extends ChangeNotifier {
   String _workLogErrorMessage = "";
   String get workLogErrorMessage => _workLogErrorMessage;
 
+  String _status = "active";
+  String get status => _status;
+
   void setSearchText(String value) {
     _searchText = value;
   }
@@ -104,8 +107,9 @@ class TicketsViewModel extends ChangeNotifier {
       notifyListeners();
 
       final response = await _repository.fetchTickets(
+        status: _status,
         page: _page,
-        searchText: _searchText, // ✅ API search text
+        searchText: _searchText,
       );
 
       final newData = response.data ?? [];
@@ -127,8 +131,16 @@ class TicketsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> searchTickets(String query) async {
+  Future<void> searchTickets(
+      String query, {
+        String? status,
+      }) async {
     _searchText = query.trim();
+
+    if (status != null) {
+      _status = status;
+    }
+
     _page = 1;
     _hasMore = true;
     _ticketsList.clear();
@@ -136,6 +148,7 @@ class TicketsViewModel extends ChangeNotifier {
 
     await fetchTickets(isRefresh: true);
   }
+
 
   void filterTickets(String query) {
     _searchText = query;
@@ -196,6 +209,7 @@ class TicketsViewModel extends ChangeNotifier {
 
   void resetTicketsState() {
     _searchText = "";
+    _status = "active"; // Reset status filter
     _page = 1;
     _hasMore = true;
     _error = "";

@@ -548,6 +548,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _showNotificationPanel() async {
+    final loginVm = Provider.of<LoginViewModel>(
+      context,
+      listen: false,
+    );
     /// Load notifications
     notificationNotifier.value = await _repo.fetchNotifications();
 
@@ -560,12 +564,69 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              const Text(
-                "Notifications",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              ValueListenableBuilder<List<NotificationModel>>(
+                valueListenable: notificationNotifier,
+                builder: (_, list, __) {
+                  return Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          "Notifications",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      if (list.isNotEmpty)
+                        GestureDetector(
+                          onTap: () async {
+                            final success = await loginVm.readAllNotifications();
+
+                            if (!success) return;
+
+                            notificationNotifier.value = list
+                                .map(
+                                  (e) => NotificationModel(
+                                id: e.id,
+                                title: e.title,
+                                message: e.message,
+                                referenceId: e.referenceId,
+                                isRead: "y",
+                              ),
+                            )
+                                .toList();
+
+                            setState(() {
+                              notificationCount = 0;
+                            });
+                          },
+                          child: Consumer<LoginViewModel>(
+                            builder: (_, vm, __) {
+                              if (vm.readAllLoading) {
+                                return const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                );
+                              }
+
+                              return const Text(
+                                "Read All",
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
 
               const Divider(),
