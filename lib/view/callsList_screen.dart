@@ -12,8 +12,10 @@ import 'registerCall_screen.dart';
 
 class CallsListScreen extends StatefulWidget {
   final String? status;
+  final String? searchText;
 
-  const CallsListScreen({super.key,    this.status,
+
+  const CallsListScreen({super.key,    this.status, this.searchText
   });
 
   @override
@@ -34,13 +36,22 @@ class _CallsListScreenState extends State<CallsListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchController.clear();
 
-      if (widget.status != null && widget.status!.isNotEmpty) {
+      if (widget.searchText != null && widget.searchText!.isNotEmpty) {
+        // From Dashboard
+        ticketVm.searchTickets(
+          widget.searchText!,
+          status: "active",
+        );
+
+        _searchController.text = widget.searchText!;
+      } else {
+        // Normal Tickets screen
         ticketVm.searchTickets(
           "",
-          status: widget.status,
+          status: "active",
         );
-      } else {
-        ticketVm.searchTickets("");
+
+        _searchController.clear();
       }
     });
 

@@ -149,57 +149,6 @@ class TicketsViewModel extends ChangeNotifier {
     await fetchTickets(isRefresh: true);
   }
 
-
-  void filterTickets(String query) {
-    _searchText = query;
-    final search = query.trim().toLowerCase();
-
-    if (search.isEmpty) {
-      _ticketsList = List.from(_allTickets);
-    } else {
-      _ticketsList = _allTickets.where((ticket) {
-        final clientName =
-        (ticket.clientId ?? ticket.clientId ?? "").toString().toLowerCase();
-
-        final contactPerson =
-        (ticket.contactPerson ?? "").toString().toLowerCase();
-
-        final phone =
-        (ticket.contactNo ?? "").toString().toLowerCase();
-
-        final ticketNo =
-        (ticket.ticketNo ?? "").toString().toLowerCase();
-
-        final queryType =
-        (ticket.queryType ?? "").toString().toLowerCase();
-
-        final description =
-        (ticket.description ?? "").toString().toLowerCase();
-
-        final ticketStatus =
-        (ticket.ticketStatus ?? "").toString().toLowerCase();
-
-        final assignee =
-        (ticket.assignee ?? "").toString().toLowerCase();
-
-        final productName =
-        (ticket.productName ?? "").toString().toLowerCase();
-
-        return clientName.contains(search) ||
-            contactPerson.contains(search) ||
-            phone.contains(search) ||
-            ticketNo.contains(search) ||
-            queryType.contains(search) ||
-            description.contains(search) ||
-            ticketStatus.contains(search) ||
-            assignee.contains(search) ||
-            productName.contains(search);
-      }).toList();
-    }
-
-    notifyListeners();
-  }
-
   /// 🔹 Pagination
   Future<void> loadMore() async {
     if (!_hasMore || _isLoading) return;

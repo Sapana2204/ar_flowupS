@@ -5,18 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="1. show created and assigned tickets - done&#10;2. Sign in signout- add parameters of network and other - done&#10;3. add app icons progressindicators - call list, profile screen,customer list">
-      <change afterPath="$PROJECT_DIR$/lib/res/widgets/appLoader.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/res/widgets/workReportPdfService.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repository/login_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/login_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/res/widgets/customerCard.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/amcList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/amcList_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/profile_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/profile_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/workReport_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/workReport_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -492,7 +484,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782818762219</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="1. show created and assigned tickets - done&#10;2. Sign in signout- add parameters of network and other - done&#10;3. add app icons progressindicators - call list, profile screen,customer list">
+      <option name="closed" value="true" />
+      <created>1782991101799</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1782991101799</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">

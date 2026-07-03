@@ -148,13 +148,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Icons.call,
                   AppStrings.manageTicket,
                       () {
-                        Navigator.push(
+                        Navigator.pushNamed(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const CallsListScreen(
-                              status: "open",
-                            ),
-                          ),
+                          RouteNames.callListScreen,
                         );
                   },
                 ),
@@ -237,38 +233,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             const SizedBox(height: 20),
 
-            /// SUMMARY LIST FROM API
-            // if (summary.isNotEmpty)
-            //   Container(
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: _cardDecoration(),
-            //     child: Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         const Text(
-            //           "Dashboard Summary",
-            //           style: TextStyle(
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //
-            //         const SizedBox(height: 10),
-            //
-            //         ...summary.map(
-            //               (item) => ListTile(
-            //             contentPadding: EdgeInsets.zero,
-            //             title: Text(item.label ?? ""),
-            //             trailing: Text(
-            //               "${item.value ?? 0}",
-            //               style: const TextStyle(
-            //                 fontWeight: FontWeight.bold,
-            //               ),
-            //             ),
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
+
 
             /// DASHBOARD CARDS
             if (summary.isNotEmpty)
@@ -296,10 +261,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           RouteNames.customersListScreen,
                         );
                       } else if (label.contains("open ticket")) {
-                        Navigator.pushNamed(
+
+
+                        Navigator.push(
                           context,
-                          RouteNames.callListScreen,
+                          MaterialPageRoute(
+                            builder: (_) => const CallsListScreen(
+                              searchText: "open",
+                            ),
+                          ),
                         );
+
                       } else if (label.contains("today follow-ups")) {
                         Navigator.pushNamed(
                           context,
