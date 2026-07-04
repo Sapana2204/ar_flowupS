@@ -65,6 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    print("🔥 HomeScreen initState");
+
     _loadAttendanceState();
 
     _startLocationTracking();
@@ -789,6 +791,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     /// ✅ STEP 3: Start tracking ONLY if allowed
+    print("🚀 Starting location tracking...");
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
@@ -803,7 +806,9 @@ class _HomeScreenState extends State<HomeScreen> {
         print("Longitude: ${position.longitude}");
         print("📱 Alive Data: $aliveData");
 
-        await NetworkApiServices().getPostApiResponse(
+        print("📤 Calling update-location API...");
+
+        final response = await NetworkApiServices().getPostApiResponse(
           "/users/update-location",
           {
             "latitude": position.latitude,
@@ -811,32 +816,14 @@ class _HomeScreenState extends State<HomeScreen> {
             "alive_data": aliveData,
           },
         );
+
+        print("✅ Update Location Response: $response");
       } catch (e) {
         print("❌ Live location update error: $e");
       }
     });
 
-    /// Optional: get current position once immediately
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
 
-    try {
-      final aliveData = await _getAliveData();
-
-      await NetworkApiServices().getPostApiResponse(
-        "/users/update-location",
-        {
-          "latitude": position.latitude,
-          "longitude": position.longitude,
-          "alive_data": aliveData,
-        },
-      );
-
-      print("✅ Initial location sent with alive_data");
-    } catch (e) {
-      print("❌ Initial location send error: $e");
-    }
 
     if (!_statusDialogShown && !isSignedIn) {
       _statusDialogShown = true;

@@ -336,7 +336,7 @@ class _ProductExpiryReportScreenState
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  "${item.daysLeft ?? 0} Days",
+                  "${item.daysLeft ?? 0} Days Left to Expire",
                   style: TextStyle(
                     color: statusColor,
                     fontSize: 11,
@@ -386,127 +386,391 @@ class _ProductExpiryReportScreenState
 
           const SizedBox(height: 12),
 
-          /// Call + Alert Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                height: 30,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await makeCall(item.mobileNo ?? "");
-                  },
-                  icon: const Icon(
-                    Icons.call,
-                    size: 14,
-                    color: primary,
-                  ),
-                  label: const Text(
-                    "Call",
-                    style: TextStyle(
-                      fontSize: 11,
+          /// Call + history + Alert Buttons
+          if (status != "valid")
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SizedBox(
+                  height: 30,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await makeCall(item.mobileNo ?? "");
+                    },
+                    icon: const Icon(
+                      Icons.call,
+                      size: 14,
                       color: primary,
-                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: primary,
-                    side: const BorderSide(color: primary, width: 1),
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    label: const Text(
+                      "Call",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: primary,
+                      side: const BorderSide(color: primary, width: 1),
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 8),
+                const SizedBox(width: 8),
 
-              Consumer<ProductExpiryViewModel>(
-                builder: (context, vm, child) {
-                  return SizedBox(
-                    height: 30,
-                    child: ElevatedButton.icon(
-                      onPressed: vm.alertLoading
-                          ? null
-                          : () async {
-                        try {
-                          final success = await context
-                              .read<ProductExpiryViewModel>()
-                              .sendProductExpiryAlert(
-                            product: item,
-                            customerId:
-                            item.customerId?.toString() ?? "",
-                          );
+                SizedBox(
+                  height: 30,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(
+                      Icons.history,
+                      size: 14,
+                      color: Colors.redAccent,
+                    ),
+                    label: const Text(
+                      "History",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.redAccent),
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () async {
+                      final vm = context.read<ProductExpiryViewModel>();
 
-                          if (!mounted) return;
+                      final activity = await vm.fetchProductExpiryActivity(
+                        product: item,
+                        customerId: item.customerId.toString(),
+                      );
 
-                          if (success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "Product expiry reminder sent successfully.",
+                      if (!mounted || activity == null) return;
+
+                      _showActivityDialog(activity, item);
+                    },
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Consumer<ProductExpiryViewModel>(
+                  builder: (context, vm, child) {
+                    final isLoading =
+                    vm.isAlertLoading(item.productId.toString());
+
+                    final isSentToday = (item.sentToday ?? 0) == 1;
+
+                    if (isSentToday) {
+                      return SizedBox(
+                        height: 30,
+                        child: OutlinedButton.icon(
+                          onPressed: null,
+                          icon: const Icon(
+                            Icons.mark_chat_read,
+                            size: 14,
+                            color: Colors.green,
+                          ),
+                          label: const Text(
+                            "Sent",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.green),
+                            disabledForegroundColor: Colors.green,
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 30,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                          try {
+                            final success = await context
+                                .read<ProductExpiryViewModel>()
+                                .sendProductExpiryAlert(
+                              product: item,
+                              customerId:
+                              item.customerId?.toString() ?? "",
+                            );
+
+                            if (!mounted) return;
+
+                            if (success) {
+                              setState(() {
+                                item.sentToday = 1;
+                                item.reminderCount = (item.reminderCount ?? 0) + 1;
+                                item.lastReminderSentAt = DateTime.now().toString();
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Product expiry reminder sent successfully."),
+                                  backgroundColor: Colors.green,
                                 ),
-                                backgroundColor: Colors.green,
+                              );
+                            }
+                          } catch (e) {
+                            if (!mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.toString().replaceAll(
+                                    "Exception: ",
+                                    "",
+                                  ),
+                                ),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
-                        } catch (e) {
-                          if (!mounted) return;
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                e.toString().replaceAll(
-                                  "Exception: ",
-                                  "",
-                                ),
-                              ),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      },
-                      icon: vm.alertLoading
-                          ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                        },
+                        icon: isLoading
+                            ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                            : const Icon(
+                          Icons.notifications_outlined,
+                          size: 14,
                         ),
-                      )
-                          : const Icon(
-                        Icons.notifications_outlined,
-                        size: 14,
-                      ),
-                      label: Text(
-                        vm.alertLoading ? "Sending..." : "Alert",
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff0F766E),
-                        foregroundColor: Colors.white,
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        label: Text(
+                          isLoading ? "Sending..." : "Alert",
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xff0F766E),
+                          foregroundColor: Colors.white,
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+                    );
+                  },
+                ),
+              ],
+            ),
         ],
       ),
     );
   }
 
+
+
   Future<void> makeCall(String number) async {
     await FlutterPhoneDirectCaller.callNumber(number);
+  }
+
+  void _showActivityDialog(
+      Map<String, dynamic> activity,
+      ProductExpData product,
+      ) {
+    final calls = activity["data"]["calls"] as List? ?? [];
+    final reminders = activity["data"]["reminders"] as List? ?? [];
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: DefaultTabController(
+            length: 2,
+            child: SizedBox(
+              width: 700,
+              height: 500,
+              child: Column(
+                children: [
+
+                  /// HEADER
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              const Text(
+                                "Product Activity",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              const SizedBox(height: 6),
+
+                              Text(
+                                "${product.customerName} | ${product.productName}",
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close),
+                        )
+                      ],
+                    ),
+                  ),
+
+                  TabBar(
+                    labelColor: primary,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: primary,
+                    indicatorWeight: 3,
+                    tabs: [
+                      Tab(text: "Calls (${calls.length})"),
+                      Tab(text: "Reminders (${reminders.length})"),
+                    ],
+                  ),
+
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+
+                        /// CALLS
+                        calls.isEmpty
+                            ? const Center(
+                          child: Text("No Call History"),
+                        )
+                            : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: calls.length,
+                          itemBuilder: (_, index) {
+                            final c = calls[index];
+
+                            return Card(
+                              child: ListTile(
+                                leading: const Icon(
+                                  Icons.call,
+                                  color: Colors.green,
+                                ),
+                                title: Text(
+                                  c["status"] ?? "",
+                                ),
+                                subtitle: Text(
+                                  c["call_time"] ?? "",
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        /// REMINDERS
+                        reminders.isEmpty
+                            ? const Center(
+                          child: Text("No Reminder History"),
+                        )
+                            : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: reminders.length,
+                          itemBuilder: (_, index) {
+                            final r = reminders[index];
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(15),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.grey.shade300),
+                                borderRadius:
+                                BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+
+                                  Text(
+                                    r["email_subject"] ?? "",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 8),
+
+                                  Text(
+                                    r["sent_at"] ?? "",
+                                    style: const TextStyle(
+                                      color: Colors.blueGrey,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 4),
+
+                                  Text(
+                                    "Report: ${r["include_report"]}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 8),
+
+                                  Text(
+                                    r["recipient_email"] ?? "",
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showFilterSheet() {

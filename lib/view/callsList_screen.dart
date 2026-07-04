@@ -94,9 +94,56 @@ class _CallsListScreenState extends State<CallsListScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text("Tickets"),
-        backgroundColor: primary,
+      backgroundColor: primary,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            await context.read<TicketsViewModel>().resetAssignee();
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+          }
       ),
+      title: const Text("Tickets"),
+      actions: [
+        Consumer2<QueryViewModel, TicketsViewModel>(
+          builder: (_, queryVm, ticketVm, __) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  value: ticketVm.selectedAssigneeId,
+                  dropdownColor: Colors.white,
+                  iconEnabledColor: Colors.white,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                  ),
+                  isDense: true,
+                  items: [
+                    const DropdownMenuItem<int>(
+                      value: 0,
+                      child: Text("All Assignees"),
+                    ),
+                    ...queryVm.adminList.map(
+                          (admin) => DropdownMenuItem<int>(
+                        value: admin.adminID!,
+                        child: Text(admin.name ?? ""),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      ticketVm.setAssignee(value);
+                    }
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    ),
 
       /// 🔵 FLOATING BUTTON
       floatingActionButton: FloatingActionButton(

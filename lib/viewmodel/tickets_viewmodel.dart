@@ -86,6 +86,14 @@ class TicketsViewModel extends ChangeNotifier {
   String _status = "active";
   String get status => _status;
 
+  int _selectedAssigneeId = 0;
+  int get selectedAssigneeId => _selectedAssigneeId;
+
+  Future<void> setAssignee(int assigneeId) async {
+    _selectedAssigneeId = assigneeId;
+    await fetchTickets(isRefresh: true);
+  }
+
   void setSearchText(String value) {
     _searchText = value;
   }
@@ -106,10 +114,22 @@ class TicketsViewModel extends ChangeNotifier {
       _error = "";
       notifyListeners();
 
+      final List<Map<String, dynamic>> filters = [];
+
+      if (_selectedAssigneeId != 0) {
+        filters.add({
+          "field": "assignee",
+          "condition": "equal_to",
+          "value": _selectedAssigneeId,
+          "type": "select",
+        });
+      }
+
       final response = await _repository.fetchTickets(
         status: _status,
         page: _page,
         searchText: _searchText,
+        filters: filters,
       );
 
       final newData = response.data ?? [];
@@ -129,6 +149,12 @@ class TicketsViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> resetAssignee() async {
+    _selectedAssigneeId = 0;
+    _searchText = "";
+    await fetchTickets(isRefresh: true);
   }
 
   Future<void> searchTickets(

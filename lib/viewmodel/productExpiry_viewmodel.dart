@@ -14,16 +14,22 @@ class ProductExpiryViewModel extends ChangeNotifier {
   List<ProductExpData> products = [];
   Summary? summary;
 
-  bool _alertLoading = false;
-  bool get alertLoading => _alertLoading;
+  final Set<String> _loadingAlerts = {};
+
+  bool isAlertLoading(String productId) {
+    return _loadingAlerts.contains(productId);
+  }
 
   setLoading(bool value) {
     _loading = value;
     notifyListeners();
   }
 
-  setAlertLoading(bool value) {
-    _alertLoading = value;
+  bool _activityLoading = false;
+  bool get activityLoading => _activityLoading;
+
+  void setActivityLoading(bool value) {
+    _activityLoading = value;
     notifyListeners();
   }
 
@@ -75,8 +81,11 @@ class ProductExpiryViewModel extends ChangeNotifier {
     required ProductExpData product,
     required String customerId,
   }) async {
+    final id = product.productId.toString();
+
     try {
-      setAlertLoading(true);
+      _loadingAlerts.add(id);
+      notifyListeners();
 
       final response = await _repository.sendProductExpiryAlert(
         product: product,
@@ -88,11 +97,30 @@ class ProductExpiryViewModel extends ChangeNotifier {
       } else {
         throw response["message"] ?? "Failed to send alert";
       }
+    } finally {
+      _loadingAlerts.remove(id);
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchProductExpiryActivity({
+    required ProductExpData product,
+    required String customerId,
+  }) async {
+    try {
+      setActivityLoading(true);
+
+      final response = await _repository.getProductExpiryActivity(
+        product: product,
+        customerId: customerId,
+      );
+
+      return response;
     } catch (e) {
-      debugPrint("Send Product Expiry Alert Error : $e");
+      debugPrint("Product Expiry Activity Error: $e");
       rethrow;
     } finally {
-      setAlertLoading(false);
+      setActivityLoading(false);
     }
   }
 }

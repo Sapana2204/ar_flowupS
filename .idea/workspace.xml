@@ -4,11 +4,15 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="1. show created and assigned tickets - done&#10;2. Sign in signout- add parameters of network and other - done&#10;3. add app icons progressindicators - call list, profile screen,customer list">
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="open tickets-&gt; show only open tickets in list">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/productExpiryReport_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/productExpiryReport_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/productExpiry_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/productExpiry_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/productExpiryReport_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/productExpiryReport_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/productExpiry_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/productExpiry_viewmodel.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -492,12 +496,19 @@
       <option name="project" value="LOCAL" />
       <updated>1782991101799</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="open tickets-&gt; show only open tickets in list">
+      <option name="closed" value="true" />
+      <created>1783071438078</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1783071438078</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="passed isMobile parameter and changed and integrated dashboard UI and API integration" />
     <MESSAGE value="Piechart changes" />
     <MESSAGE value="Products changes" />
     <MESSAGE value="Addons changes" />
@@ -522,6 +533,7 @@
     <MESSAGE value="multiple logins handle" />
     <MESSAGE value="customer ticket report" />
     <MESSAGE value="1. show created and assigned tickets - done&#10;2. Sign in signout- add parameters of network and other - done&#10;3. add app icons progressindicators - call list, profile screen,customer list" />
-    <option name="LAST_COMMIT_MESSAGE" value="1. show created and assigned tickets - done&#10;2. Sign in signout- add parameters of network and other - done&#10;3. add app icons progressindicators - call list, profile screen,customer list" />
+    <MESSAGE value="open tickets-&gt; show only open tickets in list" />
+    <option name="LAST_COMMIT_MESSAGE" value="open tickets-&gt; show only open tickets in list" />
   </component>
 </project>

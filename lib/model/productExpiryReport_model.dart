@@ -76,21 +76,34 @@ class ProductExpData {
   String? expiryStatus;
   List<String>? addOns;
 
-  ProductExpData(
-      {this.customerId,
-        this.customerName,
-        this.contactPerson,
-        this.email,
-        this.mobileNo,
-        this.companyId,
-        this.companyName,
-        this.productId,
-        this.productName,
-        this.serialNumber,
-        this.expiryDate,
-        this.daysLeft,
-        this.expiryStatus,
-        this.addOns});
+  // NEW FIELDS
+  String? recordId;
+  String? lastReminderSentAt;
+  int? reminderCount;
+  String? lastReminderIncludeReport;
+  int? sentToday;
+
+  ProductExpData({
+    this.customerId,
+    this.customerName,
+    this.contactPerson,
+    this.email,
+    this.mobileNo,
+    this.companyId,
+    this.companyName,
+    this.productId,
+    this.productName,
+    this.serialNumber,
+    this.expiryDate,
+    this.daysLeft,
+    this.expiryStatus,
+    this.addOns,
+    this.recordId,
+    this.lastReminderSentAt,
+    this.reminderCount,
+    this.lastReminderIncludeReport,
+    this.sentToday,
+  });
 
   ProductExpData.fromJson(Map<String, dynamic> json) {
     customerId = json['customer_id'];
@@ -106,25 +119,44 @@ class ProductExpData {
     expiryDate = json['expiry_date'];
     daysLeft = json['days_left'];
     expiryStatus = json['expiry_status'];
-    addOns = json['add_ons'].cast<String>();
+
+    addOns = json['add_ons'] != null
+        ? List<String>.from(json['add_ons'])
+        : [];
+
+    // NEW
+    recordId = json['record_id'];
+    lastReminderSentAt = json['last_reminder_sent_at'];
+    reminderCount = json['reminder_count'];
+    lastReminderIncludeReport = json['last_reminder_include_report'];
+    sentToday = json['sent_today'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['customer_id'] = this.customerId;
-    data['customer_name'] = this.customerName;
-    data['contact_person'] = this.contactPerson;
-    data['email'] = this.email;
-    data['mobile_no'] = this.mobileNo;
-    data['company_id'] = this.companyId;
-    data['company_name'] = this.companyName;
-    data['product_id'] = this.productId;
-    data['product_name'] = this.productName;
-    data['serial_number'] = this.serialNumber;
-    data['expiry_date'] = this.expiryDate;
-    data['days_left'] = this.daysLeft;
-    data['expiry_status'] = this.expiryStatus;
-    data['add_ons'] = this.addOns;
+    final Map<String, dynamic> data = {};
+
+    data['customer_id'] = customerId;
+    data['customer_name'] = customerName;
+    data['contact_person'] = contactPerson;
+    data['email'] = email;
+    data['mobile_no'] = mobileNo;
+    data['company_id'] = companyId;
+    data['company_name'] = companyName;
+    data['product_id'] = productId;
+    data['product_name'] = productName;
+    data['serial_number'] = serialNumber;
+    data['expiry_date'] = expiryDate;
+    data['days_left'] = daysLeft;
+    data['expiry_status'] = expiryStatus;
+    data['add_ons'] = addOns;
+
+    // NEW
+    data['record_id'] = recordId;
+    data['last_reminder_sent_at'] = lastReminderSentAt;
+    data['reminder_count'] = reminderCount;
+    data['last_reminder_include_report'] = lastReminderIncludeReport;
+    data['sent_today'] = sentToday;
+
     return data;
   }
 }
