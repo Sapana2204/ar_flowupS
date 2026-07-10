@@ -1,7 +1,11 @@
+import 'customerContact_model.dart';
+
 class CreateTicket {
   int? ticketId;
   int? clientId;
   String? contactNo;
+  bool? saveContact;
+  CustomerContact? contactDetails;
   String? description;
   String? queryType;
   String? queryTypeName;
@@ -26,6 +30,8 @@ class CreateTicket {
     this.ticketId,
     this.clientId,
     this.contactNo,
+    this.saveContact,
+    this.contactDetails,
     this.description,
     this.queryType,
     this.queryTypeName,
@@ -52,6 +58,10 @@ class CreateTicket {
       "ticket_id": ticketId,
       "client_id": clientId,
       "contact_no": contactNo,
+      "save_contact": saveContact,
+      "contact_details": saveContact == true
+          ? contactDetails?.toJson()
+          : null,
       "description": description,
       "query_type": queryType,
       "query_type_name": queryTypeName,

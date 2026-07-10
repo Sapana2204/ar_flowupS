@@ -1,3 +1,4 @@
+import 'customerContact_model.dart';
 import 'customerProduct.dart';
 
 class CustomersModel {
@@ -49,6 +50,9 @@ class CustomerData {
   /// Products
   List<CustomerProduct>? customerProducts;
 
+  List<CustomerContact>? customerContacts;
+  List<CustomerContact>? contactPersons;
+
   CustomerData({
     this.customerId,
     this.name,
@@ -69,7 +73,9 @@ class CustomerData {
     this.amcEndDate,
     this.customerProducts,
     this.responsiblePerson,
-    this.expCallCount
+    this.expCallCount,
+    this.customerContacts,
+    this.contactPersons,
   });
 
   CustomerData.fromJson(Map<String, dynamic> json) {
@@ -109,6 +115,18 @@ class CustomerData {
           CustomerProduct.fromJson(v),
         );
       });
+    }
+
+    if (json['customer_contacts'] != null) {
+      customerContacts = (json['customer_contacts'] as List)
+          .map((e) => CustomerContact.fromJson(e))
+          .toList();
+    }
+
+    if (json['contact_persons'] != null) {
+      contactPersons = (json['contact_persons'] as List)
+          .map((e) => CustomerContact.fromJson(e))
+          .toList();
     }
   }
 }

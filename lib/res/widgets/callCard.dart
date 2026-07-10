@@ -63,15 +63,19 @@ class CallCard extends StatelessWidget {
         children: [
 
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                ticket.clientId ?? "",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+              Expanded(
+                child: Text(
+                  ticket.clientId ?? "",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               _tag(
                 ticket.ticketStatus ?? "",
                 hexToColor(ticket.statusColor),
@@ -82,12 +86,19 @@ class CallCard extends StatelessWidget {
           const SizedBox(height: 4),
 
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                ticket.contactNo ?? "",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              Expanded(
+                child: Text(
+                  ticket.contactNo ?? "",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
+              const SizedBox(width: 8),
               _tag(
                 ticket.ticketPriority ?? "",
                 hexToColor(ticket.priorityColor),

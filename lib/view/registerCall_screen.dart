@@ -7,6 +7,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:provider/provider.dart';
 import '../model/createTicket_model.dart';
 import '../model/createWorkLog_model.dart';
+import '../model/customerContact_model.dart';
 import '../model/customerProduct.dart';
 import '../model/customers_model.dart';
 import '../model/updateTicket_model.dart';
@@ -52,6 +53,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   CustomerProduct? selectedProduct;
   bool isLoadingProducts = false;
   List<String> selectedAddOns = [];
+  List<CustomerContact> customerContacts = [];
+  CustomerContact? selectedContact;
+  bool showNewContactCard = false;
   TextEditingController expectedTimeController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -65,6 +69,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   TextEditingController serialNoController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
   TextEditingController whatsappController = TextEditingController();
+  final designationController = TextEditingController();
+  final departmentController = TextEditingController();
   int? _activeWorkLogId;
   DateTime? _callStartTime;
   bool visitRequired = false;
@@ -73,6 +79,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   bool _callDetailsOpened = false;
   String? _initialAssignee;
   String? _initialStatus;
+  bool addNewContact = false;
 
 
   @override
@@ -181,8 +188,10 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
             );
 
             selectedCustomer = customer;
-
+            customerContacts = customer?.customerContacts ?? [];
+            _checkContactNumber(data.contactNo ?? "");
             visitRequired = (data.visitRequired ?? "n") == "y";
+
             print("API visitRequired = ${data.visitRequired}");
             print("Checkbox value = $visitRequired");
             if (customer != null && data.productId != null) {
@@ -233,6 +242,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         if (client != null) {
           nameController.text = client.name ?? "";
           phoneController.text = client.mobileNo ?? "";
+          _checkContactNumber(phoneController.text);
         }
       }
 
@@ -438,12 +448,15 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                   Expanded(
                     child: _buildTextFieldWithAction(
                       "Client Contact No",
-                      "+ 91 ",
+                      "+91",
                       Icons.phone,
                       phoneController,
                       Icons.history,
                       getRecentCalls,
                       keyboardType: TextInputType.phone,
+                      onChanged: (value) {
+                        _checkContactNumber(value);
+                      },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return "Phone number required";
@@ -484,17 +497,19 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
 
               const SizedBox(height: 12),
 
-              _buildTextField(
-                "Contact Person",
-                "Enter contact person name",
-                contactPersonController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Contact person required";
-                  }
-                  return null;
-                },
-                enabled: widget.mode != RegisterCallMode.edit, // 👈 ADD
+              Column(
+                children: [
+                  if (showNewContactCard) _buildNewContactCard(),
+
+                  if (!showNewContactCard)
+                    _buildContactDropdown()
+                  else
+                    _buildTextField(
+                      "Contact Person",
+                      "Enter contact person name",
+                      contactPersonController,
+                    ),
+                ],
               ),
 
               const SizedBox(height: 12),
@@ -791,6 +806,50 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     }
   }
 
+  Widget _buildContactDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Contact Person"),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<CustomerContact>(
+              isExpanded: true,
+              value: selectedContact,
+              hint: const Text("Select Contact Person"),
+              items: customerContacts.map((contact) {
+                return DropdownMenuItem(
+                  value: contact,
+                  child: Text(contact.name ?? ""),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedContact = value;
+
+                  contactPersonController.text =
+                      value?.name ?? "";
+
+                  emailController.text =
+                      value?.email ?? "";
+
+                  phoneController.text =
+                      value?.mobileNo ?? "";
+                });
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _onRegisterCallPressed() async {
     final vm = Provider.of<TicketsViewModel>(context, listen: false);
 
@@ -904,6 +963,17 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     final ticket = CreateTicket(
       clientId: queryVm.selectedClient?.customerId,
       contactNo: phoneController.text,
+      saveContact: showNewContactCard,
+
+      contactDetails: showNewContactCard
+          ? CustomerContact(
+        name: contactPersonController.text.trim(),
+        mobileNo: phoneController.text.trim(),
+        email: emailController.text.trim(),
+        designation: designationController.text.trim(),
+        department: departmentController.text.trim(),
+      )
+          : null,
       description: "<p>${descriptionController.text}</p>",
       queryType: queryVm.getSelectedQueryId(),
       ticketStatus: "205",
@@ -1031,6 +1101,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                   phoneController.text = call.number ?? "";
                   whatsappController.text = call.number ?? "";
                 });
+
+                _checkContactNumber(phoneController.text);
+
                 Navigator.pop(context);
               },
             );
@@ -1339,6 +1412,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
             contact.phoneNumbers!.isNotEmpty) {
           setState(() {
             phoneController.text = contact.phoneNumbers!.first;
+            _checkContactNumber(phoneController.text);
           });
         }
 
@@ -1352,6 +1426,113 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     } catch (e) {
       debugPrint("Error picking contact: $e");
     }
+  }
+
+  Widget _buildNewContactCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F8FF),
+        border: Border.all(color: Colors.blue.shade100),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          Row(
+            children: [
+              const Icon(Icons.person_add_alt_1, color: primary),
+              const SizedBox(width: 8),
+
+              const Expanded(
+                child: Text(
+                  "New contact for this customer",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              Checkbox(
+                value: addNewContact,
+                onChanged: (value) {
+                  setState(() {
+                    addNewContact = value ?? false;
+                  });
+                },
+              ),
+
+              const Text("Add"),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            "No contact found for ${phoneController.text}. It will be saved after ticket creation.",
+            style: const TextStyle(color: Colors.grey),
+          ),
+
+          /// Show form only after checking
+          if (addNewContact) ...[
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    "Contact Name *",
+                    "Contact name",
+                    contactPersonController,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    "Mobile",
+                    "Mobile",
+                    phoneController,
+                    enabled: false,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    "Designation",
+                    "Optional",
+                    designationController,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    "Email",
+                    "Optional",
+                    emailController,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildTextField(
+              "Department",
+              "Optional",
+              departmentController,
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   void _openClientBottomSheet(QueryViewModel vm) {
@@ -1484,6 +1665,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
 
                                     this.setState(() {
                                       selectedCustomer = customer;
+                                      customerContacts = customer?.customerContacts ?? [];
+
+                                      _checkContactNumber(phoneController.text);
                                       isLoadingProducts = false;
                                     });
 
@@ -1492,6 +1676,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                                       nameController.text = client.name ?? "";
                                       phoneController.text =
                                           client.mobileNo ?? "";
+                                      _checkContactNumber(phoneController.text);
                                     });
 
                                     Navigator.pop(context);
@@ -1508,6 +1693,37 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
         );
       },
     );
+  }
+
+  void _checkContactNumber(String mobile) {
+    final number = mobile.replaceAll(RegExp(r'\D'), '');
+
+    final match = customerContacts.where((e) {
+      final contactNo = (e.mobileNo ?? '').replaceAll(RegExp(r'\D'), '');
+      return contactNo == number;
+    }).toList();
+
+    setState(() {
+      if (match.isNotEmpty) {
+        selectedContact = match.first;
+
+        contactPersonController.text = match.first.name ?? "";
+        emailController.text = match.first.email ?? "";
+
+        showNewContactCard = false;
+        addNewContact = false; // ✅ hide checkbox form
+      } else {
+        selectedContact = null;
+
+        contactPersonController.clear();
+        emailController.clear();
+        designationController.clear();
+        departmentController.clear();
+
+        showNewContactCard = true; // show "New Contact" card
+        addNewContact = false;     // ✅ checkbox remains unchecked initially
+      }
+    });
   }
 
   void _clearAllFields() {
@@ -1626,7 +1842,9 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
     bool enabled = true, // 👈 ADD
     String? Function(String?)? validator, // ✅ ADD THIS
     TextInputType keyboardType = TextInputType.text, // ✅ ADD THIS
-  }) {
+     ValueChanged<String>? onChanged, // 👈 ADD
+
+      }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1637,6 +1855,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
           enabled: enabled,
           validator: validator,
           keyboardType: keyboardType,
+          onChanged: onChanged, // 👈 ADD
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
           ],

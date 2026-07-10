@@ -1,3 +1,5 @@
+import 'customerContact_model.dart';
+
 class Ticketsmodel {
   bool? success;
   int? code;
@@ -99,6 +101,24 @@ class Data {
   String? isDelegated;
   String? isReassigned;
   String? visibilityReason;
+  int? customerId;
+  String? name;
+  String? email;
+  String? mobileNo;
+  String? waNo;
+  String? panNumber;
+  String? gstNumber;
+  String? companyName;
+  String? address;
+  String? isAmc;
+  String? amcTermPeriod;
+  String? amcStartDate;
+  String? amcEndDate;
+  String? expCallCount;
+  String? responsiblePerson;
+
+  List<CustomerContact>? customerContacts;
+  List<CustomerContact>? contactPersons;
 
   Data({
     this.ticketId,
@@ -139,6 +159,23 @@ class Data {
     this.isDelegated,
     this.isReassigned,
     this.visibilityReason,
+    this.customerId,
+    this.name,
+    this.email,
+    this.mobileNo,
+    this.waNo,
+    this.panNumber,
+    this.gstNumber,
+    this.companyName,
+    this.address,
+    this.isAmc,
+    this.amcTermPeriod,
+    this.amcStartDate,
+    this.amcEndDate,
+    this.expCallCount,
+    this.responsiblePerson,
+    this.customerContacts,
+    this.contactPersons,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -182,6 +219,33 @@ class Data {
     isDelegated = json['is_delegated']?.toString();
     isReassigned = json['is_reassigned']?.toString();
     visibilityReason = json['visibility_reason']?.toString();
+    customerId = json['customer_id'];
+    name = json['name']?.toString();
+    email = json['email']?.toString();
+    mobileNo = json['mobile_no']?.toString();
+    waNo = json['wa_no']?.toString();
+    panNumber = json['pan_number']?.toString();
+    gstNumber = json['gst_number']?.toString();
+    companyName = json['company_name']?.toString();
+    address = json['address']?.toString();
+    isAmc = json['is_amc']?.toString();
+    amcTermPeriod = json['amc_term_period']?.toString();
+    amcStartDate = json['amc_start_date']?.toString();
+    amcEndDate = json['amc_end_date']?.toString();
+    expCallCount = json['exp_call_count']?.toString();
+    responsiblePerson = json['responsible_person']?.toString();
+
+    if (json['customer_contacts'] != null) {
+      customerContacts = (json['customer_contacts'] as List)
+          .map((e) => CustomerContact.fromJson(e))
+          .toList();
+    }
+
+    if (json['contact_persons'] != null) {
+      contactPersons = (json['contact_persons'] as List)
+          .map((e) => CustomerContact.fromJson(e))
+          .toList();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -226,6 +290,31 @@ class Data {
     dataMap['is_delegated'] = isDelegated;
     dataMap['is_reassigned'] = isReassigned;
     dataMap['visibility_reason'] = visibilityReason;
+    dataMap['customer_id'] = customerId;
+    dataMap['name'] = name;
+    dataMap['email'] = email;
+    dataMap['mobile_no'] = mobileNo;
+    dataMap['wa_no'] = waNo;
+    dataMap['pan_number'] = panNumber;
+    dataMap['gst_number'] = gstNumber;
+    dataMap['company_name'] = companyName;
+    dataMap['address'] = address;
+    dataMap['is_amc'] = isAmc;
+    dataMap['amc_term_period'] = amcTermPeriod;
+    dataMap['amc_start_date'] = amcStartDate;
+    dataMap['amc_end_date'] = amcEndDate;
+    dataMap['exp_call_count'] = expCallCount;
+    dataMap['responsible_person'] = responsiblePerson;
+
+    if (customerContacts != null) {
+      dataMap['customer_contacts'] =
+          customerContacts!.map((e) => e.toJson()).toList();
+    }
+
+    if (contactPersons != null) {
+      dataMap['contact_persons'] =
+          contactPersons!.map((e) => e.toJson()).toList();
+    }
     return dataMap;
   }
 }
