@@ -1,14 +1,8 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:battery_plus/battery_plus.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:my_new_project/view/amcList_screen.dart';
 import 'package:my_new_project/view/customerList_screen.dart';
-import 'package:my_new_project/view/leadsDashboard_screen.dart';
 import 'package:my_new_project/view/productExpiryReport_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
@@ -17,7 +11,6 @@ import 'package:my_new_project/view/userMarker_screen.dart';
 import 'package:my_new_project/view/workPerformanceReport_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
 import '../model/notification_model.dart';
 import '../repository/login_repository.dart';
@@ -29,10 +22,6 @@ import '../viewmodel/userStatus_viewmodel.dart';
 import 'dashboard_screen.dart';
 import 'loginScreen.dart';
 import '../utils/utils.dart';
-import 'package:battery_plus/battery_plus.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:ringer_mode/ringer_mode.dart';
-import 'package:telephony_info_plus/telephony_info_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -42,18 +31,16 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver {
   late int _currentIndex;
   int notificationCount = 0;
   ValueNotifier<List<NotificationModel>> notificationNotifier = ValueNotifier([]);
   final LoginRepository _repo = LoginRepository();
   final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isDialogShowing = false;
-  StreamSubscription<ServiceStatus>? _locationStatusSub;
   bool isSignedIn = false;
   bool _statusDialogShown = false;
-  static final MethodChannel _telephonyChannel =
-  MethodChannel('com.example.my_new_project/telephony');
+
 
   final List<Widget> _pages = const [
     DashboardScreen(),
@@ -69,16 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _loadAttendanceState();
 
-    _startLocationTracking();
-    /// ✅ ADD THIS BLOCK HERE
-    _locationStatusSub =
-        Geolocator.getServiceStatusStream().listen((status) {
-          if (status == ServiceStatus.disabled) {
-            _showLocationDialog();
-          } else if (status == ServiceStatus.enabled) {
-            _startLocationTracking(); // ✅ restart tracking automatically
-          }
-        });
+
 
     _currentIndex = widget.initialIndex;
 
@@ -762,286 +740,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _startLocationTracking() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    /// 🔴 STEP 1: Check if location service is ON
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      _showLocationDialog();
-      return;
-    }
-
-    /// 🔴 STEP 2: Check permission
-    permission = await Geolocator.checkPermission();
-
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-
-      if (permission == LocationPermission.denied) {
-        _showLocationDialog();
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      _showLocationDialog(openSettings: true);
-      return;
-    }
-
-    /// ✅ STEP 3: Start tracking ONLY if allowed
-    print("🚀 Starting location tracking...");
-    Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 50,
-      ),
-    ).listen((Position position) async {
-      try {
-        final aliveData = await _getAliveData();
-
-        print("📡 LIVE LOCATION UPDATE:");
-        print("Latitude: ${position.latitude}");
-        print("Longitude: ${position.longitude}");
-        print("📱 Alive Data: $aliveData");
-
-        print("📤 Calling update-location API...");
-
-        final response = await NetworkApiServices().getPostApiResponse(
-          "/users/update-location",
-          {
-            "latitude": position.latitude,
-            "longitude": position.longitude,
-            "alive_data": aliveData,
-          },
-        );
-
-        print("✅ Update Location Response: $response");
-      } catch (e) {
-        print("❌ Live location update error: $e");
-      }
-    });
-
-
-
-    if (!_statusDialogShown && !isSignedIn) {
-      _statusDialogShown = true;
-
-      Future.delayed(
-        const Duration(milliseconds: 500),
-            () => _showAttendanceDialog(),
-      );
-    }
-  }
-
-  Future<Map<String, dynamic>> _getAliveData() async {
-    try {
-      final battery = Battery();
-      final int batteryPercent = await battery.batteryLevel;
-
-      /// ---------------- RINGER MODE ----------------
-      String ringerMode = "unknown";
-      try {
-        final mode = await RingerModeService.getRingerMode();
-
-        switch (mode) {
-          case RingerMode.normal:
-            ringerMode = "normal";
-            break;
-          case RingerMode.silent:
-            ringerMode = "silent";
-            break;
-          case RingerMode.vibrate:
-            ringerMode = "vibrate";
-            break;
-        }
-      } catch (e) {
-        print("❌ Ringer mode error: $e");
-      }
-
-      /// ---------------- CONNECTIVITY ----------------
-      String networkType = "offline";
-      try {
-        final connectivityResults = await Connectivity().checkConnectivity();
-
-        if (connectivityResults.contains(ConnectivityResult.wifi)) {
-          networkType = "wifi";
-        } else if (connectivityResults.contains(ConnectivityResult.mobile)) {
-          networkType = "mobile";
-        } else {
-          networkType = "offline";
-        }
-      } catch (e) {
-        print("❌ Connectivity error: $e");
-      }
-
-      /// ---------------- REAL TELEPHONY DATA ----------------
-      final telephonyData = await _getTelephonyData();
-
-      final String mobileGeneration =
-          telephonyData["mobile_network_generation"] ?? "unknown";
-      final String carrier = telephonyData["carrier"] ?? "unknown";
-      final String signalStrength = telephonyData["signal_strength"] ?? "unknown";
-
-      return {
-        "battery_percent": batteryPercent,
-        "ringer_mode": ringerMode,
-        "network_type": networkType,
-        "mobile_network_generation": mobileGeneration,
-        "carrier": carrier,
-        "signal_strength": signalStrength,
-        "timestamp": DateTime.now().toIso8601String(),
-      };
-    } catch (e) {
-      print("❌ Alive data error: $e");
-
-      return {
-        "battery_percent": 0,
-        "ringer_mode": "unknown",
-        "network_type": "unknown",
-        "mobile_network_generation": "unknown",
-        "carrier": "unknown",
-        "signal_strength": "unknown",
-        "timestamp": DateTime.now().toIso8601String(),
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> _getTelephonyData() async {
-    try {
-      final result =
-      await _telephonyChannel.invokeMethod('getTelephonyData');
-
-      return {
-        "carrier": result["carrier"] ?? "unknown",
-        "mobile_network_generation":
-        result["mobile_network_generation"] ?? "unknown",
-        "signal_strength": result["signal_strength"] ?? "unknown",
-      };
-    } catch (e) {
-      print("❌ Telephony method channel error: $e");
-      return {
-        "carrier": "unknown",
-        "mobile_network_generation": "unknown",
-        "signal_strength": "unknown",
-      };
-    }
-  }
-
-  void _showLocationDialog({bool openSettings = false}) {
-    if (_isDialogShowing) return; // 🚫 prevent duplicate
-
-    _isDialogShowing = true;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Location Required"),
-          content: const Text(
-            "This app requires location to work. Please enable location services.",
-          ),
-          actions: [
-            if (openSettings)
-              TextButton(
-                onPressed: () {
-                  Geolocator.openAppSettings();
-                },
-                child: const Text("Open Settings"),
-              ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                _isDialogShowing = false; // ✅ reset
-                _startLocationTracking();
-              },
-              child: const Text("Retry"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showAttendanceDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return PopScope(
-          canPop: false, // Prevent back button
-          child: AlertDialog(
-            title: const Row(
-              children: [
-                Icon(Icons.fingerprint, color: Colors.orange),
-                SizedBox(width: 8),
-                Text("Attendance Required"),
-              ],
-            ),
-            content: const Text(
-                "Welcome to FlowupS CallDesk.\n\n"
-                    "To continue, please Sign In and start your attendance.\n\n"
-                    "Once completed, you’ll be able to access all features of the application."
-            ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  Utils.showToast(
-                    "Sign In is mandatory to use FlowupS CallDesk.",
-                  );
-
-                  await context.read<LoginViewModel>().logout(context);
-                },
-                child: const Text("Exit",style: TextStyle(color: primary),),
-              ),
-              Consumer<UserStatusViewModel>(
-                builder: (context, vm, child) {
-                  return ElevatedButton.icon(
-                    icon: vm.isLoading
-                        ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                        : const Icon(Icons.login),
-                    label: Text(vm.isLoading ? "Signing In..." : "Sign In"),
-                    onPressed: vm.isLoading
-                        ? null
-                        : () async {
-                      final success = await vm.signIn();
-
-                      if (!success) return;
-
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool("attendance_signed_in", true);
-
-                      if (!mounted) return;
-
-                      setState(() {
-                        isSignedIn = true;
-                      });
-
-                      Navigator.pop(context);
-
-                      Utils.showToast(
-                        "You are signed in successfully.",
-                      );
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _loadAttendanceState() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -1098,7 +796,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _locationStatusSub?.cancel(); // ✅ prevent memory leak
     super.dispose();
   }
 }

@@ -12,6 +12,8 @@ import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
 import '../model/login_model.dart';
 import '../repository/login_repository.dart';
+import '../services/alive_data_service.dart';
+import '../services/background_location_service.dart';
 import '../utils/routes/routes_names.dart';
 import '../utils/utils.dart';
 
@@ -20,9 +22,6 @@ class LoginViewModel with ChangeNotifier {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
-
-  static final MethodChannel _telephonyChannel =
-  MethodChannel('com.example.my_new_project/telephony');
 
   LoginModel? _userData;
   LoginModel? get userData => _userData;
@@ -94,7 +93,9 @@ class LoginViewModel with ChangeNotifier {
 
         Utils.showToast("Login Successful!");
 
-        _sendLocationToServer();
+        await _sendLocationToServer();
+
+        await BackgroundLocationService.start();
 
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -132,6 +133,9 @@ class LoginViewModel with ChangeNotifier {
       debugPrint("Status update failed: $e");
     }
 
+    // ✅ Stop background service
+    await BackgroundLocationService.stop();
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("userData");
 
@@ -155,6 +159,8 @@ class LoginViewModel with ChangeNotifier {
     print("📦 STORED DATA: $data");
 
     if (data == null) {
+      await BackgroundLocationService.stop();
+
       Navigator.pushReplacementNamed(
         context,
         RouteNames.login,
@@ -168,6 +174,8 @@ class LoginViewModel with ChangeNotifier {
 
     if (user.token == null ||
         JwtDecoder.isExpired(user.token!)) {
+
+      await BackgroundLocationService.stop();
 
       await prefs.remove('userData');
 
@@ -184,18 +192,14 @@ class LoginViewModel with ChangeNotifier {
 
     /// Restore logged in user
     setUserData(user);
-    SocketService().connect(
-      user.adminId.toString(),
-    );
+
+    SocketService().connect(user.adminId.toString());
+
+    await BackgroundLocationService.start();
 
     print("✅ RESTORING SESSION");
     print("👤 AdminID: ${user.adminId}");
     print("👤 Username: ${user.username}");
-
-    /// Reconnect socket after app restart
-    SocketService().connect(
-      user.adminId.toString(),
-    );
 
     /// Auto logout when token expires
     final expiry = JwtDecoder.getExpirationDate(
@@ -223,7 +227,7 @@ class LoginViewModel with ChangeNotifier {
 
       Position position = await api.getUserLocation();
 
-      final aliveData = await _getAliveData();
+      final aliveData = await AliveDataService.getAliveData();
 
       print("📍 LOGIN LOCATION:");
       print("Latitude: ${position.latitude}");
@@ -242,78 +246,7 @@ class LoginViewModel with ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> _getAliveData() async {
-    try {
-      final battery = Battery();
-      final int batteryPercent = await battery.batteryLevel;
 
-      /// ---------------- RINGER MODE ----------------
-      String ringerMode = "unknown";
-      try {
-        final mode = await RingerModeService.getRingerMode();
-
-        switch (mode) {
-          case RingerMode.normal:
-            ringerMode = "normal";
-            break;
-          case RingerMode.silent:
-            ringerMode = "silent";
-            break;
-          case RingerMode.vibrate:
-            ringerMode = "vibrate";
-            break;
-        }
-      } catch (e) {
-        print("❌ Ringer mode error: $e");
-      }
-
-      /// ---------------- CONNECTIVITY ----------------
-      String networkType = "offline";
-      try {
-        final connectivityResults = await Connectivity().checkConnectivity();
-
-        if (connectivityResults.contains(ConnectivityResult.wifi)) {
-          networkType = "wifi";
-        } else if (connectivityResults.contains(ConnectivityResult.mobile)) {
-          networkType = "mobile";
-        } else {
-          networkType = "offline";
-        }
-      } catch (e) {
-        print("❌ Connectivity error: $e");
-      }
-
-      /// ---------------- REAL TELEPHONY DATA ----------------
-      final telephonyData = await _getTelephonyData();
-
-      final String mobileGeneration =
-          telephonyData["mobile_network_generation"] ?? "unknown";
-      final String carrier = telephonyData["carrier"] ?? "unknown";
-      final String signalStrength = telephonyData["signal_strength"] ?? "unknown";
-
-      return {
-        "battery_percent": batteryPercent,
-        "ringer_mode": ringerMode,
-        "network_type": networkType,
-        "mobile_network_generation": mobileGeneration,
-        "carrier": carrier,
-        "signal_strength": signalStrength,
-        "timestamp": DateTime.now().toIso8601String(),
-      };
-    } catch (e) {
-      print("❌ Alive data error: $e");
-
-      return {
-        "battery_percent": 0,
-        "ringer_mode": "unknown",
-        "network_type": "unknown",
-        "mobile_network_generation": "unknown",
-        "carrier": "unknown",
-        "signal_strength": "unknown",
-        "timestamp": DateTime.now().toIso8601String(),
-      };
-    }
-  }
 
   Future<void> forgotPassword(
       String email,
@@ -375,26 +308,6 @@ class LoginViewModel with ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> _getTelephonyData() async {
-    try {
-      final result =
-      await _telephonyChannel.invokeMethod('getTelephonyData');
-
-      return {
-        "carrier": result["carrier"] ?? "unknown",
-        "mobile_network_generation":
-        result["mobile_network_generation"] ?? "unknown",
-        "signal_strength": result["signal_strength"] ?? "unknown",
-      };
-    } catch (e) {
-      print("❌ Telephony method channel error: $e");
-      return {
-        "carrier": "unknown",
-        "mobile_network_generation": "unknown",
-        "signal_strength": "unknown",
-      };
-    }
-  }
 
   Future<bool> readAllNotifications() async {
     try {

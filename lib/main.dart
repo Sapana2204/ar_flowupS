@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_new_project/services/background_location_service.dart';
 import 'package:my_new_project/utils/app_colors.dart';
 import 'package:my_new_project/utils/routes/routes.dart';
 import 'package:my_new_project/utils/routes/routes_names.dart';
@@ -18,7 +19,11 @@ import 'package:my_new_project/viewmodel/workReport_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'data/network/navigation_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await BackgroundLocationService.initialize();
+
   runApp(const MyApp());
 }
 

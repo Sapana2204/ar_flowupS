@@ -208,7 +208,6 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                   try {
                     String addOnString = data.productAddOns!.trim();
 
-                    // Remove brackets
                     addOnString =
                         addOnString.replaceAll('[', '').replaceAll(']', '');
 

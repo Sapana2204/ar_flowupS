@@ -82,6 +82,8 @@ dependencies:
   connectivity_plus: ^6.0.3
   ringer_mode: ^1.0.2
   telephony_info_plus: ^0.0.2
+  flutter_background_service: ^5.1.0
+  flutter_local_notifications: ^17.2.3
 
 
 
