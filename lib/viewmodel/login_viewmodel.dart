@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:my_new_project/viewmodel/userStatus_viewmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -94,6 +95,10 @@ class LoginViewModel with ChangeNotifier {
         Utils.showToast("Login Successful!");
 
         await _sendLocationToServer();
+        await updateAttendanceStatus(
+          context,
+          true,
+        );
 
         await BackgroundLocationService.start();
 
@@ -123,11 +128,9 @@ class LoginViewModel with ChangeNotifier {
   /// ✅ Logout
   Future<void> logout(BuildContext context) async {
     try {
-      await NetworkApiServices().getPostApiResponse(
-        "/users/status",
-        {
-          "status": "inactive",
-        },
+      await updateAttendanceStatus(
+        context,
+        false,
       );
     } catch (e) {
       debugPrint("Status update failed: $e");
@@ -195,6 +198,16 @@ class LoginViewModel with ChangeNotifier {
 
     SocketService().connect(user.adminId.toString());
 
+
+    final signed =
+        prefs.getBool("attendance_signed_in") ?? false;
+
+    if (!signed) {
+      await updateAttendanceStatus(
+        context,
+        true,
+      );
+    }
     await BackgroundLocationService.start();
 
     print("✅ RESTORING SESSION");
@@ -318,6 +331,30 @@ class LoginViewModel with ChangeNotifier {
     } finally {
       _readAllLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> updateAttendanceStatus(
+      BuildContext context,
+      bool active,
+      ) async {
+    try {
+      final vm = UserStatusViewModel();
+
+      if (active) {
+        await vm.signIn();
+      } else {
+        await vm.signOut();
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setBool(
+        "attendance_signed_in",
+        active,
+      );
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 }

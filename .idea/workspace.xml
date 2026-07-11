@@ -4,19 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="add contact person from register call screen">
-      <change afterPath="$PROJECT_DIR$/lib/background/location_task_handler.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/services/alive_data_service.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/services/background_location_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="location: 50m moving">
+      <change beforePath="$PROJECT_DIR$/.idea/ar_flowupS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ar_flowupS.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/userStatus_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/userStatus_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,14 +116,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1776664708209</updated>
-    </task>
-    <task id="LOCAL-00002" summary="splash, logo, dashboard and search by callID screens ui">
-      <option name="closed" value="true" />
-      <created>1776770943178</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1776770943178</updated>
     </task>
     <task id="LOCAL-00003" summary="recent calls changes done">
       <option name="closed" value="true" />
@@ -515,12 +501,19 @@
       <option name="project" value="LOCAL" />
       <updated>1783662388773</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="location: 50m moving">
+      <option name="closed" value="true" />
+      <created>1783683236059</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1783683236059</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Addons changes" />
     <MESSAGE value="product, customizations and dialer" />
     <MESSAGE value="dialer changes" />
     <MESSAGE value="dialer api integration done" />
@@ -545,6 +538,7 @@
     <MESSAGE value="open tickets-&gt; show only open tickets in list" />
     <MESSAGE value="product expiry history and alert changes" />
     <MESSAGE value="add contact person from register call screen" />
-    <option name="LAST_COMMIT_MESSAGE" value="add contact person from register call screen" />
+    <MESSAGE value="location: 50m moving" />
+    <option name="LAST_COMMIT_MESSAGE" value="location: 50m moving" />
   </component>
 </project>

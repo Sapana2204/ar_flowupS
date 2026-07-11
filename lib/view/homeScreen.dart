@@ -104,39 +104,30 @@ class _HomeScreenState extends State<HomeScreen>
         actions: _currentIndex == 0
             ? [
           /// Attendance Status Icon
-          Consumer<UserStatusViewModel>(
-            builder: (context, vm, child) {
-              return IconButton(
-                onPressed: vm.isLoading ? null : _changeAttendanceStatus,
-                icon: vm.isLoading
-                    ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.orange,
-                  ),
-                )
-                    : Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isSignedIn
-                        ? Colors.green.shade50
-                        : Colors.orange.shade50,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isSignedIn
-                        ? Icons.work_history_rounded
-                        : Icons.fingerprint_rounded,
-                    color: isSignedIn
-                        ? Colors.green
-                        : Colors.orange,
-                    size: 22,
-                  ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Tooltip(
+              message: isSignedIn ? "Active" : "Inactive",
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isSignedIn
+                      ? Colors.green.shade50
+                      : Colors.red.shade50,
+                  shape: BoxShape.circle,
                 ),
-              );
-            },
+                child: Icon(
+                  isSignedIn
+                      ? Icons.check_circle
+                      : Icons.cancel,
+                  color: isSignedIn
+                      ? Colors.green
+                      : Colors.red,
+                  size: 22,
+                ),
+              ),
+            ),
           ),
 
           /// Notifications

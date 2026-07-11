@@ -7,7 +7,6 @@ class AppUrls {
   static const socketUrl = "https://api.calldesk.flowups.in";
   // static const socketUrl = "http://192.168.1.23";
   static const unreadCount = "$baseUrl/notifications/unread-count";
-  static const userStatus = "$baseUrl/users/status";
   static const userSignIn = "$baseUrl/users/sign-in";
   static const userSignOut = "$baseUrl/users/sign-out";
 
