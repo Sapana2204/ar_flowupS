@@ -16,11 +16,12 @@ class TicketsRepository {
 
   Future<Ticketsmodel> fetchTickets({
     String status = "active",
+    String viewAll = "N",
     int page = 1,
     String searchText = "",
     List filters = const [],
     String order = "DESC",
-    String orderBy = "created_by",
+    String orderBy = "created_date",
   }) async {
     try {
       final response = await _apiService.getPostApiResponse(
@@ -32,6 +33,7 @@ class TicketsRepository {
           "filters": filters,
           "order": order,
           "order_by": orderBy,
+          "viewAll": viewAll,
         },
       );
 

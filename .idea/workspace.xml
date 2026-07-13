@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="location: 50m moving">
-      <change beforePath="$PROJECT_DIR$/.idea/ar_flowupS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ar_flowupS.iml" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="location: 50m moving + status (active/inactive)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repository/userStatus_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/userStatus_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/tickets_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/tickets_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,14 +115,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1776664708209</updated>
-    </task>
-    <task id="LOCAL-00003" summary="recent calls changes done">
-      <option name="closed" value="true" />
-      <created>1776943693542</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1776943693543</updated>
     </task>
     <task id="LOCAL-00004" summary="app icon and app name set, client history and update call screen done">
       <option name="closed" value="true" />
@@ -509,12 +500,19 @@
       <option name="project" value="LOCAL" />
       <updated>1783683236059</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="location: 50m moving + status (active/inactive)">
+      <option name="closed" value="true" />
+      <created>1783755608484</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1783755608484</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="product, customizations and dialer" />
     <MESSAGE value="dialer changes" />
     <MESSAGE value="dialer api integration done" />
     <MESSAGE value="reports dropdown integration and api integration done" />
@@ -539,6 +537,7 @@
     <MESSAGE value="product expiry history and alert changes" />
     <MESSAGE value="add contact person from register call screen" />
     <MESSAGE value="location: 50m moving" />
-    <option name="LAST_COMMIT_MESSAGE" value="location: 50m moving" />
+    <MESSAGE value="location: 50m moving + status (active/inactive)" />
+    <option name="LAST_COMMIT_MESSAGE" value="location: 50m moving + status (active/inactive)" />
   </component>
 </project>

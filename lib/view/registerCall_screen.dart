@@ -291,8 +291,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
       appBar: AppBar(
         title: Text(
           widget.mode == RegisterCallMode.edit
-              ? "Update Call"
-              : "Register Call",
+              ? "Update Ticket"
+              : "Register Ticket",
         ),
         backgroundColor: primary,
       ),
@@ -708,8 +708,8 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                             const SizedBox(width: 8),
                             Text(
                               widget.mode == RegisterCallMode.edit
-                                  ? "Update Call"
-                                  : "Register Call",
+                                  ? "Update Ticket"
+                                  : "Register Ticket",
                             ),
                           ],
                         ),

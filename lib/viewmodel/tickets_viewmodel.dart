@@ -89,6 +89,9 @@ class TicketsViewModel extends ChangeNotifier {
   int _selectedAssigneeId = 0;
   int get selectedAssigneeId => _selectedAssigneeId;
 
+  String _viewAll = "N";
+  String get viewAll => _viewAll;
+
   Future<void> setAssignee(int assigneeId) async {
     _selectedAssigneeId = assigneeId;
     await fetchTickets(isRefresh: true);
@@ -100,18 +103,19 @@ class TicketsViewModel extends ChangeNotifier {
 
   /// 🔹 Initial Load
   Future<void> fetchTickets({bool isRefresh = false}) async {
+    if (_isLoading) return;
+
     try {
-      if (_isLoading) return;
+      _isLoading = true;
+      _error = "";
 
       if (isRefresh) {
         _page = 1;
+        _hasMore = true;
         _ticketsList.clear();
         _allTickets.clear();
-        _hasMore = true;
       }
 
-      _isLoading = true;
-      _error = "";
       notifyListeners();
 
       final List<Map<String, dynamic>> filters = [];
@@ -130,6 +134,7 @@ class TicketsViewModel extends ChangeNotifier {
         page: _page,
         searchText: _searchText,
         filters: filters,
+        viewAll: _viewAll,
       );
 
       final newData = response.data ?? [];
@@ -505,6 +510,13 @@ class TicketsViewModel extends ChangeNotifier {
       createVisitLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> setViewAll(String value) async {
+    if (_viewAll == value) return;
+
+    _viewAll = value;
+    await fetchTickets(isRefresh: true);
   }
 
 }

@@ -105,44 +105,88 @@ class _CallsListScreenState extends State<CallsListScreen> {
           }
       ),
       title: const Text("Tickets"),
-      actions: [
-        Consumer2<QueryViewModel, TicketsViewModel>(
-          builder: (_, queryVm, ticketVm, __) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<int>(
-                  value: ticketVm.selectedAssigneeId,
-                  dropdownColor: Colors.white,
-                  iconEnabledColor: Colors.white,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
+        actions: [
+          Consumer<TicketsViewModel>(
+            builder: (_, ticketVm, __) {
+              return PopupMenuButton<String>(
+                tooltip: "Ticket View",
+                icon: const Icon(Icons.filter_list, color: Colors.white),
+                onSelected: (value) async {
+                  await ticketVm.setViewAll(value);
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: "N",
+                    child: Row(
+                      children: [
+                        Icon(
+                          ticketVm.viewAll == "N"
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_off,
+                          color: primary,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text("My Tickets"),
+                      ],
+                    ),
                   ),
-                  isDense: true,
-                  items: [
-                    const DropdownMenuItem<int>(
-                      value: 0,
-                      child: Text("All Assignees"),
+                  PopupMenuItem(
+                    value: "Y",
+                    child: Row(
+                      children: [
+                        Icon(
+                          ticketVm.viewAll == "Y"
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_off,
+                          color: primary,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text("All Tickets"),
+                      ],
                     ),
-                    ...queryVm.adminList.map(
-                          (admin) => DropdownMenuItem<int>(
-                        value: admin.adminID!,
-                        child: Text(admin.name ?? ""),
+                  ),
+                ],
+              );
+            },
+          ),
+
+          Consumer2<QueryViewModel, TicketsViewModel>(
+            builder: (_, queryVm, ticketVm, __) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: ticketVm.selectedAssigneeId,
+                    dropdownColor: Colors.white,
+                    iconEnabledColor: Colors.white,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                    ),
+                    isDense: true,
+                    items: [
+                      const DropdownMenuItem(
+                        value: 0,
+                        child: Text("All Assignees"),
                       ),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      ticketVm.setAssignee(value);
-                    }
-                  },
+                      ...queryVm.adminList.map(
+                            (admin) => DropdownMenuItem(
+                          value: admin.adminID!,
+                          child: Text(admin.name ?? ""),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        ticketVm.setAssignee(value);
+                      }
+                    },
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
-      ],
+              );
+            },
+          ),
+        ],
     ),
 
       /// 🔵 FLOATING BUTTON
