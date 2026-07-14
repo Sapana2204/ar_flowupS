@@ -159,6 +159,7 @@ class TicketsViewModel extends ChangeNotifier {
   Future<void> resetAssignee() async {
     _selectedAssigneeId = 0;
     _searchText = "";
+    _viewAll = "N"; // Reset to My Tickets
     await fetchTickets(isRefresh: true);
   }
 
