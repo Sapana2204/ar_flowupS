@@ -32,7 +32,7 @@ class BackgroundLocationService {
         autoStartOnBoot: true,
         foregroundServiceNotificationId: 1001,
         initialNotificationTitle: "flowupS",
-        initialNotificationContent: "App is running",
+        initialNotificationContent: "Running",
         foregroundServiceTypes: [
           AndroidForegroundType.location,
         ],

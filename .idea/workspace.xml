@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="show all tickets">
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="background service msg changed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/services/background_location_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/background_location_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,14 +112,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1776664708209</updated>
-    </task>
-    <task id="LOCAL-00005" summary="profile and reports screen done">
-      <option name="closed" value="true" />
-      <created>1777031080746</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1777031080746</updated>
     </task>
     <task id="LOCAL-00006" summary="api integration of login, calllist and register call screen dropdowns done">
       <option name="closed" value="true" />
@@ -506,7 +497,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783928005465</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="background service msg changed">
+      <option name="closed" value="true" />
+      <created>1784010839838</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1784010839838</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -522,7 +521,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="dialer api integration done" />
     <MESSAGE value="reports dropdown integration and api integration done" />
     <MESSAGE value="AMC ui" />
     <MESSAGE value="till customer ticket report ui" />
@@ -547,6 +545,7 @@
     <MESSAGE value="location: 50m moving" />
     <MESSAGE value="location: 50m moving + status (active/inactive)" />
     <MESSAGE value="show all tickets" />
-    <option name="LAST_COMMIT_MESSAGE" value="show all tickets" />
+    <MESSAGE value="background service msg changed" />
+    <option name="LAST_COMMIT_MESSAGE" value="background service msg changed" />
   </component>
 </project>
