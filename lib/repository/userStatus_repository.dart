@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -14,10 +15,17 @@ class UserStatusRepository {
   Future<bool> signIn() async {
     final payload = await _buildPayload("active");
 
+    debugPrint("=========== SIGN IN API ===========");
+    debugPrint("URL: ${AppUrls.userSignIn}");
+    debugPrint("Payload: $payload");
+
     final response = await _api.getPostApiResponse(
       AppUrls.userSignIn,
       payload,
     );
+
+    debugPrint("Response: $response");
+    debugPrint("===================================");
 
     return response != null;
   }
@@ -25,10 +33,17 @@ class UserStatusRepository {
   Future<bool> signOut() async {
     final payload = await _buildPayload("inactive");
 
+    debugPrint("=========== SIGN OUT API ===========");
+    debugPrint("URL: ${AppUrls.userSignOut}");
+    debugPrint("Payload: $payload");
+
     final response = await _api.getPostApiResponse(
       AppUrls.userSignOut,
       payload,
     );
+
+    debugPrint("Response: $response");
+    debugPrint("====================================");
 
     return response != null;
   }
@@ -50,7 +65,9 @@ class UserStatusRepository {
         final p = place.first;
         location = "${p.locality}, ${p.administrativeArea}";
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint("Location Error: $e");
+    }
 
     final battery = Battery();
 
@@ -67,8 +84,8 @@ class UserStatusRepository {
       networkType = Platform.isAndroid ? "4g" : "mobile";
     }
 
-    return {
-      "status": status, // active / inactive
+    final payload = {
+      "status": status,
       "latitude": position.latitude.toString(),
       "longitude": position.longitude.toString(),
       "location": location,
@@ -79,6 +96,19 @@ class UserStatusRepository {
         "last_seen": DateTime.now().toIso8601String(),
       }
     };
+
+    debugPrint("========== USER STATUS PAYLOAD ==========");
+    debugPrint("Status        : $status");
+    debugPrint("Latitude      : ${position.latitude}");
+    debugPrint("Longitude     : ${position.longitude}");
+    debugPrint("Location      : $location");
+    debugPrint("Battery       : $batteryPercent%");
+    debugPrint("Battery State : $batteryState");
+    debugPrint("Network       : $networkType");
+    debugPrint("Payload       : $payload");
+    debugPrint("=========================================");
+
+    return payload;
   }
 
 }
