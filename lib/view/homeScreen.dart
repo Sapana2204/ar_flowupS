@@ -5,6 +5,7 @@ import 'package:my_new_project/view/amcList_screen.dart';
 import 'package:my_new_project/view/customerList_screen.dart';
 import 'package:my_new_project/view/productExpiryReport_screen.dart';
 import 'package:my_new_project/view/profile_screen.dart';
+import 'package:my_new_project/view/quotationList_screen.dart';
 import 'package:my_new_project/view/registerCall_screen.dart';
 import 'package:my_new_project/view/workReport_screen.dart';
 import 'package:my_new_project/view/userMarker_screen.dart';
@@ -283,6 +284,14 @@ class _HomeScreenState extends State<HomeScreen>
                   );
                 }),
 
+                // _drawerSimpleNav(Icons.radio_button_unchecked_outlined, AppStrings.quotation, () {
+                //   Navigator.pop(context);
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (_) => const QuotationListScreen()),
+                //   );
+                // }),
+
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
                   Navigator.pop(context);
@@ -347,132 +356,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  void _changeAttendanceStatus() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSignedIn
-                    ? Icons.logout_rounded
-                    : Icons.login_rounded,
-                size: 36,
-                color: isSignedIn
-                    ? Colors.red
-                    : Colors.green,
-              ),
 
-              const SizedBox(height: 12),
-
-              Text(
-                isSignedIn ? "Sign Out" : "Sign In",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                isSignedIn
-                    ? "End today's work session?"
-                    : "Start today's work session?",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-          actionsPadding:
-          const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: Consumer<UserStatusViewModel>(
-                    builder: (context, vm, child) {
-                      return ElevatedButton(
-                        onPressed: vm.isLoading
-                            ? null
-                            : () async {
-                          bool success;
-
-                          if (isSignedIn) {
-                            success = await vm.signOut();
-
-                            if (success) {
-                              final prefs = await SharedPreferences.getInstance();
-
-                              await prefs.remove("attendance_signed_in");
-
-                              if (!mounted) return;
-
-                              setState(() {
-                                isSignedIn = false;
-                              });
-
-                              Navigator.pop(context);
-
-                              Utils.showToast("Signed out successfully.");
-                            }
-                          } else {
-                            success = await vm.signIn();
-
-                            if (success) {
-                              final prefs = await SharedPreferences.getInstance();
-
-                              await prefs.setBool(
-                                "attendance_signed_in",
-                                true,
-                              );
-
-                              if (!mounted) return;
-
-                              setState(() {
-                                isSignedIn = true;
-                              });
-
-                              Navigator.pop(context);
-
-                              Utils.showToast(
-                                "You are signed in successfully.",
-                              );
-                            }
-                          }
-                        },
-                        child: vm.isLoading
-                            ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                            : Text(
-                          isSignedIn ? "Sign Out" : "Sign In",
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Widget _sectionTitle(String title) {
     return Padding(

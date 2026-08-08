@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:package_info_plus/package_info_plus.dart';
 import '../utils/app_colors.dart';
 import '../viewModel/profile_viewmodel.dart';
 import 'loginScreen.dart';
@@ -13,6 +13,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String appVersion = "";
+  String buildNumber = "";
+
   @override
   void initState() {
     super.initState();
@@ -20,6 +23,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Future.microtask(() {
       context.read<ProfileViewModel>().getProfile();
     });
+
+    _loadAppVersion();
+
   }
 
   @override
@@ -215,6 +221,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                       ),
+
+                      const SizedBox(height: 18),
+
+                      if (appVersion.isNotEmpty)
+                        Center(
+                          child: Text(
+                            "Version $appVersion (Build $buildNumber)",  //remove build no while updating playstore build
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -224,6 +244,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+  }
+
+  Future<void> _loadAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+
+    if (!mounted) return;
+
+    setState(() {
+      appVersion = packageInfo.version;
+      buildNumber = packageInfo.buildNumber;
+    });
   }
 
   String removeHtmlTags(String? html) {
