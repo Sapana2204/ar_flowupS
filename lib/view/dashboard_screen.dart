@@ -401,42 +401,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _chip(String text, bool selected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
-      decoration: BoxDecoration(
-        color: selected ? primary : Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: selected ? Colors.white : Colors.black,
-        ),
-      ),
-    );
-  }
-
-  Widget _statusBox(String count, String label) {
-    return Column(
-      children: [
-        Text(
-          count,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: primary,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(label),
-      ],
-    );
-  }
-
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
       color: Colors.white,

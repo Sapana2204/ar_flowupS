@@ -21,6 +21,22 @@ class GetMenusViewModel extends ChangeNotifier {
     return _menuModel?.data ?? [];
   }
 
+  /// Menus which are currently implemented
+  /// in the Android application.
+  ///
+  /// Web-only menus should NOT be added here
+  /// until their Android screen is implemented.
+  static const Set<String> mobileSupportedMenus = {
+    "dashboard",
+    "user-markers",
+    "customers",
+    "amc-management",
+    "quotation",
+    "profile",
+    "/work-report",
+    "reports/performance",
+  };
+
   Future<void> fetchMenus() async {
     _isLoading = true;
     _errorMessage = null;
@@ -30,31 +46,52 @@ class GetMenusViewModel extends ChangeNotifier {
     try {
       final response = await _repository.getMenus();
 
+      final apiMenus = response.data ?? [];
+
+      /// Filter:
+      /// 1. Menu must be active
+      /// 2. Menu must be implemented in Android
+      final mobileMenus = apiMenus.where((menu) {
+        final menuLink = menu.menuLink?.trim() ?? "";
+
+        return menu.status?.toLowerCase() == "active" &&
+            mobileSupportedMenus.contains(menuLink);
+      }).toList();
+
+      /// Sort by menu_index
+      mobileMenus.sort(
+            (a, b) {
+          return (a.menuIndex ?? 999)
+              .compareTo(b.menuIndex ?? 999);
+        },
+      );
+
+      /// Replace API data with Android-supported menus
+      response.data = mobileMenus;
+
       _menuModel = response;
 
-      // Only active menus
-      _menuModel?.data = (_menuModel?.data ?? [])
-          .where(
-            (menu) =>
-        menu.status?.toLowerCase() == "active",
-      )
-          .toList();
-
-      // Sort according to menu_index
-      _menuModel?.data?.sort(
-            (a, b) =>
-            (a.menuIndex ?? 999).compareTo(b.menuIndex ?? 999),
+      debugPrint(
+        "══════════════════════════════════════",
       );
 
       debugPrint(
-        "✅ Menus loaded: ${_menuModel?.data?.length}",
+        "🌐 API MENUS: ${apiMenus.length}",
       );
 
-      for (final menu in _menuModel?.data ?? []) {
+      debugPrint(
+        "📱 MOBILE MENUS: ${mobileMenus.length}",
+      );
+
+      for (final menu in mobileMenus) {
         debugPrint(
-          "MENU: ${menu.menuName} | ${menu.menuLink} | ${menu.status}",
+          "📱 ${menu.menuName} | ${menu.menuLink}",
         );
       }
+
+      debugPrint(
+        "══════════════════════════════════════",
+      );
     } catch (e) {
       _errorMessage = e.toString();
 
@@ -63,6 +100,7 @@ class GetMenusViewModel extends ChangeNotifier {
       );
     } finally {
       _isLoading = false;
+
       notifyListeners();
     }
   }

@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="profile: version no added and quotation ui done">
-      <change afterPath="$PROJECT_DIR$/lib/repository/getMenus_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/viewmodel/getMenus_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="before homescreen drawer addition for get-menus">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/constants/appUrls.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/appUrls.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/getMenus_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/getMenus_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/getMenus_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/getMenus_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,14 +112,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1776664708209</updated>
-    </task>
-    <task id="LOCAL-00009" summary="changes with leads screen">
-      <option name="closed" value="true" />
-      <created>1777532453608</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1777532453608</updated>
     </task>
     <task id="LOCAL-00010" summary="create and update ticket completed">
       <option name="closed" value="true" />
@@ -512,7 +497,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786176204717</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="before homescreen drawer addition for get-menus">
+      <option name="closed" value="true" />
+      <created>1786347024703</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1786347024704</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -528,7 +521,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="till customer ticket report ui" />
     <MESSAGE value="customer ticket report with pdf preview and share pdf done" />
     <MESSAGE value="password encryption done" />
     <MESSAGE value="ticket history changes done" />
@@ -553,6 +545,7 @@
     <MESSAGE value="background service msg changed" />
     <MESSAGE value="status log print" />
     <MESSAGE value="profile: version no added and quotation ui done" />
-    <option name="LAST_COMMIT_MESSAGE" value="profile: version no added and quotation ui done" />
+    <MESSAGE value="before homescreen drawer addition for get-menus" />
+    <option name="LAST_COMMIT_MESSAGE" value="before homescreen drawer addition for get-menus" />
   </component>
 </project>
