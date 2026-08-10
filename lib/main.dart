@@ -8,6 +8,7 @@ import 'package:my_new_project/viewmodel/amc_viewmodel.dart';
 import 'package:my_new_project/viewmodel/customerReport_viewmodel.dart';
 import 'package:my_new_project/viewmodel/customers_viewmodel.dart';
 import 'package:my_new_project/viewModel/dashboard_viewmodel.dart';
+import 'package:my_new_project/viewmodel/getMenus_viewmodel.dart';
 import 'package:my_new_project/viewmodel/map_viewmodel.dart';
 import 'package:my_new_project/viewModel/profile_viewmodel.dart';
 import 'package:my_new_project/viewmodel/productExpiry_viewmodel.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserStatusViewModel()),
         ChangeNotifierProvider(create: (_) => CustomerReportViewModel()),
         ChangeNotifierProvider(create: (_) => ProductExpiryViewModel()),
+        ChangeNotifierProvider(create: (_) => GetMenusViewModel()),
       ],
       child: MaterialApp(
         navigatorKey: NavigationService.navigatorKey, // 🔥 ADD THIS LINE

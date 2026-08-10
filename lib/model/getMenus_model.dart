@@ -1,4 +1,4 @@
-class getMenus_model {
+class GetMenusModel {
   bool? success;
   int? code;
   String? type;
@@ -6,7 +6,7 @@ class getMenus_model {
   List<Data>? data;
   Pagination? pagination;
 
-  getMenus_model(
+  GetMenusModel(
       {this.success,
         this.code,
         this.type,
@@ -14,7 +14,7 @@ class getMenus_model {
         this.data,
         this.pagination});
 
-  getMenus_model.fromJson(Map<String, dynamic> json) {
+  GetMenusModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     code = json['code'];
     type = json['type'];

@@ -13,6 +13,9 @@ class AppUrls {
   //API end points
   static const loginEndPoint = "$baseUrl/login";
   static const dashboardApi = "$baseUrl/dashboard";
+  // Get all menus
+  static const getMenus =
+      "$baseUrl/get-menus";
   static const ticketsList = "$baseUrl/tickets";
   static const queryTypes = "$baseUrl/system/searchSlugList";
   static const searchList = "$baseUrl/system/searchList";

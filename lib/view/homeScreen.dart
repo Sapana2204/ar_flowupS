@@ -284,13 +284,13 @@ class _HomeScreenState extends State<HomeScreen>
                   );
                 }),
 
-                // _drawerSimpleNav(Icons.radio_button_unchecked_outlined, AppStrings.quotation, () {
-                //   Navigator.pop(context);
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(builder: (_) => const QuotationListScreen()),
-                //   );
-                // }),
+                _drawerSimpleNav(Icons.radio_button_unchecked_outlined, AppStrings.quotation, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QuotationListScreen()),
+                  );
+                }),
 
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
@@ -626,6 +626,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
+
   void _handleLogout() async {
     final confirm = await showDialog(
       context: context,
@@ -651,23 +652,11 @@ class _HomeScreenState extends State<HomeScreen>
     );
 
     if (confirm == true) {
-      final success = await context.read<UserStatusViewModel>().signOut();
-
-      if (!success) {
-        return;
-      }
-
       await context.read<LoginViewModel>().logout(context);
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const LoginScreen(),
-        ),
-            (route) => false,
-      );
     }
   }
+
+
 
   @override
   void dispose() {
