@@ -1,155 +1,79 @@
 class QuotationModel {
   final int quotationId;
   final String quotationNo;
-  final String customerName;
-  final String firmName;
-  final String contactNo;
-  final String address;
+  final String companyId;
+  final String leadId;
+  final String customerId;
+  final String? contactId;
+  final String? ticketId;
   final String quotationDate;
-  final String dueDate;
-  final double quotedRate;
+  final String validUntil;
+  final String quotationStatus;
+  final double subtotal;
+  final double discountTotal;
+  final double taxTotal;
+  final double grandTotal;
+  final String notes;
+  final String terms;
   final String status;
-  final String description;
+  final String createdBy;
+  final String createdDate;
 
   QuotationModel({
     required this.quotationId,
     required this.quotationNo,
-    required this.customerName,
-    required this.firmName,
-    required this.contactNo,
-    required this.address,
+    required this.companyId,
+    required this.leadId,
+    required this.customerId,
+    this.contactId,
+    this.ticketId,
     required this.quotationDate,
-    required this.dueDate,
-    required this.quotedRate,
+    required this.validUntil,
+    required this.quotationStatus,
+    required this.subtotal,
+    required this.discountTotal,
+    required this.taxTotal,
+    required this.grandTotal,
+    required this.notes,
+    required this.terms,
     required this.status,
-    required this.description,
+    required this.createdBy,
+    required this.createdDate,
   });
+
+  factory QuotationModel.fromJson(Map<String, dynamic> json) {
+    return QuotationModel(
+      quotationId: json['quotation_id'] ?? 0,
+      quotationNo: json['quotation_no'] ?? '',
+      companyId: json['company_id'] ?? '',
+      leadId: json['lead_id'] ?? '',
+      customerId: json['customer_id'] ?? '',
+      contactId: json['contact_id']?.toString(),
+      ticketId: json['ticket_id']?.toString(),
+      quotationDate: json['quotation_date'] ?? '',
+      validUntil: json['valid_until'] ?? '',
+      quotationStatus: json['quotation_status'] ?? '',
+      subtotal: double.tryParse(
+        json['subtotal']?.toString() ?? '0',
+      ) ??
+          0,
+      discountTotal: double.tryParse(
+        json['discount_total']?.toString() ?? '0',
+      ) ??
+          0,
+      taxTotal: double.tryParse(
+        json['tax_total']?.toString() ?? '0',
+      ) ??
+          0,
+      grandTotal: double.tryParse(
+        json['grand_total']?.toString() ?? '0',
+      ) ??
+          0,
+      notes: json['notes'] ?? '',
+      terms: json['terms'] ?? '',
+      status: json['status'] ?? '',
+      createdBy: json['created_by'] ?? '',
+      createdDate: json['created_date'] ?? '',
+    );
+  }
 }
-
-///--------------------------------------------------------------
-/// STATIC DATA
-///--------------------------------------------------------------
-
-List<QuotationModel> dummyQuotations = [
-
-  QuotationModel(
-    quotationId: 1,
-    quotationNo: "QT-2026-001",
-    customerName: "ABC Industries",
-    firmName: "ABC Engineering Pvt Ltd",
-    contactNo: "9876543210",
-    address: "MIDC Ambad, Nashik",
-    quotationDate: "05 Aug 2026",
-    dueDate: "12 Aug 2026",
-    quotedRate: 125000,
-    status: "Pending",
-    description:
-    "Supply of industrial automation panels, installation and commissioning.",
-  ),
-
-  QuotationModel(
-    quotationId: 2,
-    quotationNo: "QT-2026-002",
-    customerName: "Shree Electricals",
-    firmName: "Shree Electrical Works",
-    contactNo: "9876543201",
-    address: "Satpur, Nashik",
-    quotationDate: "04 Aug 2026",
-    dueDate: "10 Aug 2026",
-    quotedRate: 85000,
-    status: "Approved",
-    description:
-    "Supply of electrical materials and panel accessories.",
-  ),
-
-  QuotationModel(
-    quotationId: 3,
-    quotationNo: "QT-2026-003",
-    customerName: "Flowups Technologies",
-    firmName: "Flowups Technologies Pvt Ltd",
-    contactNo: "9090909090",
-    address: "College Road, Nashik",
-    quotationDate: "03 Aug 2026",
-    dueDate: "08 Aug 2026",
-    quotedRate: 65000,
-    status: "Pending",
-    description:
-    "CRM Software Development with Android & iOS Application.",
-  ),
-
-  QuotationModel(
-    quotationId: 4,
-    quotationNo: "QT-2026-004",
-    customerName: "SP Traders",
-    firmName: "SP Traders",
-    contactNo: "9012345678",
-    address: "Sinnar, Nashik",
-    quotationDate: "02 Aug 2026",
-    dueDate: "06 Aug 2026",
-    quotedRate: 48000,
-    status: "Rejected",
-    description:
-    "Website Development and Product Catalog Management.",
-  ),
-
-  QuotationModel(
-    quotationId: 5,
-    quotationNo: "QT-2026-005",
-    customerName: "Celebration Studio",
-    firmName: "Celebration Studio",
-    contactNo: "8888888888",
-    address: "Panchavati, Nashik",
-    quotationDate: "01 Aug 2026",
-    dueDate: "15 Aug 2026",
-    quotedRate: 172500,
-    status: "Approved",
-    description:
-    "Photography Booking System with Admin Dashboard.",
-  ),
-
-  QuotationModel(
-    quotationId: 6,
-    quotationNo: "QT-2026-006",
-    customerName: "Royal Enterprises",
-    firmName: "Royal Enterprises",
-    contactNo: "9988776655",
-    address: "Mumbai Naka, Nashik",
-    quotationDate: "31 Jul 2026",
-    dueDate: "07 Aug 2026",
-    quotedRate: 91500,
-    status: "Pending",
-    description:
-    "Industrial Billing Software with Inventory Module.",
-  ),
-
-  QuotationModel(
-    quotationId: 7,
-    quotationNo: "QT-2026-007",
-    customerName: "Green Agro",
-    firmName: "Green Agro Solutions",
-    contactNo: "9000011111",
-    address: "Sinnar MIDC",
-    quotationDate: "30 Jul 2026",
-    dueDate: "05 Aug 2026",
-    quotedRate: 240000,
-    status: "Approved",
-    description:
-    "Agriculture Billing Application with GST Module.",
-  ),
-
-  QuotationModel(
-    quotationId: 8,
-    quotationNo: "QT-2026-008",
-    customerName: "Sai Industries",
-    firmName: "Sai Industries",
-    contactNo: "7777777777",
-    address: "Aurangabad Road, Nashik",
-    quotationDate: "29 Jul 2026",
-    dueDate: "04 Aug 2026",
-    quotedRate: 76000,
-    status: "Rejected",
-    description:
-    "Annual Software Maintenance Contract (AMC).",
-  ),
-
-];

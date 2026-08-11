@@ -76,4 +76,8 @@ class AppUrls {
   static const String createVisit =
       "$baseUrl/tickets/visits/create";
 
+  // Quotation
+  static const quotations =
+      "$baseUrl/quotations";
+
 }
