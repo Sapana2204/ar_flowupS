@@ -20,10 +20,8 @@ import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
 import '../utils/enums/register_call_mode.dart';
 import '../viewModel/login_viewmodel.dart';
-import '../viewmodel/userStatus_viewmodel.dart';
 import 'dashboard_screen.dart';
-import 'loginScreen.dart';
-import '../utils/utils.dart';
+
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -680,13 +678,13 @@ class _HomeScreenState extends State<HomeScreen>
                   );
                 }),
 
-                // _drawerSimpleNav(Icons.radio_button_unchecked_outlined, AppStrings.quotation, () {
-                //   Navigator.pop(context);
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(builder: (_) => const QuotationListScreen()),
-                //   );
-                // }),
+                _drawerSimpleNav(Icons.radio_button_unchecked_outlined, AppStrings.quotation, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QuotationListScreen()),
+                  );
+                }),
 
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {

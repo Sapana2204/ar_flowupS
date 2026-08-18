@@ -21,17 +21,6 @@ class CustomerProductModel {
     }
   }
 
-  // Map<String, dynamic> toJson() {
-  //   final Map<String, dynamic> data = new Map<String, dynamic>();
-  //   data['success'] = this.success;
-  //   data['code'] = this.code;
-  //   data['type'] = this.type;
-  //   data['message'] = this.message;
-  //   if (this.data != null) {
-  //     data['data'] = this.data!.map((v) => v.toJson()).toList();
-  //   }
-  //   return data;
-  // }
 }
 
 class ProductData {
@@ -39,12 +28,15 @@ class ProductData {
   String? productName;
   double? rate;
   double? gstRate;
+  String? productDescription;
+
 
   ProductData({
     this.productId,
     this.productName,
     this.rate,
     this.gstRate,
+    this.productDescription
   });
 
   ProductData.fromJson(Map<String, dynamic> json) {
@@ -61,5 +53,8 @@ class ProductData {
     gstRate = double.tryParse(
       json['gst_rate']?.toString() ?? '',
     );
+
+    productDescription =
+    json['product_description'];
   }
 }

@@ -62,8 +62,6 @@ class CustomersRepository {
     );
   }
 
-
-  /// GET PRODUCTS
   /// GET PRODUCTS
   Future<List<ProductData>> getProducts() async {
     try {
@@ -75,7 +73,9 @@ class CustomersRepository {
           "tableName": "products",
           "wherec": "product_name",
           "status": false,
-          "list": "product_id,product_name,rate,gst_rate",
+          "list":
+          "product_id,product_name,rate,gst_rate,product_description",
+          "isCompanyWise": true,
         },
       );
 

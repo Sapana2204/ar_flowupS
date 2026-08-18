@@ -4,20 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/ar_flowupS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ar_flowupS.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="changes of assignee dropdown to statuses dropdown">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/model/customerProduct_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customerProduct_model.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/repository/customers_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/customers_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/createQuotation_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/createQuotation_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/tickets_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,14 +116,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1776664708209</updated>
-    </task>
-    <task id="LOCAL-00012" summary="color od call due date and maekasread notification and logo changes">
-      <option name="closed" value="true" />
-      <created>1777963489902</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1777963489902</updated>
     </task>
     <task id="LOCAL-00013" summary="token and unread count after login">
       <option name="closed" value="true" />
@@ -516,7 +501,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786447702889</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="changes of assignee dropdown to statuses dropdown">
+      <option name="closed" value="true" />
+      <created>1787035328616</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1787035328616</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -532,7 +525,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="password encryption done" />
     <MESSAGE value="ticket history changes done" />
     <MESSAGE value="customer ticket report UI changes done" />
     <MESSAGE value="ticket visit done" />
@@ -557,6 +549,7 @@
     <MESSAGE value="profile: version no added and quotation ui done" />
     <MESSAGE value="before homescreen drawer addition for get-menus" />
     <MESSAGE value="quotation screen ui and quotation list api integration done" />
-    <option name="LAST_COMMIT_MESSAGE" value="quotation screen ui and quotation list api integration done" />
+    <MESSAGE value="changes of assignee dropdown to statuses dropdown" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes of assignee dropdown to statuses dropdown" />
   </component>
 </project>

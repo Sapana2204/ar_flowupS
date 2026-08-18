@@ -22,7 +22,10 @@ class ProductItem {
   TextEditingController(text: '0');
 
   final TextEditingController gstController =
-  TextEditingController(text: '18');
+  TextEditingController(text: '0');
+
+  final TextEditingController descriptionController =
+  TextEditingController();
 
   double get rate =>
       double.tryParse(rateController.text) ?? 0;
@@ -36,8 +39,7 @@ class ProductItem {
   double get gstPercent =>
       double.tryParse(gstController.text) ?? 0;
 
-  double get subtotal =>
-      qty * rate;
+  double get subtotal => qty * rate;
 
   double get discountAmount =>
       subtotal * discountPercent / 100;
@@ -56,6 +58,8 @@ class ProductItem {
     rateController.dispose();
     discountController.dispose();
     gstController.dispose();
+    descriptionController.dispose();
+
   }
 }
 
@@ -92,6 +96,9 @@ class _CreateQuotationScreenState
   TextEditingController();
 
   final TextEditingController notesController =
+  TextEditingController();
+
+  final TextEditingController timeframeController =
   TextEditingController();
 
   final TextEditingController termsController =
@@ -147,6 +154,7 @@ class _CreateQuotationScreenState
     validUntilController.dispose();
     notesController.dispose();
     termsController.dispose();
+    timeframeController.dispose();
 
     for (final item in productItems) {
       item.dispose();
@@ -669,13 +677,14 @@ class _CreateQuotationScreenState
       setState(() {
         item.selectedProduct = selected;
 
-        // Automatically populate API rate
         item.rateController.text =
             (selected.rate ?? 0).toString();
 
-        // Automatically populate API GST
         item.gstController.text =
             (selected.gstRate ?? 0).toString();
+
+        item.descriptionController.text =
+            selected.productDescription ?? "";
       });
     }
   }
@@ -926,11 +935,11 @@ class _CreateQuotationScreenState
 
             const SizedBox(height: 16),
 
-            _buildProductsSection(),
+            _buildAdditionalDetailsSection(),
 
             const SizedBox(height: 16),
 
-            _buildAdditionalDetailsSection(),
+            _buildProductsSection(),
 
             const SizedBox(height: 16),
 
@@ -1149,8 +1158,7 @@ class _CreateQuotationScreenState
                   icon: Icons.calendar_today_outlined,
                   onTap: () {
                     _pickDate(
-                      controller:
-                      quotationDateController,
+                      controller: quotationDateController,
                       initialDate: DateTime.now(),
                     );
                   },
@@ -1166,8 +1174,7 @@ class _CreateQuotationScreenState
                   icon: Icons.event_available_outlined,
                   onTap: () {
                     _pickDate(
-                      controller:
-                      validUntilController,
+                      controller: validUntilController,
                       initialDate: DateTime.now()
                           .add(const Duration(days: 13)),
                     );
@@ -1175,6 +1182,52 @@ class _CreateQuotationScreenState
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 12),
+
+          TextFormField(
+            controller: timeframeController,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+            decoration: InputDecoration(
+              labelText: "Timeframe",
+              hintText: "e.g. 14 days",
+              hintStyle: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 12,
+              ),
+              prefixIcon: Icon(
+                Icons.schedule_outlined,
+                color: primary,
+                size: 20,
+              ),
+              filled: true,
+              fillColor: const Color(0xffF8F9FC),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 13,
+                vertical: 14,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(13),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(13),
+                borderSide: BorderSide(
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(13),
+                borderSide: BorderSide(
+                  color: primary,
+                  width: 1.2,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -1407,6 +1460,9 @@ class _CreateQuotationScreenState
                   const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  onTap: () {
+                    _clearZeroOnTap(item.qtyController);
+                  },
                 ),
               ),
 
@@ -1421,6 +1477,9 @@ class _CreateQuotationScreenState
                   const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  onTap: () {
+                    _clearZeroOnTap(item.rateController);
+                  },
                 ),
               ),
             ],
@@ -1441,6 +1500,9 @@ class _CreateQuotationScreenState
                   const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  onTap: () {
+                    _clearZeroOnTap(item.discountController);
+                  },
                 ),
               ),
 
@@ -1456,9 +1518,61 @@ class _CreateQuotationScreenState
                   const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  onTap: () {
+                    _clearZeroOnTap(item.gstController);
+                  },
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 12),
+
+          TextFormField(
+            controller: item.descriptionController,
+            maxLines: 3,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              labelText: "Product Description",
+              hintText: "Enter product description...",
+              hintStyle: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 12,
+              ),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 32,
+                ),
+                child: Icon(
+                  Icons.notes_outlined,
+                  color: primary,
+                  size: 19,
+                ),
+              ),
+              filled: true,
+              fillColor: const Color(0xffF8F9FC),
+              contentPadding: const EdgeInsets.all(13),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: primary,
+                  width: 1.2,
+                ),
+              ),
+            ),
           ),
 
           const SizedBox(height: 14),
@@ -1881,10 +1995,12 @@ class _CreateQuotationScreenState
     String? prefix,
     String? suffix,
     TextInputType? keyboardType,
+    VoidCallback? onTap,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      onTap: onTap,
       style: const TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
@@ -2018,5 +2134,15 @@ class _CreateQuotationScreenState
 
   String _currency(double value) {
     return "₹ ${value.toStringAsFixed(2)}";
+  }
+
+  void _clearZeroOnTap(TextEditingController controller) {
+    final value = controller.text.trim();
+
+    if (value == "0" ||
+        value == "0.0" ||
+        value == "0.00") {
+      controller.clear();
+    }
   }
 }
