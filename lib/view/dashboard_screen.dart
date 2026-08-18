@@ -74,6 +74,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
         closedCount = value;
       }
     }
+    // final ticketStatus =
+    //     dashboardVM.dashboardModel?.data?.charts?.ticketStatus ?? [];
+    //
+    // final Map<String, double> pieData = {};
+    // final List<Color> pieColors = [];
+    //
+    // int totalTickets = 0;
+    //
+    // for (final item in ticketStatus) {
+    //   if (item is Map<String, dynamic>) {
+    //     // final int value = item['value'] ?? 0;
+    //
+    //     final value = int.tryParse(
+    //       item['value']?.toString() ?? '0',
+    //     ) ??
+    //         0;
+    //
+    //     pieData[item['label'] ?? 'Unknown'] = value.toDouble();
+    //
+    //     totalTickets += value;
+    //
+    //     if (item['color'] != null) {
+    //       pieColors.add(hexToColor(item['color']));
+    //     }
+    //   }
+    // }
+
     final ticketStatus =
         dashboardVM.dashboardModel?.data?.charts?.ticketStatus ?? [];
 
@@ -84,14 +111,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     for (final item in ticketStatus) {
       if (item is Map<String, dynamic>) {
-        final int value = item['value'] ?? 0;
+        final value = int.tryParse(
+          item['value']?.toString() ?? '0',
+        ) ??
+            0;
 
-        pieData[item['label'] ?? 'Unknown'] = value.toDouble();
+        final label = item['label']?.toString() ?? 'Unknown';
 
-        totalTickets += value;
+        if (value > 0) {
+          pieData[label] = value.toDouble();
+          totalTickets += value;
+        }
 
         if (item['color'] != null) {
-          pieColors.add(hexToColor(item['color']));
+          pieColors.add(
+            hexToColor(item['color'].toString()),
+          );
         }
       }
     }
@@ -179,10 +214,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     height: 180,
                     child: Row(
                       children: [
-                        /// PIE CHART
+                        /// PIE CHART / EMPTY STATE
                         Expanded(
                           flex: 2,
-                          child: PieChart(
+                          child: pieData.isEmpty || totalTickets == 0
+                              ? const Center(
+                            child: Text(
+                              "No ticket data available",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
+                              : PieChart(
                             dataMap: pieData,
                             animationDuration: const Duration(milliseconds: 800),
                             chartRadius: 90,
@@ -204,7 +251,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         /// STATUS LEGEND
                         Expanded(
                           flex: 1,
-                          child: Column(
+                          child: ticketStatus.isEmpty
+                              ? const Center(
+                            child: Text(
+                              "No status data",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                              : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: ticketStatus.map<Widget>((item) {

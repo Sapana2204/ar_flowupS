@@ -1,28 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'package:provider/provider.dart';
+import '../model/clientData_model.dart';
+import '../model/customerProduct_model.dart';
 import '../utils/app_colors.dart';
+import '../viewmodel/customers_viewmodel.dart';
+import '../viewmodel/query_viewmodel.dart';
 
-class CustomerModel {
-  final int id;
-  final String customerName;
-  final String firmName;
-  final String contact;
-  final String email;
-  final String address;
 
-  CustomerModel({
-    required this.id,
-    required this.customerName,
-    required this.firmName,
-    required this.contact,
-    required this.email,
-    required this.address,
-  });
-}
 
 class ProductItem {
-  String? product;
+  ProductData? selectedProduct;
 
   final TextEditingController qtyController =
   TextEditingController(text: '1');
@@ -36,16 +24,20 @@ class ProductItem {
   final TextEditingController gstController =
   TextEditingController(text: '18');
 
-  double get rate => double.tryParse(rateController.text) ?? 0;
+  double get rate =>
+      double.tryParse(rateController.text) ?? 0;
 
-  double get qty => double.tryParse(qtyController.text) ?? 0;
+  double get qty =>
+      double.tryParse(qtyController.text) ?? 0;
 
   double get discountPercent =>
       double.tryParse(discountController.text) ?? 0;
 
-  double get gstPercent => double.tryParse(gstController.text) ?? 0;
+  double get gstPercent =>
+      double.tryParse(gstController.text) ?? 0;
 
-  double get subtotal => qty * rate;
+  double get subtotal =>
+      qty * rate;
 
   double get discountAmount =>
       subtotal * discountPercent / 100;
@@ -80,48 +72,7 @@ class _CreateQuotationScreenState
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // ---------------------------------------------------------------------------
-  // DATA
-  // ---------------------------------------------------------------------------
-
-  final List<CustomerModel> customers = [
-    CustomerModel(
-      id: 1,
-      customerName: "ABC Industries",
-      firmName: "ABC Engineering Pvt Ltd",
-      contact: "9876543210",
-      email: "abc@gmail.com",
-      address: "MIDC Ambad, Nashik",
-    ),
-    CustomerModel(
-      id: 2,
-      customerName: "SP Traders",
-      firmName: "SP Traders",
-      contact: "9988776655",
-      email: "sp@gmail.com",
-      address: "Sinnar, Nashik",
-    ),
-    CustomerModel(
-      id: 3,
-      customerName: "Flowups Technologies",
-      firmName: "Flowups Technologies Pvt Ltd",
-      contact: "9090909090",
-      email: "info@flowups.in",
-      address: "College Road, Nashik",
-    ),
-  ];
-
-  final List<String> products = [
-    "CRM Software",
-    "Website Development",
-    "Mobile Application",
-    "AMC Service",
-    "Tally Customization",
-    "Tally Integration",
-    "Software Support",
-  ];
-
-  CustomerModel? selectedCustomer;
+  ClientData? selectedCustomer;
 
   final List<ProductItem> productItems = [
     ProductItem(),
@@ -168,6 +119,12 @@ class _CreateQuotationScreenState
     for (final item in productItems) {
       _attachListeners(item);
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<QueryViewModel>().fetchClients();
+      context.read<CustomersViewModel>().fetchProducts();
+
+    });
   }
 
   void _attachListeners(ProductItem item) {
@@ -266,18 +223,26 @@ class _CreateQuotationScreenState
   // ---------------------------------------------------------------------------
 
   Future<void> _selectCustomer() async {
-    final CustomerModel? customer =
-    await showModalBottomSheet<CustomerModel>(
+    final viewModel = context.read<QueryViewModel>();
+
+    if (viewModel.clientList.isEmpty && !viewModel.isLoading) {
+      await viewModel.fetchClients();
+    }
+
+    final ClientData? selected =
+    await showModalBottomSheet<ClientData>(
       context: context,
       backgroundColor: Colors.white,
       isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(24),
         ),
       ),
       builder: (context) {
-        return SafeArea(
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.65,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
               20,
@@ -285,237 +250,128 @@ class _CreateQuotationScreenState
               20,
               20,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 42,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                Row(
+            child: Consumer<QueryViewModel>(
+              builder: (context, vm, child) {
+                return Column(
                   children: [
-                    const Expanded(
-                      child: Text(
-                        "Select Customer / Lead",
-                        style: TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    // Drag handle
+                    Container(
+                      width: 42,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () =>
-                          Navigator.pop(context),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
 
-                const SizedBox(height: 10),
+                    const SizedBox(height: 18),
 
-                ...customers.map(
-                      (customer) {
-                    final bool selected =
-                        selectedCustomer?.id == customer.id;
-
-                    return InkWell(
-                      borderRadius:
-                      BorderRadius.circular(16),
-                      onTap: () =>
-                          Navigator.pop(context, customer),
-                      child: Container(
-                        margin: const EdgeInsets.only(
-                          bottom: 10,
-                        ),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? primary.withOpacity(.07)
-                              : const Color(0xffF7F9FC),
-                          borderRadius:
-                          BorderRadius.circular(16),
-                          border: Border.all(
-                            color: selected
-                                ? primary
-                                : Colors.grey.shade200,
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: primary.withOpacity(.08),
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                          child: Icon(
+                            Icons.people_outline,
+                            color: primary,
+                            size: 21,
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color:
-                                primary.withOpacity(.10),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.business_outlined,
-                                color: primary,
-                              ),
-                            ),
 
-                            const SizedBox(width: 12),
+                        const SizedBox(width: 11),
 
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    customer.customerName,
-                                    style: const TextStyle(
-                                      fontWeight:
-                                      FontWeight.w700,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    customer.firmName,
-                                    style: TextStyle(
-                                      color:
-                                      Colors.grey.shade600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    customer.contact,
-                                    style: TextStyle(
-                                      color:
-                                      Colors.grey.shade600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Select Customer",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                            ),
-
-                            if (selected)
-                              Icon(
-                                Icons.check_circle,
-                                color: primary,
-                              )
-                            else
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey.shade400,
+                              SizedBox(height: 2),
+                              Text(
+                                "Choose a customer for this quotation",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 11,
+                                ),
                               ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
 
-    if (customer != null) {
-      setState(() {
-        selectedCustomer = customer;
-      });
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // PRODUCT BOTTOM SHEET
-  // ---------------------------------------------------------------------------
-
-  Future<void> _selectProduct(ProductItem item) async {
-    final String? selected =
-    await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Colors.white,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              12,
-              20,
-              20,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 42,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Select Product / Service",
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(
+                            Icons.close,
+                            size: 21,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
 
-                const SizedBox(height: 14),
+                    const SizedBox(height: 16),
 
-                ...products.map(
-                      (product) {
-                    return ListTile(
-                      contentPadding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 4,
-                      ),
-                      leading: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: primary.withOpacity(.08),
-                          borderRadius:
-                          BorderRadius.circular(12),
+                    // Customer count
+                    if (!vm.isLoading && vm.clientList.isNotEmpty)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "${vm.clientList.length} customers",
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.inventory_2_outlined,
+                      ),
+
+                    const SizedBox(height: 10),
+
+                    // Customer list
+                    Expanded(
+                      child: vm.isLoading
+                          ? Center(
+                        child: CircularProgressIndicator(
                           color: primary,
                         ),
+                      )
+                          : vm.clientList.isEmpty
+                          ? _buildEmptyCustomers()
+                          : ListView.separated(
+                        physics:
+                        const BouncingScrollPhysics(),
+                        itemCount:
+                        vm.clientList.length,
+                        separatorBuilder:
+                            (_, __) =>
+                        const SizedBox(height: 8),
+                        itemBuilder:
+                            (context, index) {
+                          final customer =
+                          vm.clientList[index];
+
+                          return _buildCustomerItem(
+                            customer,
+                            vm,
+                          );
+                        },
                       ),
-                      title: Text(
-                        product,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      trailing: const Icon(
-                        Icons.chevron_right,
-                      ),
-                      onTap: () =>
-                          Navigator.pop(context, product),
-                    );
-                  },
-                ),
-              ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         );
@@ -524,9 +380,441 @@ class _CreateQuotationScreenState
 
     if (selected != null) {
       setState(() {
-        item.product = selected;
+        selectedCustomer = selected;
       });
     }
+  }
+
+  Widget _buildCustomerItem(
+      ClientData customer,
+      QueryViewModel viewModel,
+      ) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: () {
+        Navigator.pop(
+          context,
+          customer,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 13,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xffF8F9FC),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Colors.grey.shade200,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: primary.withOpacity(.09),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.business_outlined,
+                color: primary,
+                size: 21,
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    customer.name ?? "",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    "Customer ID: ${customer.customerId ?? '-'}",
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey.shade400,
+              size: 21,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyCustomers() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: primary.withOpacity(.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.people_outline,
+              color: primary,
+              size: 30,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          const Text(
+            "No customers found",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            "No customers are available.",
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // PRODUCT BOTTOM SHEET
+  // ---------------------------------------------------------------------------
+
+  Future<void> _selectProduct(ProductItem item) async {
+    final viewModel = context.read<CustomersViewModel>();
+
+    if (viewModel.products.isEmpty) {
+      await viewModel.fetchProducts();
+    }
+
+    final ProductData? selected =
+    await showModalBottomSheet<ProductData>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
+      ),
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.65,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              20,
+            ),
+            child: Consumer<CustomersViewModel>(
+              builder: (context, vm, child) {
+                return Column(
+                  children: [
+                    // Drag handle
+                    Container(
+                      width: 42,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: primary.withOpacity(.08),
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                          child: Icon(
+                            Icons.inventory_2_outlined,
+                            color: primary,
+                            size: 21,
+                          ),
+                        ),
+
+                        const SizedBox(width: 11),
+
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Select Product",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                "Choose a product for this quotation",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(
+                            Icons.close,
+                            size: 21,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    if (!vm.isLoading && vm.products.isNotEmpty)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "${vm.products.length} products",
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 10),
+
+                    Expanded(
+                      child: vm.isLoading
+                          ? Center(
+                        child: CircularProgressIndicator(
+                          color: primary,
+                        ),
+                      )
+                          : vm.products.isEmpty
+                          ? _buildEmptyProducts()
+                          : ListView.separated(
+                        physics:
+                        const BouncingScrollPhysics(),
+                        itemCount: vm.products.length,
+                        separatorBuilder:
+                            (_, __) =>
+                        const SizedBox(height: 8),
+                        itemBuilder:
+                            (context, index) {
+                          final product =
+                          vm.products[index];
+
+                          return _buildProductItem(
+                            product,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      setState(() {
+        item.selectedProduct = selected;
+
+        // Automatically populate API rate
+        item.rateController.text =
+            (selected.rate ?? 0).toString();
+
+        // Automatically populate API GST
+        item.gstController.text =
+            (selected.gstRate ?? 0).toString();
+      });
+    }
+  }
+
+  Widget _buildProductItem(ProductData product) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: () {
+        Navigator.pop(
+          context,
+          product,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 13,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xffF8F9FC),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Colors.grey.shade200,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: primary.withOpacity(.09),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                color: primary,
+                size: 21,
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.productName ?? "",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  Row(
+                    children: [
+                      Text(
+                        "Rate: ₹${(product.rate ?? 0).toStringAsFixed(2)}",
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Text(
+                        "GST: ${product.gstRate ?? 0}%",
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey.shade400,
+              size: 21,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyProducts() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: primary.withOpacity(.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.inventory_2_outlined,
+              color: primary,
+              size: 30,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          const Text(
+            "No products found",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            "No products are available.",
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -581,7 +869,7 @@ class _CreateQuotationScreenState
     }
 
     final hasProduct = productItems.any(
-          (item) => item.product != null,
+          (item) => item.selectedProduct != null,
     );
 
     if (!hasProduct) {
@@ -798,12 +1086,14 @@ class _CreateQuotationScreenState
                         ),
                       ],
                     )
+
+
+
                         : Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          selectedCustomer!.customerName,
+                          selectedCustomer!.name.toString(),
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
@@ -811,15 +1101,7 @@ class _CreateQuotationScreenState
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          selectedCustomer!.firmName,
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          selectedCustomer!.contact,
+                          "Customer ID: ${selectedCustomer!.customerId}",
                           style: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 11,
@@ -1088,14 +1370,14 @@ class _CreateQuotationScreenState
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      item.product ??
+                      item.selectedProduct?.productName ??
                           "Select Product / Service",
                       style: TextStyle(
-                        color: item.product == null
+                        color: item.selectedProduct == null
                             ? Colors.grey.shade500
                             : Colors.grey.shade800,
                         fontWeight:
-                        item.product == null
+                        item.selectedProduct == null
                             ? FontWeight.w400
                             : FontWeight.w600,
                         fontSize: 13,

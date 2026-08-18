@@ -64,6 +64,7 @@ class CustomersRepository {
 
 
   /// GET PRODUCTS
+  /// GET PRODUCTS
   Future<List<ProductData>> getProducts() async {
     try {
       final response = await _api.getPostApiResponse(
@@ -71,12 +72,10 @@ class CustomersRepository {
         {
           "text": "",
           "system": "new",
-          "isCompanyWise":true,
           "tableName": "products",
           "wherec": "product_name",
           "status": false,
-          "curpage": 0,
-          "list": "product_id,product_name",
+          "list": "product_id,product_name,rate,gst_rate",
         },
       );
 

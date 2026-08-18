@@ -86,14 +86,23 @@ class TicketsViewModel extends ChangeNotifier {
   String _status = "active";
   String get status => _status;
 
-  int _selectedAssigneeId = 0;
-  int get selectedAssigneeId => _selectedAssigneeId;
+  // int _selectedAssigneeId = 0;
+  // int get selectedAssigneeId => _selectedAssigneeId;
+
+  String _selectedTicketStatus = "";
+  String get selectedTicketStatus => _selectedTicketStatus;
 
   String _viewAll = "N";
   String get viewAll => _viewAll;
 
-  Future<void> setAssignee(int assigneeId) async {
-    _selectedAssigneeId = assigneeId;
+  // Future<void> setAssignee(int assigneeId) async {
+  //   _selectedAssigneeId = assigneeId;
+  //   await fetchTickets(isRefresh: true);
+  // }
+
+  Future<void> setTicketStatus(String status) async {
+    _selectedTicketStatus = status;
+
     await fetchTickets(isRefresh: true);
   }
 
@@ -118,13 +127,24 @@ class TicketsViewModel extends ChangeNotifier {
 
       notifyListeners();
 
+      // final List<Map<String, dynamic>> filters = [];
+      //
+      // if (_selectedAssigneeId != 0) {
+      //   filters.add({
+      //     "field": "assignee",
+      //     "condition": "equal_to",
+      //     "value": _selectedAssigneeId,
+      //     "type": "select",
+      //   });
+      // }
+
       final List<Map<String, dynamic>> filters = [];
 
-      if (_selectedAssigneeId != 0) {
+      if (_selectedTicketStatus.isNotEmpty) {
         filters.add({
-          "field": "assignee",
+          "field": "ticket_status",
           "condition": "equal_to",
-          "value": _selectedAssigneeId,
+          "value": _selectedTicketStatus,
           "type": "select",
         });
       }
@@ -156,10 +176,18 @@ class TicketsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> resetAssignee() async {
-    _selectedAssigneeId = 0;
+  // Future<void> resetAssignee() async {
+  //   _selectedAssigneeId = 0;
+  //   _searchText = "";
+  //   _viewAll = "N"; // Reset to My Tickets
+  //   await fetchTickets(isRefresh: true);
+  // }
+
+  Future<void> resetTicketFilters() async {
+    _selectedTicketStatus = "";
     _searchText = "";
-    _viewAll = "N"; // Reset to My Tickets
+    _viewAll = "N";
+
     await fetchTickets(isRefresh: true);
   }
 

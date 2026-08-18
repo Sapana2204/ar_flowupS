@@ -21,34 +21,45 @@ class CustomerProductModel {
     }
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['code'] = this.code;
-    data['type'] = this.type;
-    data['message'] = this.message;
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  // Map<String, dynamic> toJson() {
+  //   final Map<String, dynamic> data = new Map<String, dynamic>();
+  //   data['success'] = this.success;
+  //   data['code'] = this.code;
+  //   data['type'] = this.type;
+  //   data['message'] = this.message;
+  //   if (this.data != null) {
+  //     data['data'] = this.data!.map((v) => v.toJson()).toList();
+  //   }
+  //   return data;
+  // }
 }
 
 class ProductData {
   int? productId;
   String? productName;
+  double? rate;
+  double? gstRate;
 
-  ProductData({this.productId, this.productName});
+  ProductData({
+    this.productId,
+    this.productName,
+    this.rate,
+    this.gstRate,
+  });
 
   ProductData.fromJson(Map<String, dynamic> json) {
-    productId = json['product_id'];
-    productName = json['product_name'];
-  }
+    productId = int.tryParse(
+      json['product_id']?.toString() ?? '',
+    );
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['product_id'] = this.productId;
-    data['product_name'] = this.productName;
-    return data;
+    productName = json['product_name']?.toString();
+
+    rate = double.tryParse(
+      json['rate']?.toString() ?? '',
+    );
+
+    gstRate = double.tryParse(
+      json['gst_rate']?.toString() ?? '',
+    );
   }
 }

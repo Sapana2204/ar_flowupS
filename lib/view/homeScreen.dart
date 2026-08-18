@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:my_new_project/view/amcList_screen.dart';
 import 'package:my_new_project/view/customerList_screen.dart';
 import 'package:my_new_project/view/productExpiryReport_screen.dart';
@@ -40,7 +41,17 @@ class _HomeScreenState extends State<HomeScreen>
   final LoginRepository _repo = LoginRepository();
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool isSignedIn = false;
-  bool _statusDialogShown = false;
+  bool _locationReady = false;
+  bool _checkingLocation = true;
+  bool _locationDialogShown = false;
+
+  bool get _canViewReports {
+    final role = context.read<LoginViewModel>().userData?.roleSlug
+        ?.toLowerCase()
+        .trim();
+
+    return role == "admin" || role == "superadmin";
+  }
 
 
   final List<Widget> _pages = const [
@@ -51,33 +62,345 @@ class _HomeScreenState extends State<HomeScreen>
   ];
 
   @override
+  @override
   void initState() {
     super.initState();
+
     print("🔥 HomeScreen initState");
 
-    _loadAttendanceState();
-
-
+    WidgetsBinding.instance.addObserver(this);
 
     _currentIndex = widget.initialIndex;
 
-    /// ✅ Delay to ensure everything is ready
-    Future.delayed(const Duration(milliseconds: 300), () {
-      loadInitialCount();
+    _initializeHome();
+  }
+
+  Future<void> _initializeHome() async {
+    final locationAvailable = await _checkLocation();
+
+    if (!mounted) return;
+
+    if (!locationAvailable) {
+      setState(() {
+        _checkingLocation = false;
+        _locationReady = false;
+      });
+
+      await _showLocationRequiredDialog();
+
+      return;
+    }
+
+    setState(() {
+      _checkingLocation = false;
+      _locationReady = true;
     });
+
+    // Only load app data after location is available
+    _loadAttendanceState();
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted && _locationReady) {
+        loadInitialCount();
+      }
+    });
+
     SocketService().listenNotification((data) async {
+      if (!_locationReady || !mounted) return;
+
       print("🔥 SOCKET HIT: $data");
-      /// 🔊 PLAY SOUND HERE
+
       _playNotificationSound();
+
       setState(() {
         notificationCount += 1;
       });
 
-      /// ✅ FETCH LATEST LIST
       final latest = await _repo.fetchNotifications();
-      notificationNotifier.value = latest;
-      });
 
+      if (mounted) {
+        notificationNotifier.value = latest;
+      }
+    });
+  }
+
+  Future<bool> _checkLocation() async {
+    try {
+      // 1. Check whether GPS/location service is ON
+      final serviceEnabled =
+      await Geolocator.isLocationServiceEnabled();
+
+      if (!serviceEnabled) {
+        print("❌ Location service is OFF");
+        return false;
+      }
+
+      // 2. Check permission
+      LocationPermission permission =
+      await Geolocator.checkPermission();
+
+      print("📍 Location permission: $permission");
+
+      // 3. Request permission if not granted
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+
+        print("📍 Requested permission: $permission");
+      }
+
+      // 4. User denied permission
+      if (permission == LocationPermission.denied) {
+        print("❌ Location permission denied");
+        return false;
+      }
+
+      // 5. User permanently denied permission
+      if (permission == LocationPermission.deniedForever) {
+        print("❌ Location permission permanently denied");
+        return false;
+      }
+
+      // 6. Permission granted
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+
+        // Extra confirmation that location can actually be obtained
+        try {
+          await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.low,
+            ),
+          );
+
+          print("✅ Location available");
+          return true;
+        } catch (e) {
+          print("❌ Unable to get current location: $e");
+          return false;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      print("❌ Location check error: $e");
+      return false;
+    }
+  }
+
+  Future<void> _showLocationRequiredDialog() async {
+    if (!mounted || _locationDialogShown) return;
+
+    _locationDialogShown = true;
+
+    while (mounted && !_locationReady) {
+      final serviceEnabled =
+      await Geolocator.isLocationServiceEnabled();
+
+      final permission =
+      await Geolocator.checkPermission();
+
+      if (serviceEnabled &&
+          permission != LocationPermission.denied &&
+          permission != LocationPermission.deniedForever) {
+        final available = await _checkLocation();
+
+        if (available) {
+          if (mounted) {
+            setState(() {
+              _locationReady = true;
+              _checkingLocation = false;
+            });
+          }
+
+          _locationDialogShown = false;
+          return;
+        }
+      }
+
+      final result = await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            titlePadding: const EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              0,
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(
+              24,
+              18,
+              24,
+              10,
+            ),
+            actionsPadding: const EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              16,
+            ),
+            title: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.location_off_rounded,
+                    color: Colors.red.shade700,
+                    size: 34,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                const Text(
+                  "Location Service Required",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.red.shade100,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.red.shade700,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "Location service is important to use "
+                              "this application.",
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.4,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red.shade800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                const Text(
+                  "It is required to fetch and provide accurate "
+                      "data based on your current location.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: Colors.black54,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                const Text(
+                  "Please enable Location Service and allow "
+                      "location permission to continue.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, "exit");
+                },
+                child: const Text(
+                  "Exit",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context, "settings");
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.location_on_rounded,
+                  size: 19,
+                ),
+                label: const Text(
+                  "Enable Location",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted) return;
+
+      if (result == "settings") {
+        await Geolocator.openLocationSettings();
+
+        await Future.delayed(
+          const Duration(milliseconds: 800),
+        );
+
+        continue;
+      }
+
+      if (result == "exit") {
+        _locationDialogShown = false;
+        return;
+      }
+    }
+
+    _locationDialogShown = false;
   }
 
   /// 🔷 Dynamic Title
@@ -97,8 +420,81 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    if (_checkingLocation) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text(
+                "Checking location...",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
+    if (!_locationReady) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.location_off_rounded,
+                  size: 70,
+                  color: Colors.grey,
+                ),
+
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Location Required",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                const Text(
+                  "Please enable Location services and "
+                      "allow location access to use the application.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await _showLocationRequiredDialog();
+                  },
+                  icon: const Icon(Icons.location_on),
+                  label: const Text("Enable Location"),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
       return Scaffold(
       appBar: AppBar(
         title: Text(_title),
@@ -284,13 +680,13 @@ class _HomeScreenState extends State<HomeScreen>
                   );
                 }),
 
-                _drawerSimpleNav(Icons.radio_button_unchecked_outlined, AppStrings.quotation, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const QuotationListScreen()),
-                  );
-                }),
+                // _drawerSimpleNav(Icons.radio_button_unchecked_outlined, AppStrings.quotation, () {
+                //   Navigator.pop(context);
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (_) => const QuotationListScreen()),
+                //   );
+                // }),
 
 
                 _drawerSimpleNav(Icons.person, AppStrings.profile, () {
@@ -303,36 +699,56 @@ class _HomeScreenState extends State<HomeScreen>
 
 
 
-                const Divider(),
+                if (_canViewReports) ...[
+                  const Divider(),
 
-                /// 🔹 REPORTS
-                _sectionTitle(AppStrings.reportsSection),
+                  /// 🔹 REPORTS
+                  _sectionTitle(AppStrings.reportsSection),
 
-                _drawerSimpleNav(Icons.add_chart, AppStrings.reports, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const WorkReportScreen()),
-                  );
-                }),
+                  _drawerSimpleNav(
+                    Icons.add_chart,
+                    AppStrings.reports,
+                        () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const WorkReportScreen(),
+                        ),
+                      );
+                    },
+                  ),
 
-                _drawerSimpleNav(Icons.bar_chart, AppStrings.performanceReport, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const PerformanceReportScreen()),
-                  );
-                }),
+                  _drawerSimpleNav(
+                    Icons.bar_chart,
+                    AppStrings.performanceReport,
+                        () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PerformanceReportScreen(),
+                        ),
+                      );
+                    },
+                  ),
 
-                _drawerSimpleNav(Icons.production_quantity_limits, AppStrings.productExpreports, () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProductExpiryReportScreen()),
-                  );
-                }),
+                  _drawerSimpleNav(
+                    Icons.production_quantity_limits,
+                    AppStrings.productExpreports,
+                        () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProductExpiryReportScreen(),
+                        ),
+                      );
+                    },
+                  ),
 
-                const Divider(),
+                  const Divider(),
+                ],
 
                 /// 🔹 OTHERS
                 _sectionTitle(AppStrings.othersSection),

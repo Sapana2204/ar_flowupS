@@ -97,12 +97,20 @@ class _CallsListScreenState extends State<CallsListScreen> {
       backgroundColor: primary,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
-          onPressed: () async {
-            await context.read<TicketsViewModel>().resetAssignee();
-            if (context.mounted) {
-              Navigator.pop(context);
-            }
+          // onPressed: () async {
+          //   await context.read<TicketsViewModel>().resetAssignee();
+          //   if (context.mounted) {
+          //     Navigator.pop(context);
+          //   }
+          // }
+
+        onPressed: () async {
+          await context.read<TicketsViewModel>().resetTicketFilters();
+
+          if (context.mounted) {
+            Navigator.pop(context);
           }
+        },
       ),
       title: const Text("Tickets"),
         actions: [
@@ -150,35 +158,96 @@ class _CallsListScreenState extends State<CallsListScreen> {
             },
           ),
 
-          Consumer2<QueryViewModel, TicketsViewModel>(
-            builder: (_, queryVm, ticketVm, __) {
+          // Consumer2<QueryViewModel, TicketsViewModel>(
+          //   builder: (_, queryVm, ticketVm, __) {
+          //     return Padding(
+          //       padding: const EdgeInsets.only(right: 12),
+          //       child: DropdownButtonHideUnderline(
+          //         child: DropdownButton<int>(
+          //           value: ticketVm.selectedAssigneeId,
+          //           dropdownColor: Colors.white,
+          //           iconEnabledColor: Colors.white,
+          //           style: const TextStyle(
+          //             color: Colors.black,
+          //             fontSize: 14,
+          //           ),
+          //           isDense: true,
+          //           items: [
+          //             const DropdownMenuItem(
+          //               value: 0,
+          //               child: Text("All Assignees"),
+          //             ),
+          //             ...queryVm.adminList.map(
+          //                   (admin) => DropdownMenuItem(
+          //                 value: admin.adminID!,
+          //                 child: Text(admin.name ?? ""),
+          //               ),
+          //             ),
+          //           ],
+          //           onChanged: (value) {
+          //             if (value != null) {
+          //               ticketVm.setAssignee(value);
+          //             }
+          //           },
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // ),
+
+          Consumer<TicketsViewModel>(
+            builder: (_, ticketVm, __) {
+              const statusList = [
+                "Open",
+                "In Progress",
+                "Pending",
+                "Resolved",
+                "Closed",
+              ];
+
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int>(
-                    value: ticketVm.selectedAssigneeId,
+                  child: DropdownButton<String>(
+                    value: ticketVm.selectedTicketStatus.isEmpty
+                        ? null
+                        : ticketVm.selectedTicketStatus,
+
+                    hint: const Text(
+                      "Status",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+
                     dropdownColor: Colors.white,
                     iconEnabledColor: Colors.white,
+
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 14,
                     ),
+
                     isDense: true,
+
                     items: [
-                      const DropdownMenuItem(
-                        value: 0,
-                        child: Text("All Assignees"),
+                      const DropdownMenuItem<String>(
+                        value: "",
+                        child: Text("All Status"),
                       ),
-                      ...queryVm.adminList.map(
-                            (admin) => DropdownMenuItem(
-                          value: admin.adminID!,
-                          child: Text(admin.name ?? ""),
+
+                      ...statusList.map(
+                            (status) => DropdownMenuItem<String>(
+                          value: status,
+                          child: Text(status),
                         ),
                       ),
                     ],
+
                     onChanged: (value) {
                       if (value != null) {
-                        ticketVm.setAssignee(value);
+                        ticketVm.setTicketStatus(value);
                       }
                     },
                   ),

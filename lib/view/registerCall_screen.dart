@@ -1561,22 +1561,50 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
                       padding: const EdgeInsets.all(12),
                       child: TextField(
                         controller: searchController,
+                        cursorColor: primary,
                         decoration: InputDecoration(
                           hintText: "Search client...",
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
+                          hintStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: primary,
+                          ),
+                          focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: primary.withOpacity(0.4),
+                            ),
                           ),
                         ),
                         onChanged: (value) {
+                          final query = value.toLowerCase().trim();
+
                           setState(() {
-                            clients = vm.clientList
-                                .where((c) =>
-                                    (c.name ?? "")
-                                        .toLowerCase()
-                                        .contains(value.toLowerCase()) ||
-                                    (c.mobileNo ?? "").contains(value))
-                                .toList();
+                            clients = vm.clientList.where((c) {
+                              final name = (c.name ?? "").toLowerCase();
+                              final mobile = (c.mobileNo ?? "").toLowerCase();
+
+                              final serialMatches =
+                              (c.customerProducts ?? []).any((p) {
+                                final serialNumber =
+                                (p.serialNumber ?? "").toLowerCase();
+
+                                return serialNumber.contains(query);
+                              });
+
+                              return name.contains(query) ||
+                                  mobile.contains(query) ||
+                                  serialMatches;
+                            }).toList();
                           });
                         },
                       ),
