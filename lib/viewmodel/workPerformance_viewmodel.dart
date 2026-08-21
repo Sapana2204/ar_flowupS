@@ -77,8 +77,8 @@ class WorkPerformanceViewModel extends ChangeNotifier {
   int get overdue =>
       summary?.overdue ?? 0;
 
-  int get avgResolutionTime =>
-      summary?.avgResolutionTime ?? 0;
+  double get avgResolutionTime =>
+      summary?.avgResolutionTime ?? 0.0;
 
   int get productivityScore =>
       summary?.productivityScore ?? 0;

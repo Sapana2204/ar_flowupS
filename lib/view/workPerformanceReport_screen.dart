@@ -9,6 +9,8 @@ import '../model/assignee_model.dart';
 import '../model/company_model.dart';
 import '../res/widgets/performancePdf_service.dart';
 import '../res/widgets/performancePreviewPdf_screen.dart';
+import '../utils/app_colors.dart';
+import '../viewModel/login_viewmodel.dart';
 import '../viewmodel/workPerformance_viewmodel.dart';
 import '../viewmodel/workReport_viewmodel.dart';
 
@@ -24,7 +26,8 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
   AssigneeModel? selectedEmployee;
   CompanyModel? selectedCompany;
 
-  DateTimeRange? selectedDateRange;
+  DateTime? selectedFromDate;
+  DateTime? selectedToDate;
 
   String searchQuery = "";
   final PageController _analyticsController = PageController();
@@ -38,11 +41,29 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
     super.initState();
 
     Future.microtask(() async {
-      await context
-          .read<WorkReportViewModel>()
-          .loadWorkReportData();
+      final workReportVM = context.read<WorkReportViewModel>();
+
+      await workReportVM.loadWorkReportData();
+
+      if (!mounted) return;
+
+      setState(() {
+        setDefaultEmployee();
+      });
     });
   }
+
+  bool get isAdminOrSuperAdmin {
+    final loginVM = context.read<LoginViewModel>();
+
+    final role = loginVM.userData?.roleSlug
+        ?.toString()
+        .toLowerCase()
+        .trim();
+
+    return role == "admin" || role == "super_admin";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,6 +96,7 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
+                  tooltip: "Select Filters",
                   icon: Icon(
                     Icons.filter_alt,
                     color: isFilterApplied
@@ -141,6 +163,10 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
   Widget _ticketsTab() {
     return Consumer<WorkPerformanceViewModel>(
       builder: (context, vm, child) {
+
+        if (!isFilterApplied) {
+          return _filterRequiredState();
+        }
 
         if (vm.isLoading) {
           return const Center(
@@ -331,21 +357,24 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
 
   Widget _analyticsTab() {
     return Consumer<WorkPerformanceViewModel>(
-      builder: (context, vm, child) {
+        builder: (context, vm, child) {
 
-        if (vm.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+          if (!isFilterApplied) {
+            return _filterRequiredState();
+          }
 
-        if (vm.report == null ||
-            (vm.monthlyProductivity.isEmpty &&
-                vm.ticketStatusDistribution.isEmpty &&
-                vm.dailyClosureTrend.isEmpty &&
-                vm.pendingVsClosed == null)) {
-          return _emptyState("No data available");
-        }
+          if (vm.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (vm.report == null ||
+              (vm.monthlyProductivity.isEmpty &&
+                  vm.ticketStatusDistribution.isEmpty &&
+                  vm.dailyClosureTrend.isEmpty &&
+                  vm.pendingVsClosed == null)) {
+            return _emptyState("No data available");}
 
         return Column(
           children: [
@@ -752,6 +781,10 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
     return Consumer<WorkPerformanceViewModel>(
       builder: (context, vm, child) {
 
+        if (!isFilterApplied) {
+          return _filterRequiredState();
+        }
+
         if (vm.isLoading) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -761,8 +794,6 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
         if (vm.report == null || vm.tickets.isEmpty) {
           return _emptyState("No data available");
         }
-
-
 
         return ListView.builder(
           padding: const EdgeInsets.all(12),
@@ -1005,6 +1036,10 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
     return Consumer<WorkPerformanceViewModel>(
       builder: (context, vm, child) {
 
+        if (!isFilterApplied) {
+          return _filterRequiredState();
+        }
+
         if (vm.isLoading) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -1061,6 +1096,60 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
     );
   }
 
+  Widget _filterRequiredState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.filter_alt_outlined,
+                size: 48,
+                color: Colors.blue.shade600,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            const Text(
+              "Select Filters",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              "Please select a user from the filters to view the performance report.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton.icon(
+              onPressed: _openFilterSheet,
+              icon: const Icon(Icons.filter_alt),
+              label: const Text("Open Filters"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _activityCard({
     required String date,
@@ -1170,6 +1259,8 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
   /// 🔹 FILTER SHEET
   void _openFilterSheet() {
     final workReportvm = context.read<WorkReportViewModel>();
+    final employeeList = filteredEmployeeList;
+
 
     showModalBottomSheet(
       context: context,
@@ -1205,50 +1296,59 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
                     const SizedBox(height: 20),
 
 
-                    /// 🔹 DATE RANGE
                     _sectionTitle("DATE RANGE"),
+
                     Row(
                       children: [
                         Expanded(
                           child: _dateField(
-                            selectedDateRange?.start,
-                            () async {
+                            selectedFromDate,
+                                () async {
                               final picked = await showDatePicker(
                                 context: context,
                                 firstDate: DateTime(2020),
                                 lastDate: DateTime(2100),
-                                initialDate: DateTime.now(),
+                                initialDate: selectedFromDate ?? DateTime.now(),
                               );
+
                               if (picked != null) {
                                 setModalState(() {
-                                  selectedDateRange = DateTimeRange(
-                                    start: picked,
-                                    end: selectedDateRange?.end ?? picked,
-                                  );
+                                  selectedFromDate = picked;
+
+                                  // If To Date is before From Date,
+                                  // clear To Date.
+                                  if (selectedToDate != null &&
+                                      selectedToDate!.isBefore(picked)) {
+                                    selectedToDate = null;
+                                  }
                                 });
                               }
                             },
                           ),
                         ),
+
                         const SizedBox(width: 10),
+
                         const Text("TO"),
+
                         const SizedBox(width: 10),
+
                         Expanded(
                           child: _dateField(
-                            selectedDateRange?.end,
-                            () async {
+                            selectedToDate,
+                                () async {
                               final picked = await showDatePicker(
                                 context: context,
-                                firstDate: DateTime(2020),
+                                firstDate: selectedFromDate ?? DateTime(2020),
                                 lastDate: DateTime(2100),
-                                initialDate: DateTime.now(),
+                                initialDate: selectedToDate ??
+                                    selectedFromDate ??
+                                    DateTime.now(),
                               );
+
                               if (picked != null) {
                                 setModalState(() {
-                                  selectedDateRange = DateTimeRange(
-                                    start: selectedDateRange?.start ?? picked,
-                                    end: picked,
-                                  );
+                                  selectedToDate = picked;
                                 });
                               }
                             },
@@ -1269,33 +1369,38 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
                     /// 🔹 DROPDOWNS
                     _sectionTitle("EMPLOYEE"),
 
-                    DropdownButtonFormField<AssigneeModel>(
-                      value: selectedEmployee,
-                      hint: const Text("Select Employee"),
-                      items: workReportvm.assigneeList.map((employee) {
-                        return DropdownMenuItem<AssigneeModel>(
-                          value: employee,
-                          child: Text(employee.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setModalState(() {
-                          selectedEmployee = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 14,
+                      DropdownButtonFormField<AssigneeModel>(
+                        value: selectedEmployee,
+                        hint: const Text("Select User"),
+
+                        items: employeeList.map((employee) {
+                          return DropdownMenuItem<AssigneeModel>(
+                            value: employee,
+                            child: Text(employee.name),
+                          );
+                        }).toList(),
+
+                        onChanged: isAdminOrSuperAdmin
+                            ? (value) {
+                          setModalState(() {
+                            selectedEmployee = value;
+                          });
+                        }
+                            : null,
+
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
+                      )
                       
 ],
                     const SizedBox(height: 20),
@@ -1307,17 +1412,23 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
                           child: OutlinedButton(
                             onPressed: () {
                               setState(() {
-                                selectedEmployee = null;
                                 selectedCompany = null;
-                                selectedDateRange = null;
+                                selectedFromDate = null;
+                                selectedToDate = null;
                                 isFilterApplied = false;
+
+                                if (isAdminOrSuperAdmin) {
+                                  selectedEmployee = null;
+                                } else {
+                                  setDefaultEmployee();
+                                }
                               });
 
                               context.read<WorkPerformanceViewModel>().clearData();
 
                               Navigator.pop(context);
                             },
-                            child: const Text("Reset"),
+                            child: const Text("Reset",style: TextStyle(color: primary),),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -1325,40 +1436,29 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
                           child: ElevatedButton(
                             onPressed: () async {
 
-                              if (selectedEmployee == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Please select employee"),
-                                  ),
-                                );
-                                return;
-                              }
+                              // FROM DATE IS OPTIONAL
+                              final fromDate = selectedFromDate == null
+                                  ? ""
+                                  : DateFormat('yyyy-MM-dd').format(selectedFromDate!);
 
-                              if (selectedDateRange == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Please select date range"),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              final fromDate =
-                              DateFormat('yyyy-MM-dd')
-                                  .format(selectedDateRange!.start);
-
-                              final toDate =
-                              DateFormat('yyyy-MM-dd')
-                                  .format(selectedDateRange!.end);
+                              // TO DATE IS OPTIONAL
+                              final toDate = selectedToDate == null
+                                  ? ""
+                                  : DateFormat('yyyy-MM-dd').format(selectedToDate!);
 
                               await context
                                   .read<WorkPerformanceViewModel>()
                                   .getPerformanceReport(
-                                userId:
-                                selectedEmployee!.adminId.toString(),
+                                userId: selectedEmployee!.adminId.toString(),
                                 fromDate: fromDate,
                                 toDate: toDate,
                               );
+
+                              if (!mounted) return;
+
+                              setState(() {
+                                isFilterApplied = true;
+                              });
 
                               Navigator.pop(context);
                             },
@@ -1454,6 +1554,37 @@ class _PerformanceReportScreenState extends State<PerformanceReportScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to generate PDF: $e")),
       );
+    }
+  }
+
+  List<AssigneeModel> get filteredEmployeeList {
+    final workReportvm = context.read<WorkReportViewModel>();
+
+    // Admin / Super Admin can see all users
+    if (isAdminOrSuperAdmin) {
+      return workReportvm.assigneeList;
+    }
+
+    // Other users can see only themselves
+    final loginVM = context.read<LoginViewModel>();
+
+    final loggedInUserId =
+    loginVM.userData?.adminId?.toString();
+
+    return workReportvm.assigneeList.where((employee) {
+      return employee.adminId.toString() == loggedInUserId;
+    }).toList();
+  }
+
+  void setDefaultEmployee() {
+    if (isAdminOrSuperAdmin) {
+      return;
+    }
+
+    final employees = filteredEmployeeList;
+
+    if (employees.isNotEmpty) {
+      selectedEmployee = employees.first;
     }
   }
 

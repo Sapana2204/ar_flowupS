@@ -4,14 +4,24 @@ import '../../data/network/network_api_services.dart';
 class DashboardRepository {
   final NetworkApiServices _apiServices = NetworkApiServices();
 
-  Future<dynamic> getDashboardData() async {
+  Future<dynamic> getDashboardData({
+    required String fromDate,
+    String? toDate,
+  }) async {
     try {
       print("========== DASHBOARD API ==========");
       print("URL : ${AppUrls.dashboardApi}");
 
+      final body = {
+        "from_date": fromDate,
+        "to_date": toDate,
+      };
+
+      print("REQUEST BODY : $body");
+
       final response = await _apiServices.getPostApiResponse(
         AppUrls.dashboardApi,
-        {}, // empty body if backend doesn't require params
+        body,
       );
 
       print("========== DASHBOARD RESPONSE ==========");

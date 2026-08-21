@@ -4,13 +4,19 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="changes of assignee dropdown to statuses dropdown">
+    <list default="true" id="1e11dd8c-7410-419a-b31e-c54baac2ed46" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/customerProduct_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/customerProduct_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repository/customers_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/customers_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/createQuotation_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/createQuotation_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/workPerformance_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/workPerformance_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repository/dashboard_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repository/dashboard_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/callsList_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/callsList_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/dashboard_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/homeScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/homeScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/registerCall_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/workPerformanceReport_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/workPerformanceReport_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/dashboard_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/dashboard_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/login_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodel/workPerformance_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodel/workPerformance_viewmodel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,14 +122,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1776664708209</updated>
-    </task>
-    <task id="LOCAL-00013" summary="token and unread count after login">
-      <option name="closed" value="true" />
-      <created>1777978047991</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1777978047991</updated>
     </task>
     <task id="LOCAL-00014" summary="token and unread count after login">
       <option name="closed" value="true" />
@@ -509,7 +507,15 @@
       <option name="project" value="LOCAL" />
       <updated>1787035328616</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="quotation changes">
+      <option name="closed" value="true" />
+      <created>1787051427517</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1787051427517</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -525,7 +531,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="ticket history changes done" />
     <MESSAGE value="customer ticket report UI changes done" />
     <MESSAGE value="ticket visit done" />
     <MESSAGE value="responsive person changes done" />
@@ -550,6 +555,7 @@
     <MESSAGE value="before homescreen drawer addition for get-menus" />
     <MESSAGE value="quotation screen ui and quotation list api integration done" />
     <MESSAGE value="changes of assignee dropdown to statuses dropdown" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes of assignee dropdown to statuses dropdown" />
+    <MESSAGE value="quotation changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="quotation changes" />
   </component>
 </project>

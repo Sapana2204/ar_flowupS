@@ -126,7 +126,7 @@ class Summary {
   int? pending;
   int? delegated;
   int? overdue;
-  int? avgResolutionTime;
+  double? avgResolutionTime;
   int? productivityScore;
 
   Summary(
@@ -144,7 +144,8 @@ class Summary {
     pending = json['pending'];
     delegated = json['delegated'];
     overdue = json['overdue'];
-    avgResolutionTime = json['avg_resolution_time'];
+    avgResolutionTime=
+    (json['avg_resolution_time'] as num?)?.toDouble();
     productivityScore = json['productivity_score'];
   }
 

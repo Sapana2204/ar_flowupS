@@ -80,6 +80,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
   String? _initialAssignee;
   String? _initialStatus;
   bool addNewContact = false;
+  String? selectedDesignation;
 
 
   @override
@@ -498,16 +499,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
 
               Column(
                 children: [
-                  if (showNewContactCard) _buildNewContactCard(),
-
-                  if (!showNewContactCard)
-                    _buildContactDropdown()
-                  else
-                    _buildTextField(
-                      "Contact Person",
-                      "Enter contact person name",
-                      contactPersonController,
-                    ),
+                  _buildNewContactCard(),
                 ],
               ),
 
@@ -1456,6 +1448,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
 
               Checkbox(
                 value: addNewContact,
+                activeColor: primary,
                 onChanged: (value) {
                   setState(() {
                     addNewContact = value ?? false;
@@ -1504,11 +1497,7 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
             Row(
               children: [
                 Expanded(
-                  child: _buildTextField(
-                    "Designation",
-                    "Optional",
-                    designationController,
-                  ),
+                  child: _buildDesignationDropdown(),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1521,14 +1510,66 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
               ],
             ),
 
-            const SizedBox(height: 12),
-
-            _buildTextField(
-              "Department",
-              "Optional",
-              departmentController,
-            ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesignationDropdown() {
+    final designations = [
+      'Owner',
+      'Admin',
+      'Accountant',
+      'Other',
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Designation",
+            style: TextStyle(
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          SizedBox(
+            width: double.infinity,
+            child: DropdownButtonFormField<String>(
+              value: selectedDesignation,
+              isExpanded: true,
+              hint: const Text("Select designation"),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
+              ),
+              items: designations.map((designation) {
+                return DropdownMenuItem<String>(
+                  value: designation,
+                  child: Text(
+                    designation,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedDesignation = value;
+                  designationController.text = value ?? '';
+                });
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -1732,23 +1773,31 @@ class _RegisterCallScreenState extends State<RegisterCallScreen>
 
     setState(() {
       if (match.isNotEmpty) {
+        // Existing contact found
         selectedContact = match.first;
 
         contactPersonController.text = match.first.name ?? "";
         emailController.text = match.first.email ?? "";
 
-        showNewContactCard = false;
-        addNewContact = false; // ✅ hide checkbox form
+        // Always show New Contact card
+        showNewContactCard = true;
+
+        // Always unchecked by default
+        addNewContact = false;
       } else {
+        // No existing contact
         selectedContact = null;
 
         contactPersonController.clear();
         emailController.clear();
         designationController.clear();
         departmentController.clear();
+        selectedDesignation = null;
+        // Always show New Contact card
+        showNewContactCard = true;
 
-        showNewContactCard = true; // show "New Contact" card
-        addNewContact = false;     // ✅ checkbox remains unchecked initially
+        // Always unchecked by default
+        addNewContact = false;
       }
     });
   }

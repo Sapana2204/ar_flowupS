@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
 import '../utils/routes/routes_names.dart';
 import '../viewModel/dashboard_viewmodel.dart';
 import '../viewModel/login_viewmodel.dart';
 import 'package:pie_chart/pie_chart.dart';
-
 import 'callsList_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -74,32 +73,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         closedCount = value;
       }
     }
-    // final ticketStatus =
-    //     dashboardVM.dashboardModel?.data?.charts?.ticketStatus ?? [];
-    //
-    // final Map<String, double> pieData = {};
-    // final List<Color> pieColors = [];
-    //
-    // int totalTickets = 0;
-    //
-    // for (final item in ticketStatus) {
-    //   if (item is Map<String, dynamic>) {
-    //     // final int value = item['value'] ?? 0;
-    //
-    //     final value = int.tryParse(
-    //       item['value']?.toString() ?? '0',
-    //     ) ??
-    //         0;
-    //
-    //     pieData[item['label'] ?? 'Unknown'] = value.toDouble();
-    //
-    //     totalTickets += value;
-    //
-    //     if (item['color'] != null) {
-    //       pieColors.add(hexToColor(item['color']));
-    //     }
-    //   }
-    // }
 
     final ticketStatus =
         dashboardVM.dashboardModel?.data?.charts?.ticketStatus ?? [];
@@ -143,6 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// HEADER
+            /// HEADER
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -153,13 +127,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: textSecondary,
                   ),
                 ),
+
                 const SizedBox(height: 4),
-                Text(
-                  loginVM.userData?.name ?? "User",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        loginVM.userData?.name ?? "User",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    InkWell(
+                      onTap: () => _showDateRangePicker(dashboardVM),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          dashboardVM.toDate != null
+                              ? Icons.event_available
+                              : Icons.calendar_month,
+                          color: primary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -398,6 +399,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+
+
   Widget _legendItem(Color color, String text) {
     return Row(
       children: [
@@ -469,6 +472,180 @@ class _DashboardScreenState extends State<DashboardScreen> {
           blurRadius: 10,
         ),
       ],
+    );
+  }
+
+  Future<void> _showDateRangePicker(DashboardViewModel dashboardVM) async {
+    DateTime? fromDate = dashboardVM.fromDate;
+    DateTime? toDate = dashboardVM.toDate;
+
+    fromDate ??= dashboardVM.currentMonthFirstDate;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(
+                    Icons.calendar_month,
+                    color: primary,
+                  ),
+                  SizedBox(width: 8),
+                  Text("Select Date Range"),
+                ],
+              ),
+
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _dialogDateField(
+                    label: "From Date",
+                    date: fromDate,
+                    onTap: () async {
+                      final selected = await showDatePicker(
+                        context: context,
+                        initialDate: fromDate!,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (selected != null) {
+                        setState(() {
+                          fromDate = selected;
+
+                          // Reset To Date if it is before From Date
+                          if (toDate != null &&
+                              toDate!.isBefore(selected)) {
+                            toDate = null;
+                          }
+                        });
+                      }
+                    },
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  _dialogDateField(
+                    label: "To Date",
+                    date: toDate,
+                    onTap: () async {
+                      final selected = await showDatePicker(
+                        context: context,
+                        initialDate: toDate ?? DateTime.now(),
+                        firstDate: fromDate!,
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (selected != null) {
+                        setState(() {
+                          toDate = selected;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                  },
+                  child: const Text("Cancel", style: TextStyle(color: black),),
+                ),
+
+                TextButton(
+                  onPressed: () async {
+                    Navigator.pop(dialogContext);
+
+                    await dashboardVM.setDateFilter(
+                      fromDate: fromDate!,
+                      toDate: toDate,
+                    );
+                  },
+                  child: const Text(
+                    "Apply",
+                    style: TextStyle(
+                      color: primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _dialogDateField({
+    required String label,
+    required DateTime? date,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey.shade300,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.calendar_today,
+              size: 18,
+              color: primary,
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: textSecondary,
+                    ),
+                  ),
+
+                  const SizedBox(height: 3),
+
+                  Text(
+                    date != null
+                        ? DateFormat('dd-MM-yyyy').format(date)
+                        : "Select date",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.grey,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

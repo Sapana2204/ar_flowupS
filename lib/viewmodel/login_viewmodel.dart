@@ -1,14 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:my_new_project/viewmodel/userStatus_viewmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:battery_plus/battery_plus.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:ringer_mode/ringer_mode.dart';
-
 import '../data/network/network_api_services.dart';
 import '../data/network/socket_service.dart';
 import '../model/login_model.dart';
@@ -47,6 +42,12 @@ class LoginViewModel with ChangeNotifier {
   void setUserData(LoginModel user) {
     _userData = user;
     notifyListeners();
+  }
+
+  bool get canViewAllTickets {
+    final role = _userData?.roleSlug?.toString().toLowerCase().trim();
+
+    return role == "admin" || role == "super_admin";
   }
 
   /// ✅ Save user locally

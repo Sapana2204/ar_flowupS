@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen>
         ?.toLowerCase()
         .trim();
 
-    return role == "admin" || role == "superadmin";
+    return role == "admin" || role == "super_admin";
   }
 
 
@@ -697,7 +697,7 @@ class _HomeScreenState extends State<HomeScreen>
 
 
 
-                if (_canViewReports) ...[
+                // if (_canViewReports) ...[
                   const Divider(),
 
                   /// 🔹 REPORTS
@@ -746,7 +746,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
 
                   const Divider(),
-                ],
+                // ],
 
                 /// 🔹 OTHERS
                 _sectionTitle(AppStrings.othersSection),

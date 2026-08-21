@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:my_new_project/viewModel/login_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -114,16 +115,26 @@ class _CallsListScreenState extends State<CallsListScreen> {
       ),
       title: const Text("Tickets"),
         actions: [
-          Consumer<TicketsViewModel>(
-            builder: (_, ticketVm, __) {
+          Consumer2<LoginViewModel, TicketsViewModel>(
+            builder: (_, loginVm, ticketVm, __) {
+              // Show My Tickets / All Tickets only for Admin & Super Admin
+              if (!loginVm.canViewAllTickets) {
+                return const SizedBox.shrink();
+              }
+
               return PopupMenuButton<String>(
                 tooltip: "Ticket View",
-                icon: const Icon(Icons.filter_list, color: Colors.white),
+                icon: const Icon(
+                  Icons.filter_list,
+                  color: Colors.white,
+                ),
+
                 onSelected: (value) async {
                   await ticketVm.setViewAll(value);
                 },
+
                 itemBuilder: (_) => [
-                  PopupMenuItem(
+                  PopupMenuItem<String>(
                     value: "N",
                     child: Row(
                       children: [
@@ -138,7 +149,8 @@ class _CallsListScreenState extends State<CallsListScreen> {
                       ],
                     ),
                   ),
-                  PopupMenuItem(
+
+                  PopupMenuItem<String>(
                     value: "Y",
                     child: Row(
                       children: [
